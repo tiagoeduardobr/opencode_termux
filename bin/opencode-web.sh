@@ -29,8 +29,8 @@ echo "[INFO] Iniciando proot + OpenCode + Cloudflare Tunnel..."
 echo "[INFO] Projeto: $PROJECT_DIR"
 
 nohup proot-distro login ubuntu --shared-tmp -- bash -c '
-  cd "$1" && ./run-cloudflare-tunnel.sh
-' _ "$PROJECT_DIR" </dev/null >/dev/null 2>&1 &
+  cd "$1" && exec ./run-cloudflare-tunnel.sh
+' _ "$SCRIPT_DIR" </dev/null >/dev/null 2>&1 &
 PROOT_PID=$!
 
 echo "$PROOT_PID" > "$PID_FILE"

@@ -8,6 +8,39 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 
 ---
 
+## Estrutura do repositório
+
+```
+opencode_termux/
+├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
+│   ├── opencode.jsonc             ← config global do opencode
+│   ├── skills/                    ← 27 skills (25 globais + 2 do parecer_descritivo)
+│   │   ├── code-reviewer/
+│   │   ├── executing-plans/
+│   │   ├── design-system-patterns/
+│   │   ├── design-tokens/
+│   │   ├── fastapi-expert/
+│   │   └── ...
+│   └── agents/                    ← agentes subagent (git-commit, code-review)
+│       ├── git-commit.md
+│       └── code-review.md
+├── opencode.json                  ← config DO PROJETO (aponta para skills e agents locais)
+├── bin/
+│   ├── opencode-web.sh            ← manager fire-and-forget
+│   └── opencode-web-stop.sh       ← stopper
+├── run-cloudflare-tunnel.sh       ← script executado dentro do proot
+├── shell/aliases.sh               ← aliases para bash
+├── scripts/setup.sh               ← configuração inicial em qualquer device
+├── .env                           ← configurações reais
+└── .env.example                   ← template de configuração
+```
+
+> **📌 Como funciona**: `~/.config/opencode/` → symlink → `opencode_termux/.config/opencode/`
+> Skills e agents vivem no repositório e são referenciados globalmente pelo symlink.
+> Clone em qualquer device, rode `bash scripts/setup.sh`, e tudo funciona.
+
+---
+
 ## ⚠️ Antes de começar — leia
 
 - **Use o Termux da F-Droid**, não o da Play Store (a versão Play é abandonada e quebra).
@@ -80,40 +113,50 @@ dpkg -i cloudflared-linux-arm64.deb
 cloudflared version
 ```
 
-### 6. Sair do proot e criar o projeto
+### 6. Sair do proot e clonar o repositório
 
 ```bash
 exit  # sai do proot
 ```
 
-De volta ao Termux nativo, clone ou crie o projeto:
+De volta ao Termux nativo:
 
 ```bash
-git clone ...  # ou crie manualmente
+git clone <url-do-repositorio> opencode_termux
+cd opencode_termux
 ```
 
-Copie o `.env.example`:
+### 7. Rodar o setup
+
+```bash
+bash scripts/setup.sh
+```
+
+O que `setup.sh` faz:
+1. Faz backup de `~/.config/opencode/` existente (se não for symlink)
+2. Cria symlink: `~/.config/opencode/` → `opencode_termux/.config/opencode/`
+3. Instala dependências npm do `.config/opencode/`
+4. Instrui sobre aliases
+
+Isso torna skills e agentes disponíveis globalmente para **todos os projetos**.
+
+### 8. Configurar aliases
+
+Adicione ao `~/.bashrc` do **Termux nativo** (não dentro do proot):
+
+```bash
+echo 'source /root/Projetos/opencode_termux/shell/aliases.sh' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 9. Copiar .env e ajustar
 
 ```bash
 cp .env.example .env
 # edite NTFY_TOPIC, PROJECT_DIR se necessário
 ```
 
-### 7. Configurar aliases
-
-Adicione ao `~/.bashrc` do **Termux nativo** (não dentro do proot):
-
-```bash
-source /root/Projetos/opencode_termux/shell/aliases.sh
-```
-
-Recarregue:
-
-```bash
-source ~/.bashrc
-```
-
-### 8. Primeira execução
+### 10. Primeira execução
 
 ```bash
 opencode_web
@@ -142,6 +185,20 @@ cat $PREFIX/tmp/opencode_url.txt   # URL ativa
 ---
 
 ## Arquitetura
+
+### Camada de config — symlink global
+
+```
+~/.config/opencode/  ──symlink──►  opencode_termux/.config/opencode/
+                                         │
+                                    skills/ (27 skills)
+                                    agents/ (git-commit.md, code-review.md)
+                                    opencode.jsonc
+
+Todos os projetos enxergam skills e agentes via ~/.config/opencode/
+```
+
+### Camada de execução — Termux → proot
 
 ```
 Termux (nativo)                     proot (Ubuntu)
