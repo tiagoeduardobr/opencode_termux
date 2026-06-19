@@ -145,3 +145,44 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 - **ntfy.sh** confirmado: `curl -d "msg" ntfy.sh/opencode-tunnel` retorna HTTP 200
 - **SSH** usado para push em `opencode_termux` (HTTPS sem credenciais no ambiente Docker); `parecer_descritivo` continua HTTPS
 - **`opencode.json`** do `parecer_descritivo` referencia `~/.config/opencode/skills` — não precisa de alteração com o symlink
+- **`0.0.0.0` crasha dentro do proot**: `opencode web --hostname 0.0.0.0` falha com `getifaddrs returned an error` — usar `127.0.0.1`
+- **`termux-notification-remove`** removido: Causa abertura de configurações de bateria em MIUI/Xiaomi
+
+---
+
+## Mudanças desta Sessão (19/06/2026)
+
+### Scripts corrigidos
+
+| Arquivo | O que mudou |
+|---|---|
+| `run-cloudflare-tunnel.sh` | Default `HOSTNAME` mudou de `0.0.0.0` para `127.0.0.1` (getifaddrs bug); adicionado `command -v opencode` check; `CLOUDFLARED_LOG` fixo em `/tmp/` (evita `rm -f ""`); removido `cleanup` duplicado no early exit |
+| `bin/opencode-web.sh` | Adicionado `LOG_FILE` variável; PID death detection (`sleep 2` + `kill -0`) com `tail -20` do log; mensagem de warn mostra caminho do log |
+| `bin/opencode-web-stop.sh` | Adicionado `LOG_FILE` ao cleanup; removido `termux-notification-remove` (MIUI bug) |
+
+### Config atualizada
+
+| Arquivo | O que mudou |
+|---|---|
+| `.env` | Adicionado `OPENCODE_HOSTNAME=127.0.0.1` |
+| `.env.example` | `OPENCODE_HOSTNAME=127.0.0.1` com comentário sobre getifaddrs |
+| `AGENTS.md` | Tabela de variáveis atualizada; gotchas adicionadas: getifaddrs, termux-notification-remove |
+| `README.md` | Tabela de variáveis atualizada (adicionados OPENCODE_HOSTNAME e LOG_FILE) |
+
+### Alias corrigido
+
+O alias `opencode_web` no `.bashrc` apontava para `~/opencode_web.sh` (script antigo). Atualizado para apontar diretamente para o repositório dentro do container Ubuntu:
+```bash
+OPENCODE_TERMUX_DIR="/data/data/com.termux/files/usr/var/lib/proot-distro/containers/ubuntu/rootfs/root/Projetos/opencode_termux"
+alias opencode_web="$OPENCODE_TERMUX_DIR/bin/opencode-web.sh"
+alias opencode_web_stop="$OPENCODE_TERMUX_DIR/bin/opencode-web-stop.sh"
+```
+
+### Diagnóstico do getifaddrs bug
+
+`opencode web --hostname 0.0.0.0` falha dentro do proot com:
+```
+Error: Unexpected error
+A system error occurred: getifaddrs returned an error
+```
+Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompleto). Solução: usar `127.0.0.1` (cloudflared conecta em localhost de qualquer forma).

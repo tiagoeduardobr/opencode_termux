@@ -66,32 +66,56 @@ Variáveis (via `.env` ou env var):
 | Variável | Default | Descrição |
 |---|---|---|
 | `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
+| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`)|
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
-| `PROJECT_DIR` | diretório do script | Onde está `run-cloudflare-tunnel.sh` |
+| `PROJECT_DIR` | diretório do script | Onde está `run-cloudflare-tunnel.sh` (raiz deste repo, não o projeto de destino) |
 | `NOTIFY_FILE` | `$PREFIX/tmp/opencode_url.txt` | Handoff da URL |
 | `PID_FILE` | `$PREFIX/tmp/opencode_web.pid` | PID do processo |
+| `LOG_FILE` | `$PREFIX/tmp/opencode_web.log` | Log da execução no proot |
 
 ### `run-cloudflare-tunnel.sh`
 
 Executado **dentro do proot** (`--shared-tmp`). Sobe `opencode web` + `cloudflared tunnel` + ntfy push.
 
-## Skills
+## Skills e Subagentes
 
-27 skills instaladas em `.config/opencode/skills/`:
-
-- **Gerais**: api-security-best-practices, backlog-curator, changelog-generator, code-documenter, code-reviewer, coauthoring-docs, content-research-writer, customize-opencode, data-science-expert, designing-frontend-interfaces, documentation-and-adrs, executing-plans, fastapi-expert, frontend-design, javascript-typescript, jupyter-notebook, pandoc-docs, postgres-pro, python-pro, secure-code-guardian, spec-driven-development, staff-engineer-review, systematic-debugging, test-master, web-design-guidelines
-- **Projeto-specific** (movidas de `parecer_descritivo/.agents/skills/`): design-system-patterns, design-tokens
-
-Skills usam o caminho relativo `.config/opencode/skills/` no `opencode.json`. O setup.sh garante que `~/.config/opencode/` aponte para cá.
+27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
+Subagentes: `git-commit`, `code-review` (prompts em `.config/opencode/agents/`).
+Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
 ## Dependências (device)
 
-- Termux F-Droid + proot-distro Ubuntu
-- Node.js 20+ (dentro do proot)
-- `npm install -g @anthropic-ai/opencode`
-- cloudflared (dentro do proot)
-- curl
-- ntfy app (Android, opcional)
+- `npm install -g opencode-ai` (dentro do proot Ubuntu)
+- `cloudflared` (dentro do proot, .deb arm64)
+
+## Convenções e Gotchas
+
+- **Shebang**: Scripts Termux usam `#!/data/data/com.termux/files/usr/bin/bash`
+  (não `/bin/bash` — não existe no Termux). Scripts dentro do proot usam
+  `#!/usr/bin/env bash`.
+- **`--shared-tmp`**: Mapeia `/tmp` do proot para `$PREFIX/tmp` do Termux.
+  Essencial para handoff da URL via `$PREFIX/tmp/opencode_url.txt`. Não remover.
+- **`exec` no proot**: Dentro do proot, o `bash -c` faz `cd "$1" && exec ./run-cloudflare-tunnel.sh`
+  — substitui o bash, evita processo orfão. Não refatorar para `bash -c` sem `exec`.
+- **Fire-and-forget**: `disown` + PID file — o opencode tem bug onde Ctrl+C não
+  termina (#21505). O manager só inicia e sai; use `opencode_web_stop` para parar.
+- **`kill -0`**: Padrão POSIX para testar se processo existe. O stop script faz
+  graceful kill (SIGTERM), espera 3s, depois `kill -9`. Não confundir com sinal 0.
+- **`stty sane`** no stop: Reset de terminal pós-proot (quirk Termux). Não remover.
+- **`termux-notification-remove`** removido: Causa abertura de configurações de bateria
+  em MIUI/Xiaomi. A notificação com `--id` e `--ongoing` é limpa automaticamente
+  pelo Android quando o processo termina.
+- **`.env` loading**: Scripts carregam `.env` de `$SCRIPT_DIR` (raiz do repo), não do CWD.
+  `run-cloudflare-tunnel.sh` dentro do proot também carrega do CWD (que é o mesmo dir).
+- **`.config/opencode/.gitignore`**: Ignora `node_modules`, `bun.lock` e `.gitignore`
+  — intencional (mantém package.json/lock versionados, exclui node_modules).
+- **`opencode.json`**: Usa paths relativos `.config/opencode/skills/` e
+  `{file:.config/opencode/agents/<name>.md}` para subagentes.
+- **`0.0.0.0` crasha dentro do proot**: O `opencode web --hostname 0.0.0.0` falha
+  com `getifaddrs returned an error` porque o proot não expõe interfaces de rede.
+  Use `127.0.0.1` (default) dentro do proot; o cloudflared conecta em `127.0.0.1`.
+- **Log de diagnóstico**: Saída do proot vai para `$PREFIX/tmp/opencode_web.log`.
+  Se o tunnel não subir, consulte este arquivo.
 
 ## Comandos Úteis
 
@@ -103,4 +127,5 @@ opencode_web_stop         # para
 # Status manual
 cat $PREFIX/tmp/opencode_web.pid   # PID
 cat $PREFIX/tmp/opencode_url.txt   # URL ativa
+cat $PREFIX/tmp/opencode_web.log   # Log de diagnóstico
 ```

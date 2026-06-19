@@ -101,7 +101,7 @@ npm -v
 ### 4. OpenCode CLI
 
 ```bash
-npm install -g @anthropic-ai/opencode
+npm install -g opencode-ai
 opencode --version
 ```
 
@@ -249,10 +249,12 @@ Variáveis (via `.env` ou env var):
 | Variável | Default | Descrição |
 |---|---|---|
 | `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
+| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`)|
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
 | `PROJECT_DIR` | diretório do script | Onde está `run-cloudflare-tunnel.sh` |
 | `NOTIFY_FILE` | `$PREFIX/tmp/opencode_url.txt` | Arquivo de handoff da URL |
 | `PID_FILE` | `$PREFIX/tmp/opencode_web.pid` | Arquivo do PID |
+| `LOG_FILE` | `$PREFIX/tmp/opencode_web.log` | Log da execução no proot |
 
 ### `bin/opencode-web-stop.sh`
 
