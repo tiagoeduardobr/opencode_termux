@@ -162,20 +162,100 @@ para acesso offline e versionamento no repositório.
 | **Atualizar cloudflared** | `cloudflare/downloads.md`, `cloudflare/run-parameters.md` |
 | **Migrar de Quick Tunnel para named tunnel** | `cloudflare/config-file.md`, `cloudflare/run-parameters.md` |
 
-## Agent Workflow — Usando as Docs
+## Agent Workflow — Orquestração
 
-Quando um agente for **planejar mudanças** neste repo:
+### Qual agente usar
 
-1. **Leia `docs/` relevante** conforme a tabela "Leitura Recomendada por Tarefa"
-2. **Verifique a versão** da ferramenta no device (`cloudflared version`, `proot-distro list`) contra a doc local
-3. **Não assuma** que flags/padrões são os mesmos — sempre confirme na doc local antes de modificar scripts
-4. **Se encontrar divergência** entre doc local e comportamento real, atualize a doc E o gotcha no AGENTS.md
+| Tarefa | Agente | Quando usar |
+|---|---|---|
+| Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
+| Mudanças simples (1-3 arquivos) | `general` | Edits, fixes, refactors pontuais |
+| Mudanças complexas (3+ arquivos) | `general` + `code-review` | Implementar → revisar → commit |
+| Criar commit | `git-commit` | Sempre após mudanças aprovadas |
+| Revisão de PR/code | `code-review` | Após implementação, antes de merge |
+| Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
+| Tarefa com plano escrito | `executing-plans` | Re-executar planos com checkpoints |
 
-Quando um agente for **revisar código**:
+### Padrões de orquestração
 
-1. Verifique se scripts usam flags documentadas em `docs/cloudflare/run-parameters.md`
-2. Verifique se paths seguem o filesystem layout em `docs/termux/filesystem-layout.md`
-3. Verifique se notificações usam APIs descritas em `docs/termux/termux-notification.md`
+**Padrão simples** (mudança pontual):
+```
+1. explore → entender contexto
+2. general → implementar
+3. git-commit → commitar
+```
+
+**Padrão completo** (feature ou fix complexo):
+```
+1. explore → mapear arquivos afetados
+2. skill (se aplicável) → carregar instructions
+3. general → implementar mudanças
+4. code-review → revisar qualidade
+5. git-commit → commitar
+```
+
+**Padrão de revisão** (após receber PR/issues):
+```
+1. code-review → analisar mudanças
+2. general → aplicar feedback
+3. git-commit → commitar fixes
+```
+
+### Regras de delegação
+
+1. **Nunca duplique trabalho** — se delegou para um agente, aguarde o resultado
+2. **Encadeie agentes** — passe o resultado de um como contexto do próximo
+3. **Use task_id** — para continuar sessão anterior, passe o task_id
+4. **Skills primeiro** — antes de implementar, verifique se há skill relevante
+5. **Docs antes de código** — sempre leia `docs/` relevante antes de modificar scripts
+
+### Uso de Skills
+
+```bash
+# Carregar skill quando tarefa casa com descrição
+skill(name="code-reviewer")    # revisão de código
+skill(name="systematic-debugging")  # debug de bugs
+skill(name="test-master")      # criar testes
+skill(name="executing-plans")  # executar plano existente
+```
+
+### Loop de trabalho
+
+```
+┌─────────────────────────────────────────────────┐
+│  1. Entender tarefa                              │
+│     └─ explore ou ler contexto                   │
+│  2. Planejar (se complexo)                       │
+│     └─ skill executing-plans ou escrever plano   │
+│  3. Implementar                                  │
+│     └─ general agent                             │
+│  4. Verificar                                    │
+│     └─ code-review ou rodar tests/lint            │
+│  5. Commitar                                     │
+│     └─ git-commit agent                          │
+│  6. Push (se pedido)                             │
+│     └─ git push                                  │
+└─────────────────────────────────────────────────┘
+```
+
+### Referências Doc por Fluxo
+
+| Fluxo | Docs para ler |
+|---|---|
+| **Setup em device novo** | `proot-distro/README.md`, `cloudflare/downloads.md`, `termux/filesystem-layout.md` |
+| **Debug do tunnel não subir** | `cloudflare/quick-tunnel.md`, `cloudflare/run-parameters.md` |
+| **Mudar porta/host do opencode** | `termux/filesystem-layout.md`, `cloudflare/config-file.md` |
+| **Adicionar notificação customizada** | `termux/termux-notification.md` |
+| **Atualizar cloudflared** | `cloudflare/downloads.md`, `cloudflare/run-parameters.md` |
+| **Migrar de Quick Tunnel para named tunnel** | `cloudflare/config-file.md`, `cloudflare/run-parameters.md` |
+
+### Anti-padrões
+
+- ❌ **Pular explore** → implementar sem entender contexto causa erros
+- ❌ **Não usar skill** → re-inventar wheel quando skill já resolve
+- ❌ **Commitar sem review** → code quality degrada
+- ❌ **Assumir flags** → sempre confirmar na doc local antes de modificar scripts
+- ❌ **Não verificar versão** → `cloudflared version`, `proot-distro list` contra doc local
 
 ## Comandos Úteis
 
