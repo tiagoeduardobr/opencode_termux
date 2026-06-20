@@ -231,10 +231,8 @@ skill(name="executing-plans")  # executar plano existente
 │     └─ general agent                             │
 │  4. Verificar                                    │
 │     └─ code-review ou rodar tests/lint            │
-│  5. Commitar                                     │
+│  5. Commitar + Push                              │
 │     └─ git-commit agent                          │
-│  6. Push (se pedido)                             │
-│     └─ git push                                  │
 └─────────────────────────────────────────────────┘
 ```
 
