@@ -27,6 +27,18 @@ opencode_termux/
 │   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop)
 ├── scripts/
 │   └── setup.sh                ← setup em device novo (backup, symlink, npm install)
+├── docs/                       ← documentação de referência
+│   ├── SESSION_CONTEXT_20260618.md ← contexto da sessão de criação
+│   ├── proot-distro/
+│   │   └── README.md           ← docs completas do proot-distro
+│   ├── termux/
+│   │   ├── filesystem-layout.md ← paths, $PREFIX, $TMPDIR
+│   │   └── termux-notification.md ← API de notificações
+│   └── cloudflare/
+│       ├── quick-tunnel.md     ← Quick Tunnel / TryCloudflare
+│       ├── downloads.md        ← cloudflared arm64 .deb
+│       ├── config-file.md      ← YAML config structure
+│       └── run-parameters.md   ← tunnel run flags
 ├── .env                        ← config real (OPENCODE_PORT, NTFY_TOPIC, PROJECT_DIR)
 ├── .env.example                ← template
 ├── README.md                   ← tutorial completo
@@ -95,6 +107,7 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   `#!/usr/bin/env bash`.
 - **`--shared-tmp`**: Mapeia `/tmp` do proot para `$PREFIX/tmp` do Termux.
   Essencial para handoff da URL via `$PREFIX/tmp/opencode_url.txt`. Não remover.
+  → Detalhes: `docs/proot-distro/README.md`, `docs/termux/filesystem-layout.md`
 - **`exec` no proot**: Dentro do proot, o `bash -c` faz `cd "$1" && exec ./run-cloudflare-tunnel.sh`
   — substitui o bash, evita processo orfão. Não refatorar para `bash -c` sem `exec`.
 - **Fire-and-forget**: `disown` + PID file — o opencode tem bug onde Ctrl+C não
@@ -105,6 +118,7 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
 - **`termux-notification-remove`** removido: Causa abertura de configurações de bateria
   em MIUI/Xiaomi. A notificação com `--id` e `--ongoing` é limpa automaticamente
   pelo Android quando o processo termina.
+  → Detalhes: `docs/termux/termux-notification.md`
 - **`.env` loading**: Scripts carregam `.env` de `$SCRIPT_DIR` (raiz do repo), não do CWD.
   `run-cloudflare-tunnel.sh` dentro do proot também carrega do CWD (que é o mesmo dir).
 - **`.config/opencode/.gitignore`**: Ignora `node_modules`, `bun.lock` e `.gitignore`
@@ -114,8 +128,54 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
 - **`0.0.0.0` crasha dentro do proot**: O `opencode web --hostname 0.0.0.0` falha
   com `getifaddrs returned an error` porque o proot não expõe interfaces de rede.
   Use `127.0.0.1` (default) dentro do proot; o cloudflared conecta em `127.0.0.1`.
+  → Detalhes: `docs/proot-distro/README.md` (section: networking limitations)
 - **Log de diagnóstico**: Saída do proot vai para `$PREFIX/tmp/opencode_web.log`.
   Se o tunnel não subir, consulte este arquivo.
+
+## Referências Externas
+
+Documentação de referência para as ferramentas utilizadas, salva localmente
+para acesso offline e versionamento no repositório.
+
+| Doc | Cobre | Usado por |
+|---|---|---|
+| `docs/proot-distro/README.md` | Login, `--shared-tmp`, distros, troubleshooting | `opencode-web.sh`, `setup.sh` |
+| `docs/termux/filesystem-layout.md` | `$PREFIX`, `$TMPDIR`, hierarquia de dirs | Todos os scripts (paths de handoff) |
+| `docs/termux/termux-notification.md` | Flags, `--id`, `--ongoing`, `--action` | `opencode-web.sh` (notificação) |
+| `docs/cloudflare/quick-tunnel.md` | URL format, stderr parsing, ephemeral tunnels | `run-cloudflare-tunnel.sh` |
+| `docs/cloudflare/downloads.md` | `.deb` arm64, versões, checksums | `setup.sh`, README tutorial |
+| `docs/cloudflare/config-file.md` | YAML structure, `ingress:` rules | Não usado ainda (futuro) |
+| `docs/cloudflare/run-parameters.md` | `tunnel --url`, `--protocol`, log flags | `run-cloudflare-tunnel.sh` |
+
+> **Staleness**: Estas docs são cópias estáticas de repositórios externos.
+> Data de snapshot: **19/06/2026**. Se alguma ferramenta quebrar após atualização,
+> verifique se a doc local ainda corresponde à versão instalada.
+
+## Leitura Recomendada por Tarefa
+
+| Tarefa | Docs para ler |
+|---|---|
+| **Setup em device novo** | `proot-distro/README.md`, `cloudflare/downloads.md`, `termux/filesystem-layout.md` |
+| **Debug do tunnel não subir** | `cloudflare/quick-tunnel.md`, `cloudflare/run-parameters.md` |
+| **Mudar porta/host do opencode** | `termux/filesystem-layout.md`, `cloudflare/config-file.md` |
+| **Adicionar notificação customizada** | `termux/termux-notification.md` |
+| **Atualizar cloudflared** | `cloudflare/downloads.md`, `cloudflare/run-parameters.md` |
+| **Migrar de Quick Tunnel para named tunnel** | `cloudflare/config-file.md`, `cloudflare/run-parameters.md` |
+
+## Agent Workflow — Usando as Docs
+
+Quando um agente for **planejar mudanças** neste repo:
+
+1. **Leia `docs/` relevante** conforme a tabela "Leitura Recomendada por Tarefa"
+2. **Verifique a versão** da ferramenta no device (`cloudflared version`, `proot-distro list`) contra a doc local
+3. **Não assuma** que flags/padrões são os mesmos — sempre confirme na doc local antes de modificar scripts
+4. **Se encontrar divergência** entre doc local e comportamento real, atualize a doc E o gotcha no AGENTS.md
+
+Quando um agente for **revisar código**:
+
+1. Verifique se scripts usam flags documentadas em `docs/cloudflare/run-parameters.md`
+2. Verifique se paths seguem o filesystem layout em `docs/termux/filesystem-layout.md`
+3. Verifique se notificações usam APIs descritas em `docs/termux/termux-notification.md`
 
 ## Comandos Úteis
 
