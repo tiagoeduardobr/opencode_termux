@@ -1,6 +1,14 @@
+[![GitHub stars](https://img.shields.io/github/stars/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/issues)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Termux%20%2F%20Android-0D1117.svg?style=flat-square)](https://f-droid.org/packages/com.termux/)
+[![OpenCode](https://img.shields.io/badge/OpenCode-Web-blue.svg?style=flat-square)](https://opencode.ai)
+[![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM%20Compatible-76B900.svg?style=flat-square)](https://build.nvidia.com)
+
 # opencode_termux
 
-Tudo que você precisa para rodar [OpenCode](https://github.com/anthropics/claude-code/tree/main) no Termux (Android)
+Tudo que você precisa para rodar [OpenCode](https://opencode.ai) no Termux (Android)
 como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com notificação push.
 
 > **Público-alvo**: Android 14+ (arm64, MIUI/Xiaomi), Termux F-Droid + proot-distro Ubuntu.
@@ -270,6 +278,58 @@ Define os aliases `opencode_web` e `opencode_web_stop`.
 
 ---
 
+## NVIDIA NIM — Modelos gratuitos
+
+O OpenCode suporta [NVIDIA NIM](https://build.nvidia.com) como provedor de inferência com **tier gratuito** (sem billing por token, ~40 requests/minuto).
+
+### Configuração rápida
+
+1. Obtenha uma API key em [build.nvidia.com](https://build.nvidia.com) (conta gratuita)
+
+2. No OpenCode, use o comando `/connect`:
+   ```
+   /connect nvidia
+   ```
+
+3. Ou configure manualmente em `opencode.json` do seu projeto:
+   ```json
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "provider": {
+       "nvidia": {
+         "options": {
+           "baseURL": "https://integrate.api.nvidia.com/v1"
+         }
+       }
+     }
+   }
+   ```
+
+4. Defina a variável de ambiente (dentro do proot):
+   ```bash
+   export NVIDIA_API_KEY="nvapi-xxx..."
+   ```
+
+### Modelos populares (gratuitos)
+
+| Modelo | Descrição |
+|---|---|
+| `meta/llama-3.1-70b-instruct` | Geral, bom custo-benefício |
+| `nvidia/nemotron-70b-instruct` | Instruções complexas |
+| `deepseek/deepseek-v4-flash` | Rápido, respostas curtas |
+
+### Plugin de sincronização (opcional)
+
+Para auto-sincronizar modelos disponíveis:
+```bash
+opencode plugin nim-sync -g
+```
+
+> **Nota**: O tier gratuito tem limite de ~40 requests/minuto.
+> Para uso intenso, considere um plano pago em build.nvidia.com.
+
+---
+
 ## FAQ
 
 | Pergunta | Resposta |
@@ -282,4 +342,7 @@ Define os aliases `opencode_web` e `opencode_web_stop`.
 | `opencode web` vs `opencode serve`? | Ambos funcionam. `web` é a interface web (recomendado). `serve` expõe via SSE. |
 | Como mudar a porta? | Edite `.env`: `OPENCODE_PORT=8080`. |
 | Posso rodar sem cloudflared? | Sim, mas o acesso será apenas local (`http://127.0.0.1:4096`). Edite `run-cloudflare-tunnel.sh` e remova o cloudflared. |
-| Preciso de API key da Anthropic? | Sim — configure `ANTHROPIC_API_KEY` (ou `OPENAI_API_KEY`) dentro do proot no `.env` do projeto de trabalho. |
+| Preciso de API key da Anthropic? | Não necessariamente — use NVIDIA NIM (gratuito), OpenAI, ou outros provedores via `/connect`. Veja seção [NVIDIA NIM](#nvidia-nim--modelos-gratuitos). |
+| Como usar NVIDIA NIM (gratuito)? | Obtenha API key em build.nvidia.com, use `/connect nvidia` no OpenCode ou configure `provider.nvidia` em `opencode.json`. |
+| Posso usar outros provedores além da Anthropic? | Sim — OpenCode suporta OpenAI, Google Gemini, NVIDIA NIM, e outros via `/connect`. Configure o provider em `opencode.json`. |
+| Como mudar de modelo? | No OpenCode Web, use o seletor de modelo na UI. Ou edite `opencode.json` → campo `model`. |
