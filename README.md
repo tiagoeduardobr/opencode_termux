@@ -35,10 +35,16 @@ opencode_termux/
 ├── opencode.json                  ← config DO PROJETO (aponta para skills e agents locais)
 ├── bin/
 │   ├── opencode-web.sh            ← manager fire-and-forget
-│   └── opencode-web-stop.sh       ← stopper
+│   ├── opencode-web-stop.sh       ← stopper
+│   ├── termux-ssh.sh              ← inicia sshd + notifica IP
+│   └── termux-ssh-stop.sh         ← para sshd
 ├── run-cloudflare-tunnel.sh       ← script executado dentro do proot
 ├── shell/aliases.sh               ← aliases para bash
 ├── scripts/setup.sh               ← configuração inicial em qualquer device
+├── docs/termux/
+│   ├── filesystem-layout.md       ← paths, $PREFIX, $TMPDIR
+│   ├── termux-notification.md     ← API de notificações
+│   └── ssh-sftp-access.md         ← referência SSH/SFTP
 ├── .env                           ← configurações reais
 └── .env.example                   ← template de configuração
 ```
@@ -192,6 +198,72 @@ cat $PREFIX/tmp/opencode_url.txt   # URL ativa
 
 ---
 
+## Acesso SSH/SFTP ao Termux
+
+Acesse os arquivos do Termux via SSH/SFTP usando o [Termius](https://termius.com) ou qualquer cliente SSH.
+
+### Instalar openssh
+
+```bash
+pkg install openssh -y
+```
+
+### Configurar senha
+
+```bash
+passwd
+```
+
+### Iniciar sshd
+
+```bash
+termux_ssh
+```
+
+O que acontece:
+1. Verifica se `openssh` está instalado
+2. Inicia `sshd` na porta 8022
+3. Detecta o IP do dispositivo
+4. Envia notificação push com o comando SSH formatado
+5. No Termius, cole o comando: `ssh root@<IP> -p 8022`
+
+### Parar sshd
+
+```bash
+termux_ssh_stop
+```
+
+### Configuração no Termius
+
+1. Abra o Termius → **New Host**
+2. Preencha:
+   - **Hostname**: `<IP do dispositivo>`
+   - **Port**: `8022`
+   - **Username**: `root`
+   - **Password**: (a senha que você definiu com `passwd`)
+3. Salve e conecte
+
+### Acessar via SFTP
+
+No Termius, após conectar via SSH:
+- Clique no ícone **SFTP** na barra lateral
+- Navegue pelos diretórios do Termux
+
+Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
+
+### Caminhos acessíveis
+
+| Caminho | Descrição |
+|---|---|
+| `$HOME` (`~`) | Diretório home do Termux |
+| `$PREFIX/tmp` | Temp (limpo ao reiniciar) |
+| `/sdcard` | Armazenamento interno do Android |
+| `/storage/emulated/0` | Armazenamento compartilhado |
+
+> **⚠️ Limitação**: `$PREFIX/tmp` é apagado ao reiniciar o Termux. Para arquivos persistentes, use `~/storage` após rodar `termux-setup-storage`.
+
+---
+
 ## Arquitetura
 
 ### Camada de config — symlink global
@@ -274,7 +346,23 @@ Executado **dentro do proot**. Sobe `opencode web` + `cloudflared tunnel` + ntfy
 
 ### `shell/aliases.sh`
 
-Define os aliases `opencode_web` e `opencode_web_stop`.
+Define os aliases `opencode_web`, `opencode_web_stop`, `termux_ssh` e `termux_ssh_stop`.
+
+### `bin/termux-ssh.sh`
+
+Inicia o serviço SSH do Termux para acesso remoto.
+
+Variáveis (via `.env` ou env var):
+
+| Variável | Default | Descrição |
+|---|---|---|
+| `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
+| `SSH_PORT` | `8022` | Porta do sshd |
+| `SSHD_PID_FILE` | `$PREFIX/tmp/termux_sshd.pid` | Arquivo do PID |
+
+### `bin/termux-ssh-stop.sh`
+
+Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ---
 
@@ -346,3 +434,6 @@ opencode plugin nim-sync -g
 | Como usar NVIDIA NIM (gratuito)? | Obtenha API key em build.nvidia.com, use `/connect nvidia` no OpenCode ou configure `provider.nvidia` em `opencode.json`. |
 | Posso usar outros provedores além da Anthropic? | Sim — OpenCode suporta OpenAI, Google Gemini, NVIDIA NIM, e outros via `/connect`. Configure o provider em `opencode.json`. |
 | Como mudar de modelo? | No OpenCode Web, use o seletor de modelo na UI. Ou edite `opencode.json` → campo `model`. |
+| Como acessar os arquivos do Termux via SSH? | Instale `openssh`, configure senha com `passwd`, rode `termux_ssh`. Conecte com Termius na porta 8022. |
+| O SSH funciona com SFTP? | Sim — use o Termius ou qualquer cliente SFTP com as mesmas credenciais (IP, porta 8022, root, senha). |
+| Preciso de IP fixo? | Não — o script detecta o IP automaticamente e envia via notificação push. |

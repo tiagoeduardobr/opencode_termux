@@ -21,7 +21,9 @@ opencode_termux/
 ├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
 ├── bin/
 │   ├── opencode-web.sh         ← manager fire-and-forget
-│   └── opencode-web-stop.sh    ← stopper
+│   ├── opencode-web-stop.sh    ← stopper
+│   ├── termux-ssh.sh           ← inicia sshd + notifica IP
+│   └── termux-ssh-stop.sh      ← para sshd
 ├── run-cloudflare-tunnel.sh    ← script executado dentro do proot
 ├── shell/
 │   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop)
@@ -33,7 +35,8 @@ opencode_termux/
 │   │   └── README.md           ← docs completas do proot-distro
 │   ├── termux/
 │   │   ├── filesystem-layout.md ← paths, $PREFIX, $TMPDIR
-│   │   └── termux-notification.md ← API de notificações
+│   │   ├── termux-notification.md ← API de notificações
+│   │   └── ssh-sftp-access.md   ← referência SSH/SFTP
 │   └── cloudflare/
 │       ├── quick-tunnel.md     ← Quick Tunnel / TryCloudflare
 │       ├── downloads.md        ← cloudflared arm64 .deb
@@ -89,6 +92,21 @@ Variáveis (via `.env` ou env var):
 
 Executado **dentro do proot** (`--shared-tmp`). Sobe `opencode web` + `cloudflared tunnel` + ntfy push.
 
+### `bin/termux-ssh.sh`
+
+Gerencia o serviço SSH do Termux para acesso remoto via SFTP/SSH.
+
+Variáveis (via `.env` ou env var):
+| Variável | Default | Descrição |
+|---|---|---|
+| `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
+| `SSH_PORT` | `8022` | Porta do sshd |
+| `SSHD_PID_FILE` | `$PREFIX/tmp/termux_sshd.pid` | Arquivo do PID |
+
+### `bin/termux-ssh-stop.sh`
+
+Para o serviço sshd: kill graceful → kill -9 → cleanup.
+
 ## Skills e Subagentes
 
 27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
@@ -142,6 +160,7 @@ para acesso offline e versionamento no repositório.
 | `docs/proot-distro/README.md` | Login, `--shared-tmp`, distros, troubleshooting | `opencode-web.sh`, `setup.sh` |
 | `docs/termux/filesystem-layout.md` | `$PREFIX`, `$TMPDIR`, hierarquia de dirs | Todos os scripts (paths de handoff) |
 | `docs/termux/termux-notification.md` | Flags, `--id`, `--ongoing`, `--action` | `opencode-web.sh` (notificação) |
+| `docs/termux/ssh-sftp-access.md` | SSH/SFTP setup, Termius, caminhos | `termux-ssh.sh` |
 | `docs/cloudflare/quick-tunnel.md` | URL format, stderr parsing, ephemeral tunnels | `run-cloudflare-tunnel.sh` |
 | `docs/cloudflare/downloads.md` | `.deb` arm64, versões, checksums | `setup.sh`, README tutorial |
 | `docs/cloudflare/config-file.md` | YAML structure, `ingress:` rules | Não usado ainda (futuro) |
@@ -261,6 +280,10 @@ skill(name="executing-plans")  # executar plano existente
 # Execução
 opencode_web              # inicia OpenCode Web + tunnel
 opencode_web_stop         # para
+
+# SSH/SFTP
+termux_ssh                # inicia sshd + notifica IP
+termux_ssh_stop           # para sshd
 
 # Status manual
 cat $PREFIX/tmp/opencode_web.pid   # PID
