@@ -12,7 +12,7 @@ Tudo que você precisa para rodar [OpenCode](https://opencode.ai) no Termux (And
 como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com notificação push.
 
 > **Público-alvo**: Android 14+ (arm64, MIUI/Xiaomi), Termux F-Droid + proot-distro Ubuntu.
-> Testado com Xiaomi 14T, Android 14, MIUI HyperOS.
+> Testado com Poco X7 Pro, Android 14, MIUI HyperOS.
 
 ---
 
