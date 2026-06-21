@@ -107,6 +107,32 @@
         "question": "allow",
         "skill": "allow"
       }
+    },
+    "build": {
+      "description": "Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita",
+      "mode": "subagent",
+      "prompt": "{file:.config/opencode/agents/build.md}",
+      "permission": {
+        "bash": {
+          "*": "allow",
+          "git add *": "deny",
+          "git commit *": "deny",
+          "git push *": "deny",
+          "git merge *": "deny",
+          "git branch -d*": "deny",
+          "git branch -D*": "deny",
+          "git reset *": "deny",
+          "git rebase *": "deny",
+          "git stash *": "deny"
+        },
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "question": "allow",
+        "skill": "allow"
+      }
     }
   }
 }
