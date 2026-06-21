@@ -15,10 +15,11 @@ opencode_termux/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
 │   │   ├── design-tokens/            ← movido de parecer_descritivo
 │   │   └── ... (23 outras)
-│   └── agents/                 ← subagentes (git-commit, code-review, task-planner)
+│   └── agents/                 ← subagentes (git-commit, code-review, task-planner, dev)
 │       ├── git-commit.md
 │       ├── code-review.md
-│       └── task-planner.md
+│       ├── task-planner.md
+│       └── dev.md
 ├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
 ├── bin/
 │   ├── opencode-web.sh         ← manager fire-and-forget
@@ -111,7 +112,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 ## Skills e Subagentes
 
 27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
-Subagentes: `git-commit`, `code-review`, `task-planner` (prompts em `.config/opencode/agents/`).
+Subagentes: `git-commit`, `code-review`, `task-planner`, `dev` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
 ## Dependências (device)
@@ -190,8 +191,9 @@ para acesso offline e versionamento no repositório.
 |---|---|---|
 | Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
 | Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
-| Mudanças simples (1-3 arquivos) | `general` | Edits, fixes, refactors pontuais |
-| Mudanças complexas (3+ arquivos) | `task-planner` → `general` → `code-review` | Planejar → implementar → revisar |
+| Implementar código | `dev` | Executar tasks do plano com qualidade e conformidade |
+| Mudanças simples (1-3 arquivos) | `dev` | Edits, fixes, refactors pontuais |
+| Mudanças complexas (3+ arquivos) | `task-planner` → `dev` → `code-review` | Planejar → implementar → revisar |
 | Criar commit | `git-commit` | Sempre após mudanças aprovadas |
 | Revisão de PR/code | `code-review` | Após implementação, antes de merge |
 | Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
@@ -248,7 +250,7 @@ skill(name="executing-plans")  # executar plano existente
 │  2. Planejar (se complexo)                       │
 │     └─ task-planner agent                        │
 │  3. Implementar                                  │
-│     └─ general agent                             │
+│     └─ dev agent                                 │
 │  4. Verificar                                    │
 │     └─ code-review ou rodar tests/lint            │
 │  5. Commitar + Push                              │

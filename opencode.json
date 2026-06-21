@@ -89,6 +89,24 @@
         "question": "allow",
         "skill": "allow"
       }
+    },
+    "dev": {
+      "description": "Implementa código — executa tasks do plano com qualidade e conformidade",
+      "mode": "subagent",
+      "prompt": "{file:.config/opencode/agents/dev.md}",
+      "permission": {
+        "bash": {
+          "*": "allow",
+          "git *": "deny"
+        },
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "question": "allow",
+        "skill": "allow"
+      }
     }
   }
 }

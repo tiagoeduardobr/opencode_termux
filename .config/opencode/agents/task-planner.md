@@ -156,3 +156,5 @@ Exibir o plano completo no chat e usar a **QUESTION TOOL**:
 - No refinamento, sempre preservar o plano anterior como contexto
 - Formato adaptativo: simples → enxuto, complexo → completo
 - Se houver plano anterior para a mesma tarefa, usá-lo como base
+- NUNCA inventar soluções — se não souber, revise skills, consulte internet ou pare e avise o build
+- SEMPRE usar a solução mais atual da tecnologia em uso
