@@ -1,15 +1,6 @@
 ---
 description: Planeja tarefas antes da implementação — análise de codebase, escopo, dependências, riscos
 mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  edit: deny
-  write: allow
-  question: allow
-  skill: allow
 ---
 
 # Task Planner Agent

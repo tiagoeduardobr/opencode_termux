@@ -60,9 +60,7 @@
       "prompt": "{file:.config/opencode/agents/code-review.md}",
       "permission": {
         "bash": {
-          "*": "allow",
-          "git merge *": "ask",
-          "git push *": "ask"
+          "*": "allow"
         },
         "read": "allow",
         "glob": "allow",
@@ -79,7 +77,12 @@
       "prompt": "{file:.config/opencode/agents/task-planner.md}",
       "permission": {
         "bash": {
-          "*": "allow"
+          "*": "allow",
+          "git commit *": "deny",
+          "git push *": "deny",
+          "git merge *": "deny",
+          "git reset *": "deny",
+          "git rebase *": "deny"
         },
         "read": "allow",
         "glob": "allow",

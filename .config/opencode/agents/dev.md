@@ -1,17 +1,6 @@
 ---
 description: Implementa código — executa tasks do plano com qualidade e conformidade
 mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  bash:
-    "*": "allow"
-    "git *": "deny"
-  edit: allow
-  write: allow
-  question: allow
-  skill: allow
 ---
 
 # Dev Agent

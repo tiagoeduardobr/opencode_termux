@@ -1,14 +1,6 @@
 ---
 description: Revisa código pós-implementação — qualidade, skills dinâmicas, plano vs execução
 mode: subagent
-permission:
-  read: allow
-  glob: allow
-  grep: allow
-  bash: allow
-  edit: deny
-  write: deny
-  question: allow
 ---
 
 # Code Review Agent
