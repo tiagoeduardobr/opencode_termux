@@ -15,9 +15,10 @@ opencode_termux/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
 │   │   ├── design-tokens/            ← movido de parecer_descritivo
 │   │   └── ... (23 outras)
-│   └── agents/                 ← subagentes (git-commit, code-review)
+│   └── agents/                 ← subagentes (git-commit, code-review, task-planner)
 │       ├── git-commit.md
-│       └── code-review.md
+│       ├── code-review.md
+│       └── task-planner.md
 ├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
 ├── bin/
 │   ├── opencode-web.sh         ← manager fire-and-forget
@@ -110,7 +111,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 ## Skills e Subagentes
 
 27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
-Subagentes: `git-commit`, `code-review` (prompts em `.config/opencode/agents/`).
+Subagentes: `git-commit`, `code-review`, `task-planner` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
 ## Dependências (device)
@@ -188,8 +189,9 @@ para acesso offline e versionamento no repositório.
 | Tarefa | Agente | Quando usar |
 |---|---|---|
 | Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
+| Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
 | Mudanças simples (1-3 arquivos) | `general` | Edits, fixes, refactors pontuais |
-| Mudanças complexas (3+ arquivos) | `general` + `code-review` | Implementar → revisar → commit |
+| Mudanças complexas (3+ arquivos) | `task-planner` → `general` → `code-review` | Planejar → implementar → revisar |
 | Criar commit | `git-commit` | Sempre após mudanças aprovadas |
 | Revisão de PR/code | `code-review` | Após implementação, antes de merge |
 | Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
@@ -206,11 +208,10 @@ para acesso offline e versionamento no repositório.
 
 **Padrão completo** (feature ou fix complexo):
 ```
-1. explore → mapear arquivos afetados
-2. skill (se aplicável) → carregar instructions
-3. general → implementar mudanças
-4. code-review → revisar qualidade
-5. git-commit → commitar
+1. task-planner → gerar plano adaptativo
+2. general → implementar
+3. code-review → revisar qualidade
+4. git-commit → commitar
 ```
 
 **Padrão de revisão** (após receber PR/issues):
@@ -245,7 +246,7 @@ skill(name="executing-plans")  # executar plano existente
 │  1. Entender tarefa                              │
 │     └─ explore ou ler contexto                   │
 │  2. Planejar (se complexo)                       │
-│     └─ skill executing-plans ou escrever plano   │
+│     └─ task-planner agent                        │
 │  3. Implementar                                  │
 │     └─ general agent                             │
 │  4. Verificar                                    │
