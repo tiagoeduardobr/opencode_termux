@@ -55,23 +55,25 @@ Exibir o plano gerado ao usuário e usar **QUESTION TOOL**:
 
 ### 5b. Criar feature branch (SEMPRE)
 
-Antes de executar tasks, criar e mudar para feature branch:
+Antes de executar tasks, delegar criação de branch para git-commit:
 
 1. **Gerar nome do branch** a partir da tarefa:
    - Se input contém padrão `TODO-{CAT}-{NUM}: {desc}` → branch = `feature/TODO-{CAT}-{NUM}`
    - Caso contrário → branch = `feature/{slug}` (slug = descrição em kebab-case, max 50 chars)
    - Exemplo: `feature/TODO-UX-10`, `feature/TODO-SEC-01`
 
-2. Executar:
+2. Delegar para git-commit:
    ```
-git checkout -b <branch>
+   task(subagent_type="git-commit",
+        description="Criar feature branch",
+        prompt="Criar e checkout branch {branch}. Execute: git checkout -b {branch}")
    ```
 
 3. Se o branch já existir, usar **QUESTION TOOL**:
    - Header: `"Branch já existe"`
    - Options:
-     - `"Reutilizar branch existente"` → apenas `git checkout feature/<slug>`
-     - `"Criar com sufixo numérico"` → `git checkout -b feature/<slug>-2`
+     - `"Reutilizar branch existente"` → delegar `git checkout feature/<slug>` para git-commit
+     - `"Criar com sufixo numérico"` → delegar `git checkout -b feature/<slug>-2` para git-commit
      - `"Sair"` → interrompe build
 
 4. LOG: `[HH:MM] branch → feature/<slug> → OK/ERRO`
@@ -104,21 +106,6 @@ task(subagent_type="code-review", description="Revisar task {N}", prompt="{conte
 ```
 
 LOG: `[HH:MM] code-review → task N/M → veredito`
-
-#### 6b1. Verificar marcação de TODOs no backlog
-
-Antes de delegar para code-review, verificar se o `dev` marcou as tasks como concluídas NO BACKLOG:
-- **Escopo**: Apenas `docs/PROJECT_BACKLOG_*.md` usa checkboxes e timestamps
-- **Formato pendente**: `- [ ] **TODO-CAT-NN:** Descrição`
-- **Formato concluído**: `- [x] **TODO-CAT-NN:** Descrição – Concluído em [DD/MM/YYYY:HH:MM]`
-- Verificar se `- [ ]` foi alterado para `- [x]`
-- Verificar se o timestamp `– Concluído em [DD/MM/YYYY:HH:MM]` foi adicionado
-- **IMPORTANTE**: O timestamp deve ter sido gerado via `date '+%d/%m/%Y:%H:%M'` — nunca digitado manualmente
-- Se NÃO foram marcados, registrar warning mas prosseguir para code-review
-- O code-review irá verificar formalmente
-- Planos em `.opencode/plans/` NÃO devem ter checkboxes
-
-LOG: `[HH:MM] plan-check → task N/M → updated/pending`
 
 #### 6c. Tratar veredito
 
@@ -191,7 +178,6 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 - NUNCA modificar código — sempre delegar para `dev`
 - NUNCA executar comandos git de escrita — sempre delegar para `git-commit`
 - Leitura git (`status`, `log`, `diff`) é permitida para inspecionar estado
-- Criação de branch (step 5b) é a ÚNICA exceção — permitida diretamente
 - SEMPRE apresentar plano ao usuário e aguardar aprovação (gate)
 - Oferecer opções de pular etapas quando aplicável
 
@@ -202,9 +188,61 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 - Categorias conhecidas: `B`, `F`, `I`, `R`, `D`, `SEC`, `FIX`, `UI`, `UX`, `SPA`, `REF`, `GOV`, `LGPD`, `MKT`
 - Nunca usar: `main`, `master`, `develop`, `release/*`
 
+### Orçamento Global
+
+- **ORÇAMENTO_GLOBAL:** 20 tentativas totais (soma de todas as tasks × retries)
+- Após cada retry, incrementar contador
+- Quando contador atingir 20:
+  - Usar QUESTION TOOL:
+    - Header: `"Orçamento global esgotado"`
+    - Options:
+      - `"Aprovar entregas parciais"` → commit o que foi aprovado
+      - `"Parar build"` → interrompe pipeline
+- Incluir contador no relatório final
+
+### Crash Recovery
+
+Se um agent crashar (timeout, erro de API, exceção não tratada):
+1. Retry 1x automátio com o mesmo prompt
+2. Se falhar novamente → salvar estado atual (task_id, tentativa, output parcial)
+3. Usar **QUESTION TOOL**:
+   - Header: `"Agent {agent} crashou"`
+   - Options:
+     - `"Tentar novamente"` → retry com contexto adicional
+     - `"Pular task"` → continua com warning
+     - `"Parar build"` → interrompe pipeline
+4. Estado salvo permite continuação em sessão futura via `task_id`
+
 ### Auto-correção
 - Se `code-review` retornar "Precisa de ajustes", voltar para `dev` automaticamente
 - Máximo de 3 tentativas por task antes de escalar via QUESTION TOOL
+
+### Detecção de Ciclos (state hashing + circuit breaker)
+
+Após cada tentativa de dev + code-review:
+1. Gerar hash do output do dev (primeiros 100 chars do resumo + lista de arquivos alterados)
+2. Comparar com hash da tentativa anterior
+3. Se hash_identicos ≥ 3 vezes consecutivas → **CIRCUIT BREAKER ABRE**:
+   - Usar QUESTION TOOL:
+     - Header: `"Loop detectado — mesmo output produzido 3 vezes"`
+     - Options:
+       - `"Forçar abordagem diferente"` → dev recebe contexto adicional + reseta contador
+       - `"Pular task"` → continua com warning
+       - `"Parar build"` → interrompe pipeline
+4. Circuit breaker é resetado quando nova task começa
+
+### Circuit Breaker (falhas em cascata)
+
+Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review:
+- Interromper pipeline imediatamente
+- Usar **QUESTION TOOL**:
+  - Header: `"Falhas em cascata detectadas — 3+ tasks falharam no review"`
+  - Options:
+    - `"Revisar abordagem"` → volta ao step 4 (task-planner) para replanejar
+    - `"Aprovar com ressalvas"` → commit o que foi aprovado
+    - `"Parar build"` → interrompe pipeline
+
+Diferente do state hashing (mesmo output) — aqui é falha geral de qualidade.
 
 ### Cleanup on failure
 Se o pipeline falhar (dev não consegue após 3 tentativas, ou usuário escolhe "Parar build"):
@@ -213,16 +251,50 @@ Se o pipeline falhar (dev não consegue após 3 tentativas, ou usuário escolhe 
   - Header: `"Pipeline falhou"`
   - Options:
     - `"Manter branch feature/<slug>"` → apenas notifica
-    - `"Deletar branch"` → `git checkout main && git branch -D feature/<slug>`
+    - `"Deletar branch"` → delegar para git-commit: `task(subagent_type="git-commit", description="Deletar branch", prompt="Deletar branch {branch}. Execute: git checkout main && git branch -D {branch}")`
     - `"Deixar como está"` → não faz nada
 
 ### Skills
 - SEMPRE carregar `executing-plans` como skill obrigatória
 - Carregar skills dinâmicas relevantes à tarefa
 
-### Logging
-- LOGar cada delegação com: agente, timestamp, input resumido, output resumido, duração, status
-- Incluir log completo no relatório final
+### Logging (structured)
+
+Cada delegação deve ser logada em formato JSON para rastreabilidade:
+
+```json
+{
+  "timestamp": "2026-06-22T14:30:00Z",
+  "agent": "dev",
+  "task_id": "1/3",
+  "input_summary": "Implementar autenticação JWT",
+  "output_summary": "3 arquivos alterados, auth implementado",
+  "duration_ms": 15000,
+  "status": "ok",
+  "trace_id": "build-20260622-001-task-1"
+}
+```
+
+Campos obrigatórios: `timestamp`, `agent`, `task_id`, `input_summary`, `output_summary`, `duration_ms`, `status`, `trace_id`.
+
+### Audit Trail
+
+Log imutável de todas as ações dos agentes. Cada ação deve ser registrada com:
+- **Quem**: qual agente executou
+- **Quando**: timestamp ISO 8601
+- **O quê**: descrição da ação
+- **Resultado**: ok/erro/detalhes
+
+O audit trail é append-only — nunca deletar ou modificar entradas anteriores.
+Formato: uma linha por ação, em ordem cronológica.
+
+Exemplo:
+```
+[2026-06-22T14:30:00Z] task-build → delegou para dev (task 1/3) → ok
+[2026-06-22T14:30:15Z] dev → implementou auth JWT → ok (15s)
+[2026-06-22T14:30:20Z] task-build → delegou para code-review (task 1/3) → ok
+[2026-06-22T14:30:25Z] code-review → revisou task 1/3 → "Aprovado" (5s)
+```
 
 ### Debug
 Para cada delegação, logar:

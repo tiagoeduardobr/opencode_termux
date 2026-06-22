@@ -9,12 +9,12 @@ opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 27 skills (25 globais + 2 do parecer_descritivo)
+│   ├── skills/                 ← 39 skills (25 globais + 2 movidas de parecer_descritivo + 12 do obra/superpowers)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
 │   │   ├── design-tokens/            ← movido de parecer_descritivo
-│   │   └── ... (23 outras)
+│   │   └── ... (35 outras)
 │   └── agents/                 ← subagentes (git-commit, code-review, task-planner, dev, task-build)
 │       ├── git-commit.md
 │       ├── code-review.md
@@ -112,7 +112,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
+39 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo` + 12 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -193,35 +193,37 @@ para acesso offline e versionamento no repositório.
 | Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
 | Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
 | Implementar código | `dev` | Executar tasks do plano com qualidade e conformidade |
-| Orquestrar entrega completa | `task-build` | Pipeline completo: planejar → implementar → revisar → commitar |
+| Orquestrar entrega completa | `task-build` | Pipeline completo: planejar → implementar → revisar → commitar (git delegado para `git-commit`) |
 | Mudanças simples (1-3 arquivos) | `dev` | Edits, fixes, refactors pontuais |
 | Mudanças complexas (3+ arquivos) | `task-build` ou `task-planner` → `dev` → `code-review` | Planejar → implementar → revisar |
-| Criar commit | `git-commit` | Sempre após mudanças aprovadas |
+| Criar commit | `git-commit` | Sempre após mudanças aprovadas (inclui criação de branch e cleanup) |
 | Revisão de PR/code | `code-review` | Após implementação, antes de merge |
 | Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
 | Tarefa com plano escrito | `executing-plans` | Re-executar planos com checkpoints |
+
+> **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) não podem chamar `task-build`.
 
 ### Padrões de orquestração
 
 **Padrão simples** (mudança pontual):
 ```
 1. explore → entender contexto
-2. general → implementar
-3. git-commit → commitar
+2. dev → implementar
+3. git-commit → branch + commit + cleanup
 ```
 
 **Padrão completo** (feature ou fix complexo):
 ```
 1. task-planner → gerar plano adaptativo
-2. general → implementar
+2. dev → implementar
 3. code-review → revisar qualidade
-4. git-commit → commitar
+4. git-commit → branch + commit + cleanup
 ```
 
 **Padrão de revisão** (após receber PR/issues):
 ```
 1. code-review → analisar mudanças
-2. general → aplicar feedback
+2. dev → aplicar feedback
 3. git-commit → commitar fixes
 ```
 
@@ -280,6 +282,21 @@ Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 - ❌ **Commitar sem review** → code quality degrada
 - ❌ **Assumir flags** → sempre confirmar na doc local antes de modificar scripts
 - ❌ **Não verificar versão** → `cloudflared version`, `proot-distro list` contra doc local
+
+## Melhorias Recentes
+
+### Orquestração Multi-Agente (2026-06-22)
+
+- **Git delegado**: task-build delega TODAS as operações git para git-commit (criação de branch, cleanup, commits)
+- **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) não podem chamar `task-build`
+- **Quality checks agnósticos**: auto-detect para Python, Node.js, Makefile
+- **State hashing**: detecção de loops idênticos nos retries
+- **Circuit breaker**: interrompe pipeline após 3+ falhas consecutivas
+- **Orçamento global**: máximo de 20 tentativas totais no pipeline
+- **Crash recovery**: retry automático + salvamento de estado
+- **Structured logging**: formato JSON com `trace_id` para rastreabilidade
+- **Audit trail**: log imutável de todas as ações dos agentes
+- **Skills do superpowers**: 12 novas skills do obra/superpowers instaladas
 
 ## Comandos Úteis
 

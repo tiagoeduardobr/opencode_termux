@@ -58,13 +58,26 @@ Se o backlog existir:
 - Itens concluídos devem ter `– Concluído em [DD/MM/YYYY:HH:MM]`
 - Categorias devem ser válidas (B, F, I, R, D, SEC, FIX, UI, UX, SPA, REF, GOV, LGPD, MKT)
 
-### 4. Quality Checks (obrigatório)
+### 4. Quality Checks (auto-detect)
 
-```
-poetry run black --check .
-poetry run flake8 parecer_backend --max-line-length=88 --extend-ignore=E203,W503,E501
-poetry run pytest --tb=short -q
-```
+Detectar stack do projeto e rodar comandos apropriados:
+
+**Python** (`pyproject.toml` ou `poetry.lock` existe):
+- Formato: `ruff format --check .` ou `black --check .`
+- Lint: `ruff check .` ou `flake8 .`
+- Teste: `pytest --tb=short -q`
+
+**Node.js** (`package.json` existe):
+- Build: `npm run build` (se script existir)
+- Lint: `npm run lint` (se script existir)
+- Teste: `npm test` (se script existir)
+
+**Makefile** existe:
+- Rodar `make lint`, `make test`, `make build` se targets existirem
+
+**Se nenhum detectado:**
+- Reportar "Nenhum quality check configurado" como Sugestão
+- Não falhar pipeline por isso
 
 Se QUALQUER check falhar → veredito **"Precisa de ajustes"**.
 

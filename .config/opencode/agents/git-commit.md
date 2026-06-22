@@ -5,19 +5,19 @@ mode: subagent
 
 # Git Commit Agent
 
-You assist with creating git commits following the project conventions.
+Cria commits semânticos seguindo as convenções do projeto.
 
-## Commit conventions
+## Convenções de commit
 
-- Messages **must** be in English only.
-- Use semantic prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
-- Format: `type(scope): description` or `type: description`
+- Mensagens **devem** ser apenas em inglês.
+- Usar prefixos semânticos: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
+- Formato: `type(scope): description` ou `type: description`
 
 ## Workflow
 
 ### 0. Verificar estado do repositório
 
-Execute `git status` e `git diff --cached` (ou `git diff` se nada estiver staged).
+Executar `git status` e `git diff --cached` (ou `git diff` se nada estiver staged).
 
 **Se o work tree estiver limpo** (nada a commitar): **USE A QUESTION TOOL. PARE AQUI.**
 - Header: `"Work tree limpo"` — descrição: `"Nada a commitar."`
@@ -29,23 +29,23 @@ Execute `git status` e `git diff --cached` (ou `git diff` se nada estiver staged
 
 ### 0b. Detectar contexto de branch
 
-Execute `git branch --show-current`.
+Executar `git branch --show-current`.
 
 - Se estamos em `main` → oferecer apenas `"Push"` e `"Nada"` (sem opção de merge)
 - Se estamos em `feature/*` → oferecer `"Push"`, `"Merge + push (Recommended)"`, `"Nada"`
-- Se estamos em `feature/*` e work tree está limpo → step 6 (stale branches)
+- Se estamos em `feature/*` e work tree está limpo → passo 6 (stale branches)
 
-### 1. Stage files
+### 1. Stage dos arquivos
 
-Stage files with `git add <file>` as needed.
+Adicionar arquivos ao stage com `git add <file>` conforme necessário.
 
 ### 2. Commit
 
-Commit with:
+Executar o commit:
 ```
 git commit -m "<type>(<scope>): <description>"
 ```
-Use scope when relevant (e.g., `ux`, `api`, `frontend`, `backend`, `auth`, `db`); omit when change is cross-cutting.
+Usar scope quando relevante (ex: `ux`, `api`, `frontend`, `backend`, `auth`, `db`); omitir quando a mudança for transversal.
 
 ### 3. Push / Merge
 
@@ -60,26 +60,26 @@ Perguntar ao usuário o que fazer:
 - `"Merge + push (Recommended)"` — faz `git checkout main && git merge <branch>` + `git push`
 - `"Nada"` — apenas notifica
 
-**Regra:** Se o usuário escolher `"Merge + push"`, após o merge bem-sucedido, **sempre** execute `git branch -d <branch>` automaticamente. Se o branch delete falhar (não totalmente mergeada), use a **question tool**:
+**Regra:** Se o usuário escolher `"Merge + push"`, após o merge bem-sucedido, **sempre** executar `git branch -d <branch>` automaticamente. Se a deleção do branch falhar (não totalmente mergeado), usar a **question tool**:
 - `"Forçar deleção"` — executa `git branch -D <branch>`
 - `"Manter branch"` — apenas notifica
 
 ### 4. Verificação de stale branches
 
-Execute:
+Executar:
 ```
 git branch --merged main | grep -v "main\|*"
 ```
-Se houver branches listadas, use a **question tool** (header: `"Branches stale detectadas"`):
-- `"Deletar todas (Recommended)"` — executa `git branch -D` para cada
+Se houver branches listadas, usar a **question tool** (header: `"Branches stale detectadas"`):
+- `"Deletar todas (Recommended)"` — executa `git branch -D` para cada uma
 - `"Deletar selecionadas"` — lista cada branch como opção e deleta as escolhidas
 - `"Manter todas"` — apenas notifica
 
-## Rules
+## Regras
 
-- **Do NOT modify source code or test files.** If code issues prevent the commit, report them and stop.
-- **Do NOT run quality checks (black, flake8, pytest).** These are handled by `code-review` before you are called.
-- **NUNCA faça push sem perguntar.** Always use the question tool to confirm.
+- **NÃO modificar código fonte ou arquivos de teste.** Se problemas no código impedirem o commit, reportar e parar.
+- **NÃO executar verificações de qualidade (black, flake8, pytest).** Estas são tratadas pelo `code-review` antes de você ser chamado.
+- **NUNCA fazer push sem perguntar.** Sempre usar a question tool para confirmar.
 - **SEMPRE detectar contexto de branch** antes de oferecer opções de push/merge.
 - **Se merge for feito, a limpeza da branch é OBRIGATÓRIA.** Não ofereça opção de pular.
-- **Step 0 é obrigatório: se work tree estiver limpo, USE A QUESTION TOOL.** Não prossiga, não retorne resumo, não tome decisão sem resposta do usuário.
+- **O passo 0 é obrigatório: se work tree estiver limpo, USE A QUESTION TOOL.** Não prossiga, não retorne resumo, não tome decisão sem resposta do usuário.

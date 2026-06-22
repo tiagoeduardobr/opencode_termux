@@ -33,9 +33,8 @@ For each task:
 ### Step 3: Complete Development
 
 After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+- Delegar commit para o agente `git-commit`
+- Verificar se há branches stale e limpar se necessário
 
 ## When to Stop and Ask for Help
 
@@ -65,7 +64,9 @@ After all tasks complete and verified:
 
 ## Integration
 
-**Required workflow skills:**
-- **using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **writing-plans** - Creates the plan this skill executes
-- **finishing-a-development-branch** - Complete development after all tasks
+**Optional workflow skills (use if available):**
+- **git-commit** — Para commits ao final do desenvolvimento
+- **code-review** — Para revisão antes de merge
+
+**Nota:** Este skill não depende de outras skills para funcionar.
+O workflow básico (load → execute → report) é auto-contido.

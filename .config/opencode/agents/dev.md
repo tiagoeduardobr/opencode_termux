@@ -57,12 +57,14 @@ Alinhar decisões arquiteturais antes de implementar.
 - Manter consistência com código existente
 - Respeitar boas práticas e padrões da tecnologia em uso
 
-### 7. Verificação interna (obrigatório)
+### 7. Verificação interna (auto-detect)
 
-Rodar os seguintes comandos (se existirem):
-- Build: `npm run build`, `make build`, `cargo build`, etc.
-- Test: `npm test`, `make test`, `cargo test`, `pytest`, etc.
-- Lint: `npm run lint`, `flake8`, `ruff`, `eslint`, etc.
+Detectar stack e rodar comandos apropriados:
+
+- Se `pyproject.toml` ou `poetry.lock` existe: `ruff format --check .`, `ruff check .`, `pytest`
+- Se `package.json` existe: `npm run build`, `npm run lint`, `npm test`
+- Se `Makefile` existe: `make build`, `make lint`, `make test`
+- Se nenhum: reportar "Nenhum check configurado" e pular
 
 Se QUALQUER verificação falhar → corrigir e repetir step 7.
 

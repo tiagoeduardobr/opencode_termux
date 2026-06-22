@@ -44,16 +44,23 @@
         "bash": {
           "*": "allow",
           "git merge *": "ask",
-          "git push *": "ask"
+          "git push *": "ask",
+          "git checkout -b*": "allow",
+          "git branch -d*": "allow",
+          "git branch -D*": "allow",
+          "git checkout main": "allow"
         },
         "read": "allow",
         "glob": "allow",
         "grep": "allow",
-        "edit": "ask",
-        "write": "ask",
+        "edit": "deny",
+        "write": "deny",
         "question": "allow",
         "plan_enter": "allow",
-        "plan_exit": "allow"
+        "plan_exit": "allow",
+        "rbac": {
+          "deny": ["task-build"]
+        }
       }
     },
     "code-review": {
@@ -72,7 +79,10 @@
         "question": "allow",
         "skill": "allow",
         "plan_enter": "allow",
-        "plan_exit": "allow"
+        "plan_exit": "allow",
+        "rbac": {
+          "deny": ["task-build"]
+        }
       }
     },
     "task-planner": {
@@ -96,7 +106,10 @@
         "question": "allow",
         "skill": "allow",
         "plan_enter": "allow",
-        "plan_exit": "allow"
+        "plan_exit": "allow",
+        "rbac": {
+          "deny": ["task-build"]
+        }
       }
     },
     "dev": {
@@ -116,7 +129,10 @@
         "question": "allow",
         "skill": "allow",
         "plan_enter": "allow",
-        "plan_exit": "allow"
+        "plan_exit": "allow",
+        "rbac": {
+          "deny": ["task-build"]
+        }
       }
     },
     "task-build": {
