@@ -51,7 +51,9 @@
         "grep": "allow",
         "edit": "ask",
         "write": "ask",
-        "question": "allow"
+        "question": "allow",
+        "plan_enter": "allow",
+        "plan_exit": "allow"
       }
     },
     "code-review": {
@@ -68,7 +70,9 @@
         "edit": "deny",
         "write": "deny",
         "question": "allow",
-        "skill": "allow"
+        "skill": "allow",
+        "plan_enter": "allow",
+        "plan_exit": "allow"
       }
     },
     "task-planner": {
@@ -90,7 +94,9 @@
         "edit": "deny",
         "write": "allow",
         "question": "allow",
-        "skill": "allow"
+        "skill": "allow",
+        "plan_enter": "allow",
+        "plan_exit": "allow"
       }
     },
     "dev": {
@@ -108,13 +114,15 @@
         "edit": "allow",
         "write": "allow",
         "question": "allow",
-        "skill": "allow"
+        "skill": "allow",
+        "plan_enter": "allow",
+        "plan_exit": "allow"
       }
     },
-    "build": {
+    "task-build": {
       "description": "Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita",
-      "mode": "subagent",
-      "prompt": "{file:.config/opencode/agents/build.md}",
+      "mode": "primary",
+      "prompt": "{file:.config/opencode/agents/task-build.md}",
       "permission": {
         "bash": {
           "*": "allow",
@@ -134,7 +142,9 @@
         "edit": "deny",
         "write": "deny",
         "question": "allow",
-        "skill": "allow"
+        "skill": "allow",
+        "plan_enter": "allow",
+        "plan_exit": "allow"
       }
     }
   }

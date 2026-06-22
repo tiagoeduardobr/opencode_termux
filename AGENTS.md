@@ -15,12 +15,12 @@ opencode_termux/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
 │   │   ├── design-tokens/            ← movido de parecer_descritivo
 │   │   └── ... (23 outras)
-│   └── agents/                 ← subagentes (git-commit, code-review, task-planner, dev, build)
+│   └── agents/                 ← subagentes (git-commit, code-review, task-planner, dev, task-build)
 │       ├── git-commit.md
 │       ├── code-review.md
 │       ├── task-planner.md
 │       ├── dev.md
-│       └── build.md
+│       └── task-build.md
 ├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
 ├── bin/
 │   ├── opencode-web.sh         ← manager fire-and-forget
@@ -113,7 +113,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 ## Skills e Subagentes
 
 27 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo`), além de `customize-opencode` (built-in do opencode, sem diretório).
-Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `build` (prompts em `.config/opencode/agents/`).
+Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
 ## Dependências (device)
@@ -193,9 +193,9 @@ para acesso offline e versionamento no repositório.
 | Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
 | Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
 | Implementar código | `dev` | Executar tasks do plano com qualidade e conformidade |
-| Orquestrar entrega completa | `build` | Pipeline completo: planejar → implementar → revisar → commitar |
+| Orquestrar entrega completa | `task-build` | Pipeline completo: planejar → implementar → revisar → commitar |
 | Mudanças simples (1-3 arquivos) | `dev` | Edits, fixes, refactors pontuais |
-| Mudanças complexas (3+ arquivos) | `build` ou `task-planner` → `dev` → `code-review` | Planejar → implementar → revisar |
+| Mudanças complexas (3+ arquivos) | `task-build` ou `task-planner` → `dev` → `code-review` | Planejar → implementar → revisar |
 | Criar commit | `git-commit` | Sempre após mudanças aprovadas |
 | Revisão de PR/code | `code-review` | Após implementação, antes de merge |
 | Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
@@ -259,7 +259,7 @@ skill(name="executing-plans")  # executar plano existente
 │     └─ git-commit agent                          │
 └─────────────────────────────────────────────────┘
 
-Ou usar o agente `build` para orquestrar tudo automaticamente.
+Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 ```
 
 ### Referências Doc por Fluxo

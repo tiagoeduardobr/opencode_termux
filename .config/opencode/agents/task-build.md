@@ -1,6 +1,6 @@
 ---
 description: Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita
-mode: subagent
+mode: primary
 ---
 
 # Build Agent
