@@ -29,8 +29,9 @@ Ignorar skills já carregadas como obrigatórias.
 ### 3. Entender a tarefa
 
 - Se a descrição da tarefa for vaga, **perguntar ao usuário** para esclarecer
-- Listar **assumptions** (pressupostos que estão sendo feitos)
+- Listar **assumptions** (pressupostos que estão sendo feitos) e confirmar com o usuário antes de prosseguir
 - Definir success criteria concretos e testáveis
+- Consultar as skills instaladas para boas práticas de planejamento
 
 ### 4. Explorar codebase
 
@@ -54,6 +55,12 @@ Se houver plano anterior para a mesma tarefa, usá-lo como base.
 ### 6. Gerar plano adaptativo
 
 O formato do plano depende da complexidade:
+
+**Formato obrigatório (backlog)**: No backlog (`docs/PROJECT_BACKLOG_*.md`), TODAS as tasks devem seguir o padrão:
+- Pendente: `- [ ] **TODO-CAT-NN:** Descrição`
+- Concluído: `- [x] **TODO-CAT-NN:** Descrição – Concluído em [DD/MM/YYYY:HH:MM]`
+- Categorias: B, F, I, R, D, SEC, FIX, UI, UX, SPA, REF, GOV, LGPD, MKT
+O agente `dev` marcará como `- [x]` + timestamp ao completar. O agente `code-review` verificará se todos foram marcados. Planos em `.opencode/plans/` NÃO usam checkboxes.
 
 **Tarefa simples** (1-2 arquivos):
 ```markdown
@@ -137,6 +144,19 @@ Exibir o plano completo no chat e usar a **QUESTION TOOL**:
 ## Plano salvo em
 `.opencode/plans/{arquivo}`
 ```
+
+### 10. Checklist de implementação (referência para dev)
+
+O plano gerado deve permitir que o `dev` siga este checklist:
+1. Ler o backlog em `docs/PROJECT_BACKLOG_*.md`
+2. Criar branch `feature/TODO-{ID}` a partir de `main`
+3. Buscar a skill mais adequada
+4. Consultar planos existentes em `.opencode/plans/`
+5. Implementar seguindo as convenções do projeto
+6. Marcar backlog `[x]` com timestamp (`date '+%d/%m/%Y:%H:%M'`)
+7. Usar subagent `code-review` para revisar o diff
+8. Corrigir problemas apontados (se houver)
+9. Usar subagent `git-commit` para commitar
 
 ## Regras
 

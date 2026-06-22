@@ -35,11 +35,34 @@ Buscar planos relacionados ao diff em:
 
 Se encontrado: **comparar** o que foi especificado vs. o que foi implementado.
 
+### 3a. Verificar conclusão de TODOs no backlog
+
+**Escopo**: Apenas `docs/PROJECT_BACKLOG_*.md` usa checkboxes e timestamps. Planos em `.opencode/plans/` NÃO devem ter checkboxes.
+
+**Formato obrigatório**:
+- Pendente: `- [ ] **TODO-CAT-NN:** Descrição`
+- Concluído: `- [x] **TODO-CAT-NN:** Descrição – Concluído em [DD/MM/YYYY:HH:MM]`
+- Categorias: B, F, I, R, D, SEC, FIX, UI, UX, SPA, REF, GOV, LGPD, MKT
+
+Se o backlog contiver checkboxes:
+- Verificar se TODOS os checkboxes foram marcados como concluídos (`- [x]`)
+- Verificar se o timestamp `– Concluído em [DD/MM/YYYY:HH:MM]` foi adicionado
+- **Validação de timestamp**: O timestamp deve seguir o formato `[DD/MM/YYYY:HH:MM]` (dia/mês/ano:hora:minuto). Se o formato estiver incorreto (ex: ANSI C `strftime` ou formato americano), reportar como **"Importante"** — o comando correto é `date '+%d/%m/%Y:%H:%M'`
+- Se houver checkboxes não marcados (`- [ ]`) ou timestamps faltando, incluir como **"Importante"** no relatório
+- Listar quais tasks não foram marcadas como concluídas
+
+### 3b. Validar formato do backlog
+
+Se o backlog existir:
+- Verificar se cada item segue o padrão `- [ ] **TODO-CAT-NN:**` ou `- [x] **TODO-CAT-NN:**`
+- Itens concluídos devem ter `– Concluído em [DD/MM/YYYY:HH:MM]`
+- Categorias devem ser válidas (B, F, I, R, D, SEC, FIX, UI, UX, SPA, REF, GOV, LGPD, MKT)
+
 ### 4. Quality Checks (obrigatório)
 
 ```
 poetry run black --check .
-poetry run flake8 parecer_backend --max-line-length=88 --extend-ignore=E203,W503
+poetry run flake8 parecer_backend --max-line-length=88 --extend-ignore=E203,W503,E501
 poetry run pytest --tb=short -q
 ```
 

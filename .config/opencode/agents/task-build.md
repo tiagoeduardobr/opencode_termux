@@ -57,15 +57,14 @@ Exibir o plano gerado ao usuário e usar **QUESTION TOOL**:
 
 Antes de executar tasks, criar e mudar para feature branch:
 
-1. **Gerar slug** a partir da tarefa:
-   - Se input contém padrão `TODO-{CAT}-{NUM}: {desc}` → slug = `todo-{cat}-{num}-{desc}`
-   - Caso contrário → slug = descrição da tarefa
-   - Lowercase, substituir espaços por `-`, remover caracteres especiais
-   - Truncar em 50 chars se necessário
+1. **Gerar nome do branch** a partir da tarefa:
+   - Se input contém padrão `TODO-{CAT}-{NUM}: {desc}` → branch = `feature/TODO-{CAT}-{NUM}`
+   - Caso contrário → branch = `feature/{slug}` (slug = descrição em kebab-case, max 50 chars)
+   - Exemplo: `feature/TODO-UX-10`, `feature/TODO-SEC-01`
 
 2. Executar:
    ```
-   git checkout -b feature/<slug>
+git checkout -b <branch>
    ```
 
 3. Se o branch já existir, usar **QUESTION TOOL**:
@@ -87,6 +86,15 @@ Para cada task do plano:
 task(subagent_type="dev", description="Implementar task {N}", prompt="{task details from plan}")
 ```
 
+**Prompt para dev**: Incluir instrução para marcar backlog com `date`:
+```
+Após implementar, marcar a task como concluída no backlog:
+1. Executar: `date '+%d/%m/%Y:%H:%M'`
+2. Substituir `- [ ]` por `- [x]`
+3. Adicionar ` – Concluído em [resultado do date]` ao final da linha
+4. NUNCA digitar o timestamp manualmente
+```
+
 LOG: `[HH:MM] dev → task N/M → OK/ERRO`
 
 #### 6b. Delegar para code-review
@@ -96,6 +104,21 @@ task(subagent_type="code-review", description="Revisar task {N}", prompt="{conte
 ```
 
 LOG: `[HH:MM] code-review → task N/M → veredito`
+
+#### 6b1. Verificar marcação de TODOs no backlog
+
+Antes de delegar para code-review, verificar se o `dev` marcou as tasks como concluídas NO BACKLOG:
+- **Escopo**: Apenas `docs/PROJECT_BACKLOG_*.md` usa checkboxes e timestamps
+- **Formato pendente**: `- [ ] **TODO-CAT-NN:** Descrição`
+- **Formato concluído**: `- [x] **TODO-CAT-NN:** Descrição – Concluído em [DD/MM/YYYY:HH:MM]`
+- Verificar se `- [ ]` foi alterado para `- [x]`
+- Verificar se o timestamp `– Concluído em [DD/MM/YYYY:HH:MM]` foi adicionado
+- **IMPORTANTE**: O timestamp deve ter sido gerado via `date '+%d/%m/%Y:%H:%M'` — nunca digitado manualmente
+- Se NÃO foram marcados, registrar warning mas prosseguir para code-review
+- O code-review irá verificar formalmente
+- Planos em `.opencode/plans/` NÃO devem ter checkboxes
+
+LOG: `[HH:MM] plan-check → task N/M → updated/pending`
 
 #### 6c. Tratar veredito
 
@@ -173,10 +196,10 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 - Oferecer opções de pular etapas quando aplicável
 
 ### Branch Naming
-- Formato: `feature/<slug>`
-- Slug: lowercase, `-` separated, max 50 chars
-- Se input contém padrão `TODO-{CAT}-{NUM}: {desc}` → usar nome do TODO como slug
-- Categorias conhecidas: `UX`, `FIX`, `REFACTOR`, `FEAT`, `DOC`, `TEST`
+- Formato: `feature/TODO-{CAT}-{NUM}` para tasks de backlog (ex: `feature/TODO-UX-10`, `feature/TODO-SEC-01`)
+- Formato: `feature/{slug}` para outras tarefas (slug = kebab-case, max 50 chars)
+- Se input contém padrão `TODO-{CAT}-{NUM}: {desc}` → usar `feature/TODO-{CAT}-{NUM}`
+- Categorias conhecidas: `B`, `F`, `I`, `R`, `D`, `SEC`, `FIX`, `UI`, `UX`, `SPA`, `REF`, `GOV`, `LGPD`, `MKT`
 - Nunca usar: `main`, `master`, `develop`, `release/*`
 
 ### Auto-correção
