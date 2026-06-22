@@ -92,32 +92,39 @@ Dentro do proot (usuário root), teste a rede:
 curl -s https://ifconfig.me
 ```
 
-### 3. Node.js 20 LTS inside proot
-
-> `pkg` não existe no proot como root. Faça download manual do `.deb`.
+### 3. Node.js inside proot
 
 ```bash
-# URLs atualizadas (junho/2026)
-curl -LO https://github.com/nodesource/distributions/raw/master/deb/setup_24.x
-bash setup_24.x
-apt-get install -y nodejs
-node -v  # v24.x
+apt update && apt install nodejs npm -y
+node -v
 npm -v
 ```
-
-> Se o `setup_24.x` falhar, baixe o binário estático direto:
-> ```bash
-> curl -LO https://nodejs.org/dist/v24.8.0/node-v24.8.0-linux-arm64.tar.xz
-> tar -xf node-v24.8.0-linux-arm64.tar.xz -C /usr/local --strip-components=1
-> node -v
-> ```
 
 ### 4. OpenCode CLI
 
 ```bash
-npm install -g opencode-ai
+npm install -g opencode-linux-arm64 --force
+ln -sf /data/data/com.termux/files/usr/lib/node_modules/opencode-linux-arm64/bin/opencode /data/data/com.termux/files/usr/bin/opencode
+hash -r
 opencode --version
 ```
+
+> **Por que `--force`?** O npm detecta o OS como "android" e bloqueia a instalação. `--force` contorna isso.
+> **Por que o symlink?** O npm global no proot não adiciona o binário ao PATH. O symlink garante que `opencode` seja encontrado.
+
+### 4.1. Antes da primeira execução
+
+1. **Wake lock** — Para evitar que o Android suspenda o Termux:
+   ```bash
+   termux-wake-lock
+   ```
+
+2. **Primeira execução é lenta** — O OpenCode cria databases SQLite na primeira vez. Pode levar **5 a 10 minutos**. Aguarde a mensagem:
+   ```
+   Database migration complete
+   ```
+
+3. **Não interrompa** — Não feche o terminal nem pressione Ctrl+C durante a migração.
 
 ### 5. cloudflared
 
