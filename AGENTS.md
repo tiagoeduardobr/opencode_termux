@@ -146,6 +146,10 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   — intencional (mantém package.json/lock versionados, exclui node_modules).
 - **`opencode.json`**: Usa paths relativos `.config/opencode/skills/` e
   `{file:.config/opencode/agents/<name>.md}` para subagentes.
+- **RBAC syntax no opencode.json**: O formato correto para permissões de agentes
+  é `"agente": "perm"`, não `"perm": ["agente"]`. Exemplo correto:
+  `"rbac": { "task-build": "deny" }`. O formato array é inválido e silenciosamente
+  ignorado pelo OpenCode.
 - **`0.0.0.0` crasha dentro do proot**: O `opencode web --hostname 0.0.0.0` falha
   com `getifaddrs returned an error` porque o proot não expõe interfaces de rede.
   Use `127.0.0.1` (default) dentro do proot; o cloudflared conecta em `127.0.0.1`.
