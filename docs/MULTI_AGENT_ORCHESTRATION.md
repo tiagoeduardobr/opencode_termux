@@ -11,6 +11,11 @@
 Sistema de orquestração multi-agente que usa 5 agentes especializados
 para executar um pipeline completo: planejar → implementar → revisar → commitar.
 
+> **IMPORTANTE**: Este arquivo é uma referência GLOBAL. NUNCA copie agentes,
+> skills ou este doc para projetos alvo. Os agentes e skills já estão
+> disponíveis via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
+> Cada projeto só precisa de `opencode.json` (local) + `AGENTS.md` (convenções).
+
 ### Quando usar task-build vs. abordagem manual
 
 | Cenário | Abordagem |
@@ -144,10 +149,12 @@ graph TD
 
 ## 4. Configuração do Sistema
 
-### 4.1 Estrutura de Diretórios
+### 4.1 Estrutura de Diretórios — Modelo Global + Local
+
+**GLOBAL** (em `opencode_termux/`, acessível via symlink `~/.config/opencode/`):
 
 ```
-~/.config/opencode/              ← symlink para opencode_termux/.config/opencode/
+opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
 ├── skills/                      ← 39 skills
@@ -157,11 +164,17 @@ graph TD
     ├── dev.md
     ├── code-review.md
     └── git-commit.md
+```
 
+**LOCAL** (em cada projeto):
+
+```
 projeto/
-├── opencode.json                ← config do projeto (referencia agents e skills)
+├── opencode.json                ← config do projeto (MÍNIMO: skills.paths + permission.skill)
+├── AGENTS.md                    ← convenções específicas do projeto
 ├── .opencode/plans/             ← planos gerados pelo task-planner
 ├── docs/PROJECT_BACKLOG_*.md    ← backlog com checkboxes e timestamps
+└── README.md
 ```
 
 ### 4.2 Setup em Device Novo
@@ -188,7 +201,27 @@ O `setup.sh`:
 - `agent.<name>.description`: descrição do agente
 - `agent.<name>.mode`: `primary` (TUI Tab) ou `subagent` (via Task tool)
 - `agent.<name>.prompt`: caminho do arquivo .md do agente (`{file:.config/opencode/agents/<name>.md}`)
+  - Resolve via symlink `~/.config/opencode/` — NÃO copie os .md para o projeto
 - `agent.<name>.permission`: permissões granulares (bash, read, edit, write, question, skill, rbac)
+
+### 4.4 Arquitetura de Config — Por que Symlink?
+
+O modelo usa um symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`
+para compartilhar agentes e skills entre TODOS os projetos.
+
+**Por que symlink (não cópia)?**
+- **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
+- **Consistência**: todos os projetos usam as mesmas versões de agents e skills
+- **Economia de espaço**: uma única cópia de 39 skills + 5 agents
+
+**O que cada projeto mantém LOCALMENTE:**
+- `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
+- `AGENTS.md`: convenções, gotchas, e workflow do projeto
+- `.opencode/plans/`: planos de implementação
+- `docs/PROJECT_BACKLOG_*.md`: backlog de tasks
+
+> **NUNCA copie** prompts `.md` dos agents ou diretórios de skills para o projeto.
+> Eles já estão disponíveis via symlink `~/.config/opencode/`.
 
 ## 5. RBAC e Permissões
 
@@ -341,138 +374,14 @@ Log imutável (append-only) de todas as ações:
       "staff-engineer-review": "allow",
       "code-reviewer": "allow"
     }
-  },
-  "agent": {
-    "task-build": {
-      "description": "Orquestra o fluxo completo de entrega",
-      "mode": "primary",
-      "prompt": "{file:.config/opencode/agents/task-build.md}",
-      "permission": {
-        "bash": {
-          "*": "allow",
-          "git add *": "deny",
-          "git commit *": "deny",
-          "git push *": "deny",
-          "git merge *": "deny",
-          "git branch -d*": "deny",
-          "git branch -D*": "deny",
-          "git reset *": "deny",
-          "git rebase *": "deny",
-          "git stash *": "deny"
-        },
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "question": "allow",
-        "skill": "allow",
-        "plan_enter": "allow",
-        "plan_exit": "allow"
-      }
-    },
-    "task-planner": {
-      "description": "Planeja tarefas antes da implementação",
-      "mode": "subagent",
-      "prompt": "{file:.config/opencode/agents/task-planner.md}",
-      "permission": {
-        "bash": {
-          "*": "allow",
-          "git commit *": "deny",
-          "git push *": "deny",
-          "git merge *": "deny",
-          "git reset *": "deny",
-          "git rebase *": "deny"
-        },
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "allow",
-        "question": "allow",
-        "skill": "allow",
-        "plan_enter": "allow",
-        "plan_exit": "allow",
-        "rbac": {
-          "task-build": "deny"
-        }
-      }
-    },
-    "dev": {
-      "description": "Implementa código",
-      "mode": "subagent",
-      "prompt": "{file:.config/opencode/agents/dev.md}",
-      "permission": {
-        "bash": {
-          "*": "allow",
-          "git *": "deny"
-        },
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "allow",
-        "write": "allow",
-        "question": "allow",
-        "skill": "allow",
-        "plan_enter": "allow",
-        "plan_exit": "allow",
-        "rbac": {
-          "task-build": "deny"
-        }
-      }
-    },
-    "code-review": {
-      "description": "Revisa código pós-implementação",
-      "mode": "subagent",
-      "prompt": "{file:.config/opencode/agents/code-review.md}",
-      "permission": {
-        "bash": {
-          "*": "allow"
-        },
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "question": "allow",
-        "skill": "allow",
-        "plan_enter": "allow",
-        "plan_exit": "allow",
-        "rbac": {
-          "task-build": "deny"
-        }
-      }
-    },
-    "git-commit": {
-      "description": "Cria commits semânticos seguindo as convenções do projeto",
-      "mode": "subagent",
-      "prompt": "{file:.config/opencode/agents/git-commit.md}",
-      "permission": {
-        "bash": {
-          "*": "allow",
-          "git merge *": "ask",
-          "git push *": "ask",
-          "git checkout -b*": "allow",
-          "git branch -d*": "allow",
-          "git branch -D*": "allow",
-          "git checkout main": "allow"
-        },
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "question": "allow",
-        "plan_enter": "allow",
-        "plan_exit": "allow",
-        "rbac": {
-          "task-build": "deny"
-        }
-      }
-    }
   }
 }
 ```
+
+> **NOTA**: Este é o MÍNIMO necessário. Agentes são resolvidos via symlink global
+> `~/.config/opencode/` — NÃO re-declare os 5 agents no `opencode.json` do projeto.
+> Se precisar de permissões customizadas de agente, adicione a seção `"agent"` apenas
+> para sobrescrever configurações globais.
 
 ### 8.2 Template de Agente Subagent
 
@@ -574,6 +483,10 @@ Formato de conclusão:
 ### 8.6 Template de AGENTS.md (para Projetos Alvo)
 
     # {PROJECT_NAME} — Guia para Agentes de IA
+
+    > **IMPORTANTE**: Os agentes e skills já estão disponíveis via symlink global.
+    > NUNCA copie os prompts .md dos agentes ou diretórios de skills para este projeto.
+    > Apenas crie este AGENTS.md com as convenções específicas deste projeto.
 
     {PROJECT_DESCRIPTION}
 
@@ -883,10 +796,10 @@ Formato de conclusão:
 
 ### 9.3 Checklist de Setup (Projeto Novo)
 
-- [ ] Criar `opencode.json` a partir do template (8.1)
-- [ ] Criar diretório `.config/opencode/agents/`
-- [ ] Criar arquivos de agente a partir do template (8.2)
-- [ ] Criar symlink `~/.config/opencode/` (via `setup.sh` ou manual)
+- [ ] Verificar symlink: `ls -la ~/.config/opencode/` (deve apontar para opencode_termux)
+- [ ] Criar `opencode.json` local a partir do template (8.1) — MÍNIMO: skills.paths + permission.skill
+- [ ] Criar `AGENTS.md` do projeto a partir do template (8.6) — convenções locais
+- [ ] Criar `.opencode/plans/` (opcional, para planos do task-planner)
 - [ ] Verificar permissões com `opencode debug agent <name>`
 - [ ] Testar pipeline com tarefa simples
 
