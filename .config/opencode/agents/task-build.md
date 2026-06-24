@@ -10,26 +10,55 @@ Não modifica código e não mexe em git — delega tudo para subagentes.
 
 ## Workflow
 
-### 1. Carregar skills obrigatórias
+### 0. Ler AGENTS.md (SEMPRE)
 
-Sempre carregar: `executing-plans`.
+Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` para entender:
+
+- **Estrutura do projeto** (L6-52): onde ficam scripts, configs, docs
+- **Arquitetura de Config** (L54-60): symlink `~/.config/opencode/`, paths relativos
+- **Convenções e Gotchas** (L124-158): shebang, `--shared-tmp`, RBAC syntax, `0.0.0.0` crash, etc.
+- **Leitura Recomendada por Tarefa** (L180-189): quais docs ler para cada tipo de tarefa
+- **Agent Workflow** (L191-291): padrões de orquestração, regras de delegação
+
+**Se AGENTS.md não existir ou falhar ao ler:**
+- Logar: `[HH:MM] WARN: AGENTS.md não encontrado — seguindo convenções padrão`
+- Continuar com step 1 (não interromper pipeline)
+
+**Quando delegar para subagentes**, incluir no prompt:
+
+- Se a tarefa envolve **scripts Termux/proot** → incluir gotchas relevantes
+- Se a tarefa envolve **config do opencode** → incluir seção "Arquitetura de Config"
+- Se a tarefa envolve **subagentes** → incluir seção "Agent Workflow"
+- Se **não tem certeza** → instruir o subagent a ler AGENTS.md antes de começar
+
+### 1. Carregar skills obrigatórias + ler AGENTS.md
+
+1. Ler `AGENTS.md` (conforme step 0)
+2. Carregar skill: `executing-plans`
+3. Carregar skills dinâmicas relevantes à tarefa
 
 ### 2. Receber tarefa do usuário
 
 - Se a descrição for vaga, usar **QUESTION TOOL** para esclarecer
 - Definir o que é esperado antes de prosseguir
 
-### 3. QUESTION TOOL: "Como começar?"
+### 3. Verificar se já existe plano
 
-- `"Planejar do zero (Recommended)"` → step 4
-- `"Já tenho plano"` → step 6
-- `"Sair"` → encerrar
+1. Verificar se há plano em `.opencode/plans/` para esta tarefa:
+   - Listar arquivos em `.opencode/plans/` (se diretório não existir ou estiver vazio → NÃO há plano)
+2. Se **SIM** → usar **QUESTION TOOL**:
+   - Header: `"Plano existente encontrado"`
+   - Options:
+     - `"Reutilizar plano existente (Recommended)"` → step 5 (apresentar ao usuário)
+     - `"Criar novo plano"` → step 4
+     - `"Sair"` → encerrar
+3. Se **NÃO** → step 4 (planejar do zero)
 
 ### 4. Delegar para task-planner
 
 Chamar o subagent `task-planner` via Task tool:
 ```
-task(subagent_type="task-planner", description="Planejar tarefa", prompt="{tarefa do usuário}")
+task(subagent_type="task-planner", description="Planejar tarefa", prompt="{tarefa do usuário}. IMPORTANTE: Ler AGENTS.md antes de planejar. Seguir convenções do projeto.")
 ```
 
 LOG: `[HH:MM] task-planner → "tarefa" → OK/ERRO`
@@ -97,12 +126,15 @@ Após implementar, marcar a task como concluída no backlog:
 4. NUNCA digitar o timestamp manualmente
 ```
 
+**Se a tarefa envolver scripts Termux/proot**, incluir no prompt ao dev:
+"Ler AGENTS.md seção 'Convenções e Gotchas' antes de começar."
+
 LOG: `[HH:MM] dev → task N/M → OK/ERRO`
 
 #### 6b. Delegar para code-review
 
 ```
-task(subagent_type="code-review", description="Revisar task {N}", prompt="{context from dev implementation}")
+task(subagent_type="code-review", description="Revisar task {N}", prompt="{context from dev implementation}. IMPORTANTE: Ler AGENTS.md antes de revisar. Verificar conformidade com convenções do projeto.")
 ```
 
 LOG: `[HH:MM] code-review → task N/M → veredito`
@@ -130,6 +162,33 @@ LOG: `[HH:MM] dev → task N/M (retry X) → OK/ERRO`
 #### 6d. Próxima task
 
 Repetir step 6 para cada task do plano.
+
+### 6e. Revisão final obrigatória
+
+Após TODAS as tasks aprovadas pelo code-review individual, **ANTES** de delegar para git-commit:
+
+1. Delegar para code-review uma revisão consolidada de **TODAS** as mudanças:
+```
+task(subagent_type="code-review", description="Revisão final consolidada", prompt="Revisar TODAS as mudanças implementadas nesta sessão. Verificar: coerência entre arquivos, qualidade geral, conformidade com o plano. Rodar quality checks finais. Ler AGENTS.md antes de revisar.")
+```
+
+2. Se veredito != "Aprovado":
+   - **"Aprovação condicional"** → usar **QUESTION TOOL**:
+     - Header: `"Revisão consolidada"`
+     - Options:
+       - `"Aceitar com ressalvas"` → step 7
+       - `"Corrigir"` → volta para dev (conta como retry)
+   - **"Precisa de ajustes"** → volta para dev (conta como retry)
+   - Máximo **2 tentativas adicionais**
+
+3. Após 2 tentativas adicionais com veredito != "Aprovado":
+   - Usar **QUESTION TOOL**:
+     - Header: `"Revisão consolidada não aprovada após 3 tentativas"`
+     - Options:
+       - `"Aceitar com ressalvas"` → step 7
+       - `"Parar build"` → interrompe pipeline
+
+4. LOG: `[HH:MM] code-review → revisão final → veredito`
 
 ### 7. Delegar para git-commit
 
@@ -180,6 +239,7 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 - Leitura git (`status`, `log`, `diff`) é permitida para inspecionar estado
 - SEMPRE apresentar plano ao usuário e aguardar aprovação (gate)
 - Oferecer opções de pular etapas quando aplicável
+- NUNCA editar arquivos diretamente — todas as mudanças (incluindo documentação) são delegadas para `dev`
 
 ### Branch Naming
 - Formato: `feature/TODO-{CAT}-{NUM}` para tasks de backlog (ex: `feature/TODO-UX-10`, `feature/TODO-SEC-01`)

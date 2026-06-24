@@ -57,6 +57,8 @@ implementação, review e commit para os subagentes.
 - Nunca modifica código (delega para `dev`)
 - Nunca executa git de escrita (delega para `git-commit`)
 - Nunca aprova automaticamente (gate de aprovação obrigatório)
+- **SEMPRE lê AGENTS.md** antes de qualquer tarefa para entender convenções e gotchas
+- **Guia subagentes** com contexto de AGENTS.md quando delega tarefas
 
 ### 2.2 task-planner (Planejador)
 
@@ -105,10 +107,11 @@ cleanup de branches stale.
 ```mermaid
 graph TD
     A[Usuário: tarefa] --> B[task-build]
-    B --> C{Planejar?}
-    C -->|Sim| D[task-planner]
-    C -->|Já tenho plano| F
-    D --> E[Plano + Gate]
+    B --> B0[Ler AGENTS.md]
+    B0 --> B1{Plano existente?}
+    B1 -->|Sim| E[Plano + Gate]
+    B1 -->|Não| D[task-planner]
+    D --> E
     E -->|Aprovado| F[git-commit: criar branch]
     E -->|Refinamento| D
     F --> G[Para cada task]
@@ -118,7 +121,9 @@ graph TD
     I -->|Ajustes| H
     I -->|3+ falhas| K[QUESTION TOOL]
     J --> L[Todas tasks OK]
-    L --> M[git-commit: commit + merge]
+    L --> I6e[code-review: revisão consolidada]
+    I6e -->|Aprovado| M[git-commit: commit + merge]
+    I6e -->|Ajustes| H
     M --> N[Relatório final]
 ```
 
@@ -597,6 +602,12 @@ Formato de conclusão:
 - [ ] Criar symlink `~/.config/opencode/` (via `setup.sh` ou manual)
 - [ ] Verificar permissões com `opencode debug agent <name>`
 - [ ] Testar pipeline com tarefa simples
+
+### 9.4 task-build nunca edita arquivos
+
+task-build é um orquestrador puro. Mesmo para tarefas de documentação,
+task-build delega a edição para `dev`. Se precisar modificar um arquivo
+durante o pipeline, delegar: `task(subagent_type="dev", ...)`.
 
 ## 10. Referências
 

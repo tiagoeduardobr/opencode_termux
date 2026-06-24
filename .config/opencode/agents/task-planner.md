@@ -157,6 +157,9 @@ O plano gerado deve permitir que o `dev` siga este checklist:
 7. Usar subagent `code-review` para revisar o diff
 8. Corrigir problemas apontados (se houver)
 9. Usar subagent `git-commit` para commitar
+- [ ] Branch creation é delegada para `git-commit` (não por task-build diretamente)
+- [ ] Code-review é obrigatório antes de qualquer commit (individual + consolidado)
+- [ ] task-build NUNCA edita arquivos — todas as mudanças são delegadas para `dev`
 
 ## Regras
 

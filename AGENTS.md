@@ -221,10 +221,11 @@ para acesso offline e versionamento no repositório.
 
 **Padrão completo** (feature ou fix complexo):
 ```
-1. task-planner → gerar plano adaptativo
-2. dev → implementar
-3. code-review → revisar qualidade
-4. git-commit → branch + commit + cleanup
+1. task-build → ler AGENTS.md + receber tarefa
+2. task-planner → gerar plano adaptativo
+3. dev → implementar
+4. code-review → revisar qualidade (individual + consolidado)
+5. git-commit → branch + commit + cleanup
 ```
 
 **Padrão de revisão** (após receber PR/issues):
@@ -256,6 +257,8 @@ skill(name="executing-plans")  # executar plano existente
 
 ```
 ┌─────────────────────────────────────────────────┐
+│  0. Ler AGENTS.md                               │
+│     └─ entender convenções e gotchas             │
 │  1. Entender tarefa                              │
 │     └─ explore ou ler contexto                   │
 │  2. Planejar (se complexo)                       │
@@ -263,13 +266,18 @@ skill(name="executing-plans")  # executar plano existente
 │  3. Implementar                                  │
 │     └─ dev agent                                 │
 │  4. Verificar                                    │
-│     └─ code-review ou rodar tests/lint            │
-│  5. Commitar + Push                              │
+│     └─ code-review (individual por task)         │
+│  5. Revisão consolidada                          │
+│     └─ code-review (todas as tasks)              │
+│  6. Commitar + Push                              │
 │     └─ git-commit agent                          │
 └─────────────────────────────────────────────────┘
 
 Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 ```
+
+> **Regra**: Code review é OBRIGATÓRIO antes de CADA commit (individual + consolidado).
+> task-build NUNCA edita arquivos — todas as mudanças são delegadas para dev.
 
 ### Referências Doc por Fluxo
 
