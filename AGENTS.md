@@ -190,6 +190,9 @@ para acesso offline e versionamento no repositório.
 
 ## Agent Workflow — Orquestração
 
+> **Documentação completa**: Para deep-dive na orquestração, templates de configuração,
+> RBAC, mecanismos de robustez e gotchas, veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
+
 ### Qual agente usar
 
 | Tarefa | Agente | Quando usar |
