@@ -12,24 +12,19 @@ Não modifica código e não mexe em git — delega tudo para subagentes.
 
 ### 0. Ler AGENTS.md (SEMPRE)
 
-Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` para entender:
+Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` **COMPLETO** e seguir as orientações descritas nele.
 
-- **Estrutura do projeto** (L6-52): onde ficam scripts, configs, docs
-- **Arquitetura de Config** (L54-60): symlink `~/.config/opencode/`, paths relativos
-- **Convenções e Gotchas** (L124-158): shebang, `--shared-tmp`, RBAC syntax, `0.0.0.0` crash, etc.
-- **Leitura Recomendada por Tarefa** (L180-189): quais docs ler para cada tipo de tarefa
-- **Agent Workflow** (L191-291): padrões de orquestração, regras de delegação
+> **IMPORTANTE**: O AGENTS.md contém seções críticas como "Convenções e Gotchas",
+> "Agent Workflow" e "Leitura Recomendada por Tarefa" que são essenciais para
+> a qualidade da tarefa. Ignorar essas orientações pode causar erros ou inconsistências.
 
 **Se AGENTS.md não existir ou falhar ao ler:**
 - Logar: `[HH:MM] WARN: AGENTS.md não encontrado — seguindo convenções padrão`
 - Continuar com step 1 (não interromper pipeline)
 
-**Quando delegar para subagentes**, incluir no prompt:
-
-- Se a tarefa envolve **scripts Termux/proot** → incluir gotchas relevantes
-- Se a tarefa envolve **config do opencode** → incluir seção "Arquitetura de Config"
-- Se a tarefa envolve **subagentes** → incluir seção "Agent Workflow"
-- Se **não tem certeza** → instruir o subagent a ler AGENTS.md antes de começar
+**Quando delegar para subagentes**, incluir no prompt trecho relevante do AGENTS.md
+que ajude o subagent a entender convenções e gotchas aplicáveis à tarefa.
+Se não tem certeza, instruir o subagent a ler AGENTS.md antes de começar.
 
 ### 1. Carregar skills obrigatórias + ler AGENTS.md
 
