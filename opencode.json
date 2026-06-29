@@ -33,7 +33,19 @@
       "systematic-debugging": "allow",
       "test-master": "allow",
       "web-design-guidelines": "allow",
-      "agent-restrictions": "allow"
+      "agent-restrictions": "allow",
+      "brainstorming": "allow",
+      "dispatching-parallel-agents": "allow",
+      "finishing-a-development-branch": "allow",
+      "receiving-code-review": "allow",
+      "requesting-code-review": "allow",
+      "subagent-driven-development": "allow",
+      "test-driven-development": "allow",
+      "using-git-worktrees": "allow",
+      "using-superpowers": "allow",
+      "verification-before-completion": "allow",
+      "writing-plans": "allow",
+      "writing-skills": "allow"
     }
   },
   "agent": {
@@ -60,7 +72,10 @@
         "plan_enter": "allow",
         "plan_exit": "allow",
         "rbac": {
-          "task-build": "deny"
+          "task-build": "deny",
+          "code-review": "deny",
+          "task-planner": "deny",
+          "dev": "deny"
         }
       }
     },
@@ -70,7 +85,20 @@
       "prompt": "{file:.config/opencode/agents/code-review.md}",
       "permission": {
         "bash": {
-          "*": "allow"
+          "*": "allow",
+          "sed *": "deny",
+          "sed -i *": "deny",
+          "awk *": "deny",
+          "python -c *": "deny",
+          "python3 -c *": "deny",
+          "node -e *": "deny",
+          "tee *": "deny",
+          "ruby -e *": "deny",
+          "perl -e *": "deny",
+          "cp *": "deny",
+          "mv *": "deny",
+          "install *": "deny",
+          "patch *": "deny"
         },
         "read": "allow",
         "glob": "allow",
@@ -82,7 +110,10 @@
         "plan_enter": "allow",
         "plan_exit": "allow",
         "rbac": {
-          "task-build": "deny"
+          "task-build": "deny",
+          "git-commit": "deny",
+          "task-planner": "deny",
+          "dev": "deny"
         }
       }
     },
@@ -123,7 +154,10 @@
         "plan_enter": "allow",
         "plan_exit": "allow",
         "rbac": {
-          "task-build": "deny"
+          "task-build": "deny",
+          "git-commit": "deny",
+          "code-review": "deny",
+          "dev": "deny"
         }
       }
     },
@@ -146,7 +180,10 @@
         "plan_enter": "allow",
         "plan_exit": "allow",
         "rbac": {
-          "task-build": "deny"
+          "task-build": "deny",
+          "git-commit": "deny",
+          "code-review": "deny",
+          "task-planner": "deny"
         }
       }
     },

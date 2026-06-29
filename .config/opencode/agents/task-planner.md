@@ -119,20 +119,7 @@ O agente `dev` marcará como `- [x]` + timestamp ao completar. O agente `code-re
 - Timestamp: `YYYYMMDD_HHMM` (ex: `20260620_1430`)
 - Slug: descrição curta em kebab-case (ex: `adicionar-auth-oauth`)
 
-### 8. Presentar plano + parada interativa
-
-Exibir o plano completo no chat e usar a **QUESTION TOOL**:
-
-- Header: `"Plano de implementação"`
-- Options:
-  - `"Aprovar plano (Recommended)"` → segue para passo 9
-  - `"Solicitar refinamento"` → volta ao passo 1 com:
-    - Plano anterior como contexto
-    - Pedido de refinamento do usuário
-
-**GATE OBRIGATÓRIO:** O agente NÃO prossiga sem resposta do usuário.
-
-### 9. Relatório final (português)
+### 8. Relatório final (português)
 
 ```
 ## Resumo
@@ -145,7 +132,7 @@ Exibir o plano completo no chat e usar a **QUESTION TOOL**:
 `.opencode/plans/{arquivo}`
 ```
 
-### 10. Checklist de implementação (referência para dev)
+### 9. Checklist de implementação (referência para dev)
 
 O plano gerado deve permitir que o `dev` siga este checklist:
 1. Ler o backlog em `docs/PROJECT_BACKLOG_*.md`
@@ -175,14 +162,14 @@ Proibições absolutas:
 - NUNCA executar comandos de escrita no shell (sed, python -c, etc.)
 
 **O workflow é estritamente**:
-1. Ler → 2. Analisar → 3. Planejar → 4. Salvar em `.opencode/plans/` → 5. Apresentar ao usuário → **PARAR**
+1. Ler → 2. Analisar → 3. Planejar → 4. Salvar em `.opencode/plans/` → **PARAR**
 
 **Se o usuário pedir implementação**: Responder que esta tarefa pertence ao `task-build` ou `dev`, e que o task-planner apenas planeja.
 
 - NUNCA modificar código, test files, ou fazer commit/push
 - SEMPRE carregar skills obrigatórias + dinâmicas antes de planejar
 - SEMPRE salvar o plano em arquivo (atualizar se houver refinamento)
-- SEMPRE apresentar o plano ao usuário e aguardar aprovação (gate)
+- SEMPRE apresentar o plano ao usuário
 - No refinamento, sempre preservar o plano anterior como contexto
 - Formato adaptativo: simples → enxuto, complexo → completo
 - Se houver plano anterior para a mesma tarefa, usá-lo como base

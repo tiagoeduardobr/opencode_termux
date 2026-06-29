@@ -238,8 +238,8 @@ no `opencode.json`.
 | `task-build` | permitido (git deny) | ✅ | ❌ | ❌ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
 | `task-planner` | permitido (git deny) | ✅ | ❌ | ✅ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
 | `dev` | permitido (`git *` deny) | ✅ | ✅ | ✅ | ✅ | ✅ | git * |
-| `code-review` | permitido | ✅ | ❌ | ❌ | ✅ | ✅ | — |
-| `git-commit` | permitido (merge/push ask) | ✅ | ❌ | ❌ | ✅ | — | — |
+| `code-review` | permitido (deny patterns) | ✅ | ❌ | ❌ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch |
+| `git-commit` | permitido (merge/push ask) | ✅ | ❌ | ❌ | ✅ | ❌ | — |
 
 ### 5.3 Regras RBAC (quem pode chamar quem)
 
@@ -280,10 +280,10 @@ Exemplo incorreto (IGNORADO pelo OpenCode):
 
 | Agente | git deny | git ask | Pode fazer | Edição Indireta |
 |--------|----------|---------|------------|-----------------|
-| `task-build` | add, commit, push, merge, branch -d/-D, reset, rebase, stash | — | status, log, diff | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
-| `task-planner` | commit, push, merge, reset, rebase | — | status, log, diff, branch | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
+| `task-build` | add, commit, push, merge, checkout -b*, branch -d/-D, reset, rebase, stash | — | status, log, diff | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
+| `task-planner` | commit, push, merge, checkout -b*, reset, rebase | — | status, log, diff, branch | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
 | `dev` | `git *` (tudo) | — | nada | ✅ (exceto git) |
-| `code-review` | — | — | status, log, diff | ❌ |
+| `code-review` | — | — | status, log, diff, quality checks | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
 | `git-commit` | — | merge, push | commit, branch, checkout, branch -d/-D | ❌ |
 
 ## 6. Mecanismos de Robustez
@@ -354,6 +354,16 @@ Log imutável (append-only) de todas as ações:
 [2026-06-22T14:30:15Z] dev → implementou auth JWT → ok (15s)
 [2026-06-22T14:30:20Z] code-review → revisou task 1/3 → "Aprovado" (5s)
 ```
+
+### 7.3 Quando usar cada formato
+
+| Formato | Quando usar | Uso |
+|---------|-------------|-----|
+| **Structured Logging (JSON)** | Cada delegação de task-build | Rastreabilidade automatizada, debugging, métricas |
+| **Audit Trail** | Visão humana do pipeline | Relatório final, compliance, revisão pós-mortem |
+| **Debug (texto simples)** | Step 8 do relatório | Formato compacto para o usuário final |
+
+**Regra**: task-build SEMPRE gera os 3 formatos. Subagentes NÃO geram logs (apenas retornam resultado para task-build logar).
 
 ## 8. Templates Prontos
 
@@ -599,8 +609,8 @@ Formato de conclusão:
 
     ### Branches
 
-    - **Padrão**: `feature/TODO-{ID}-{slug}` para features
-    - **Fix**: `fix/TODO-{ID}-{slug}` para correções
+    - **Padrão**: `feature/TODO-{CAT}-{NUM}-{slug}` para features
+    - **Fix**: `fix/TODO-{CAT}-{NUM}-{slug}` para correções
     - **Main**: `main` (ou `master` — confirmar)
 
     ### Backlog

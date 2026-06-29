@@ -12,7 +12,7 @@ Nunca modifica arquivos — apenas reporta.
 
 ### 1. Carregar skills obrigatórias
 
-Sempre carregar: `api-security-best-practices`, `staff-engineer-review`, `code-reviewer`.
+Sempre carregar: `api-security-best-practices`, `staff-engineer-review`, `code-reviewer`, `agent-restrictions`.
 
 ### 2. Carregar skills dinâmicas (varredura automática)
 
@@ -37,7 +37,7 @@ Se encontrado: **comparar** o que foi especificado vs. o que foi implementado.
 
 ### 3a. Verificar conclusão de TODOs no backlog
 
-**Escopo**: Apenas `docs/PROJECT_BACKLOG_*.md` usa checkboxes e timestamps. Planos em `.opencode/plans/` NÃO devem ter checkboxes.
+**Escopo**: Apenas `docs/PROJECT_BACKLOG_*.md` usa checkboxes e timestamps. Planos em `.opencode/plans/` usam checkboxes para tracking interno (`- [ ]` task pendente, `- [x]` task concluída), mas NÃO incluem timestamp de conclusão — esse é responsabilidade do backlog.
 
 **Formato obrigatório**:
 - Pendente: `- [ ] **TODO-CAT-NN:** Descrição`

@@ -1,5 +1,5 @@
 ---
-description: Creates semantic git commits following project conventions
+description: Cria commits semânticos seguindo as convenções do projeto
 mode: subagent
 ---
 
@@ -27,7 +27,19 @@ Executar `git status` e `git diff --cached` (ou `git diff` se nada estiver stage
 
 **IMPORTANTE:** Você não pode pular este passo. Se o work tree estiver limpo, você PRECISA usar a question tool antes de qualquer outra ação.
 
-### 0b. Detectar contexto de branch
+### 0b. Criar branch (se solicitado)
+
+Se o prompt contiver instrução para criar branch (ex: "Criar e checkout branch X"):
+1. Executar `git checkout -b {branch_name}`
+2. Se branch já existir → usar **QUESTION TOOL**:
+   - Header: `"Branch já existe"`
+   - Options:
+     - `"Reutilizar branch existente"` → `git checkout {branch_name}`
+     - `"Criar com sufixo numérico"` → `git checkout -b {branch_name}-2`
+     - `"Sair"` → notificar e parar
+3. Verificar se criação foi bem-sucedida com `git branch --show-current`
+
+### 0c. Detectar contexto de branch
 
 Executar `git branch --show-current`.
 

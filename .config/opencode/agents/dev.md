@@ -78,10 +78,17 @@ Se QUALQUER verificação falhar → corrigir e repetir step 7.
 
 ### 8. Atualizar plano
 
-Após verificação bem-sucedida, marcar a task como concluída no arquivo do plano:
+Após verificação bem-sucedida:
+1. **Ler o arquivo do plano** em `.opencode/plans/` para encontrar a task correspondente
+2. Marcar a task como concluída substituindo `- [ ]` por `- [x]`:
 ```
 - [x] {task implementada}
 ```
+3. Se o plano usar backlog format (`docs/PROJECT_BACKLOG_*.md`), adicionar timestamp:
+```
+- [x] **TODO-CAT-NN:** {task} – Concluído em [DD/MM/YYYY:HH:MM]
+```
+4. Usar `date '+%d/%m/%Y:%H:%M'` para gerar o timestamp (nunca digitar manualmente)
 
 ### 9. Relatório (português)
 

@@ -58,6 +58,28 @@ task(subagent_type="task-planner", description="Planejar tarefa", prompt="{taref
 
 LOG: `[HH:MM] task-planner → "tarefa" → OK/ERRO`
 
+**Se task-planner falhar ou retornar vazio:**
+1. Retry 1x automático com o mesmo prompt
+2. Se falhar novamente → usar **QUESTION TOOL**:
+   - Header: `"task-planner falhou"`
+   - Options:
+     - `"Criar plano manualmente"` → task-build cria plano simples (1-2 arquivos) e continua
+     - `"Tentar novamente"` → retry com contexto adicional
+     - `"Parar build"` → interrompe pipeline
+3. Se usuário escolher "Criar plano manualmente":
+   - Criar plano simples no formato:
+     ```
+     # Plano: {tarefa}
+     ## Objetivo
+     {descrição}
+     ## Tasks
+     - [ ] {task} — Acceptance: {critério} — Verify: {como confirmar}
+     ## Verificação
+     {como confirmar}
+     ```
+   - Salvar em `.opencode/plans/{timestamp}_{slug}.md`
+   - Continuar para step 5
+
 ### 5. Presentar plano + gate de aprovação
 
 Exibir o plano gerado ao usuário e usar **QUESTION TOOL**:
