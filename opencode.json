@@ -32,7 +32,8 @@
       "staff-engineer-review": "allow",
       "systematic-debugging": "allow",
       "test-master": "allow",
-      "web-design-guidelines": "allow"
+      "web-design-guidelines": "allow",
+      "agent-restrictions": "allow"
     }
   },
   "agent": {
@@ -92,9 +93,23 @@
       "permission": {
         "bash": {
           "*": "allow",
+          "sed *": "deny",
+          "sed -i *": "deny",
+          "awk *": "deny",
+          "python -c *": "deny",
+          "python3 -c *": "deny",
+          "node -e *": "deny",
+          "tee *": "deny",
+          "ruby -e *": "deny",
+          "perl -e *": "deny",
+          "cp *": "deny",
+          "mv *": "deny",
+          "install *": "deny",
+          "patch *": "deny",
           "git commit *": "deny",
           "git push *": "deny",
           "git merge *": "deny",
+          "git checkout -b*": "deny",
           "git reset *": "deny",
           "git rebase *": "deny"
         },
@@ -142,10 +157,24 @@
       "permission": {
         "bash": {
           "*": "allow",
+          "sed *": "deny",
+          "sed -i *": "deny",
+          "awk *": "deny",
+          "python -c *": "deny",
+          "python3 -c *": "deny",
+          "node -e *": "deny",
+          "tee *": "deny",
+          "ruby -e *": "deny",
+          "perl -e *": "deny",
+          "cp *": "deny",
+          "mv *": "deny",
+          "install *": "deny",
+          "patch *": "deny",
           "git add *": "deny",
           "git commit *": "deny",
           "git push *": "deny",
           "git merge *": "deny",
+          "git checkout -b*": "deny",
           "git branch -d*": "deny",
           "git branch -D*": "deny",
           "git reset *": "deny",

@@ -233,13 +233,13 @@ no `opencode.json`.
 
 ### 5.2 Matriz de Permissões
 
-| Agente | bash | read | edit | write | question | skill |
-|--------|------|------|------|-------|----------|-------|
-| `task-build` | permitido (git deny) | ✅ | ❌ | ❌ | ✅ | ✅ |
-| `task-planner` | permitido (git deny) | ✅ | ❌ | ✅ | ✅ | ✅ |
-| `dev` | permitido (`git *` deny) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `code-review` | permitido | ✅ | ❌ | ❌ | ✅ | ✅ |
-| `git-commit` | permitido (merge/push ask) | ✅ | ❌ | ❌ | ✅ | — |
+| Agente | bash | read | edit | write | question | skill | bash deny patterns |
+|--------|------|------|------|-------|----------|-------|-------------------|
+| `task-build` | permitido (git deny) | ✅ | ❌ | ❌ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
+| `task-planner` | permitido (git deny) | ✅ | ❌ | ✅ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
+| `dev` | permitido (`git *` deny) | ✅ | ✅ | ✅ | ✅ | ✅ | git * |
+| `code-review` | permitido | ✅ | ❌ | ❌ | ✅ | ✅ | — |
+| `git-commit` | permitido (merge/push ask) | ✅ | ❌ | ❌ | ✅ | — | — |
 
 ### 5.3 Regras RBAC (quem pode chamar quem)
 
@@ -278,13 +278,13 @@ Exemplo incorreto (IGNORADO pelo OpenCode):
 
 ### 5.5 Permissões Git por Agente
 
-| Agente | git deny | git ask | Pode fazer |
-|--------|----------|---------|------------|
-| `task-build` | add, commit, push, merge, branch -d/-D, reset, rebase, stash | — | status, log, diff |
-| `task-planner` | commit, push, merge, reset, rebase | — | status, log, diff, branch |
-| `dev` | `git *` (tudo) | — | nada |
-| `code-review` | — | — | status, log, diff |
-| `git-commit` | — | merge, push | commit, branch, checkout, branch -d/-D |
+| Agente | git deny | git ask | Pode fazer | Edição Indireta |
+|--------|----------|---------|------------|-----------------|
+| `task-build` | add, commit, push, merge, branch -d/-D, reset, rebase, stash | — | status, log, diff | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
+| `task-planner` | commit, push, merge, reset, rebase | — | status, log, diff, branch | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
+| `dev` | `git *` (tudo) | — | nada | ✅ (exceto git) |
+| `code-review` | — | — | status, log, diff | ❌ |
+| `git-commit` | — | merge, push | commit, branch, checkout, branch -d/-D | ❌ |
 
 ## 6. Mecanismos de Robustez
 
@@ -785,6 +785,7 @@ Formato de conclusão:
 | Timestamp manual errado | Usar `date '+%d/%m/%Y:%H:%M'` — nunca digitar |
 | task-build editando código | Nunca — delegar para dev |
 | Skills dinâmicas não carregadas | Varredura automática em `~/.config/opencode/skills/` |
+| Indirect file editing via bash | Usar padrões de negação no opencode.json (sed, python -c, etc.) + lista explícita nos prompts |
 
 ### 9.2 Anti-padrões
 
@@ -808,6 +809,39 @@ Formato de conclusão:
 task-build é um orquestrador puro. Mesmo para tarefas de documentação,
 task-build delega a edição para `dev`. Se precisar modificar um arquivo
 durante o pipeline, delegar: `task(subagent_type="dev", ...)`.
+
+**Isso inclui métodos indiretos**: sed, awk, python -c, node -e, tee, echo redirect, cp, mv, install, patch, git checkout -b*
+Todos estão bloqueados por padrões de negação no `opencode.json`.
+
+### 9.5 Proibições de Edição Indireta
+
+**Problema**: Instruções de prompt dizendo "NUNCA editar" não são suficientes.
+Agentes podem usar métodos alternativos (sed, python -c, tee) para modificar arquivos.
+
+**Solução**: Duas camadas de proteção:
+
+1. **Prompt instructions**: Lista explícita de métodos proibidos nos prompts dos agentes
+2. **Permission system**: Padrões de negação no `opencode.json` que bloqueiam comandos específicos
+
+**Métodos bloqueados para `task-build` e `task-planner`**:
+- `sed` / `awk` — edição via regex em shell
+- `python -c` / `python3 -c` — edição via Python inline
+- `node -e` — edição via Node.js inline
+- `tee` — redirecionamento de saída para arquivos
+- `ruby -e` / `perl -e` — edição via outras linguagens inline
+- `cp` / `mv` — substituição de arquivos inteiros
+- `install` — instalação de pacotes/modificação do filesystem
+- `patch` — aplicação de patches
+- `git checkout -b*` — criação de branch (delegado para git-commit)
+
+**Exceção**: `task-planner` pode salvar planos em `.opencode/plans/` (via `write: "allow"`).
+
+**Limitação conhecida**: Redirecionamento shell (`echo "content" > file`,
+`cat file1 > file2`) é difícil de bloquear via pattern matching no opencode.json.
+A camada de prompt instructions cobre isso, mas a camada de permissão não.
+Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
+
+**Verificação**: Usar `opencode debug agent <name>` para verificar permissões aplicadas.
 
 ## 10. Referências
 

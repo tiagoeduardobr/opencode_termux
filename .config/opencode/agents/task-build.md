@@ -229,12 +229,32 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 ## Regras
 
 ### Orquestração
-- NUNCA modificar código — sempre delegar para `dev`
+
+#### Proibições de Edição (CRÍTICO)
+
+**NUNCA modificar código ou arquivos — SEMPRE delegar para `dev`.**
+
+Isso inclui, mas NÃO se limita a:
+- `edit` / `write` / `patch` — ferramentas nativas de edição
+- `sed` / `awk` — edição via regex em shell
+- `python -c "open(...).write(...)"` — edição via Python inline
+- `node -e "require('fs').writeFile(...)"` — edição via Node.js inline
+- `tee` / `cat >` / `echo >` — redirecionamento de saída para arquivos
+- `cp` / `mv` — substituição de arquivos inteiros
+- `install` / `npm install` — qualquer comando que modifique o filesystem
+- Qualquer outro comando shell que resulte em criação ou modificação de arquivos
+
+**Exceção ÚNICA**: `.opencode/plans/` — task-planner pode salvar planos aqui.
+
+**Por quê?** Proibições vagas ("nunca editar diretamente") criam loopholes. Um agente pode argumentar que `python -c` não é "edição direta". Esta lista explícita fecha esses atalhos.
+
+**Se precisar de alteração**: Delegar para `dev` com instruções claras.
+
+#### Outras Regras de Orquestração
 - NUNCA executar comandos git de escrita — sempre delegar para `git-commit`
 - Leitura git (`status`, `log`, `diff`) é permitida para inspecionar estado
 - SEMPRE apresentar plano ao usuário e aguardar aprovação (gate)
 - Oferecer opções de pular etapas quando aplicável
-- NUNCA editar arquivos diretamente — todas as mudanças (incluindo documentação) são delegadas para `dev`
 
 ### Branch Naming
 - Formato: `feature/TODO-{CAT}-{NUM}` para tasks de backlog (ex: `feature/TODO-UX-10`, `feature/TODO-SEC-01`)
