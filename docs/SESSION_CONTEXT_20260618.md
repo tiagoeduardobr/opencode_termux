@@ -147,6 +147,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 - **`opencode.json`** do `parecer_descritivo` referencia `~/.config/opencode/skills` — não precisa de alteração com o symlink
 - **`0.0.0.0` crasha dentro do proot**: `opencode web --hostname 0.0.0.0` falha com `getifaddrs returned an error` — usar `127.0.0.1`
 - **`termux-notification-remove`** removido: Causa abertura de configurações de bateria em MIUI/Xiaomi
+- **ADR-001 (2026-06-30)**: Loop de trabalho no `AGENTS.md` padronizado como visão rápida do workflow do `task-build.md` (passos 0–8). Detalhe em `docs/decisions/ADR-001-loop-de-trabalho-vs-task-build.md`.
 
 ---
 
