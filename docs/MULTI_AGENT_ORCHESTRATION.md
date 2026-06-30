@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
 > **Última atualização**: 2026-06-23
-> **Versão do sistema**: 5 agentes + 39 skills
+> **Versão do sistema**: 5 agentes + 40 skills
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral
@@ -157,7 +157,7 @@ graph TD
 opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
-├── skills/                      ← 39 skills
+├── skills/                      ← 40 skills (composição abaixo)
 └── agents/                      ← 5 agentes
     ├── task-build.md
     ├── task-planner.md
@@ -165,6 +165,14 @@ opencode_termux/.config/opencode/
     ├── code-review.md
     └── git-commit.md
 ```
+
+> **Composição das 40 skills**: 26 globais (incluindo 2 movidas de `parecer_descritivo`:
+> `design-system-patterns` e `design-tokens`) + 14 do
+> [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
+> `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
+> `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,
+> `systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
+> `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`.
 
 **LOCAL** (em cada projeto):
 
@@ -212,7 +220,7 @@ para compartilhar agentes e skills entre TODOS os projetos.
 **Por que symlink (não cópia)?**
 - **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
 - **Consistência**: todos os projetos usam as mesmas versões de agents e skills
-- **Economia de espaço**: uma única cópia de 39 skills + 5 agents
+- **Economia de espaço**: uma única cópia de 40 skills + 5 agents
 
 **O que cada projeto mantém LOCALMENTE:**
 - `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
@@ -245,16 +253,31 @@ no `opencode.json`.
 
 ```
 task-build ──→ task-planner, dev, code-review, git-commit  (pode chamar todos)
-task-planner ──→ NÃO pode chamar task-build
-dev ──→ NÃO pode chamar task-build
-code-review ──→ NÃO pode chamar task-build
-git-commit ──→ NÃO pode chamar task-build
+task-planner ──→ NÃO pode chamar NENHUM outro subagente
+dev ──→ NÃO pode chamar NENHUM outro subagente
+code-review ──→ NÃO pode chamar NENHUM outro subagente
+git-commit ──→ NÃO pode chamar NENHUM outro subagente
 ```
+
+**Isolamento completo entre subagentes**: Cada subagente (`git-commit`,
+`code-review`, `task-planner`, `dev`) tem `"rbac"` negando TODOS os
+outros 3 subagentes + `task-build`. Por exemplo, `git-commit` nega
+`task-build`, `code-review`, `task-planner` e `dev`.
+
+**Por que isolamento total?**
+- **Segurança**: Subagentes com bash restrito não devem invocar agentes
+  com permissões diferentes (ex: `code-review` não deveria chamar `dev`
+  que tem write)
+- **Prevenção de loops**: Sem isolamento, um subagente poderia invocar
+  outro que invoca de volta, criando loops infinitos
+- **Responsabilidade única**: Cada subagente faz uma coisa — `dev`
+  implementa, `code-review` revisa, `git-commit` commita. A orquestração
+  fica com `task-build`
 
 **Por que `task-build` não tem seção `rbac`?**
 Porque é `mode: primary` — é o único agente invocado diretamente pelo
-usuário. Os 4 subagentes têm `"rbac": { "task-build": "deny" }` para
-impedir chamadas circulares.
+usuário. Os 4 subagentes têm rbac deny para todos os pares para
+manter o isolamento completo.
 
 ### 5.4 Gotchas de Configuração
 
@@ -262,10 +285,13 @@ impedir chamadas circulares.
 > `"perm": ["agente"]`. O formato array é inválido e silenciosamente
 > ignorado pelo OpenCode.
 
-Exemplo correto:
+Exemplo correto (um subagente nega todos os outros):
 ```json
 "rbac": {
-  "task-build": "deny"
+  "task-build": "deny",
+  "git-commit": "deny",
+  "code-review": "deny",
+  "dev": "deny"
 }
 ```
 
@@ -528,7 +554,7 @@ Formato de conclusão:
 
     ## Skills e Subagentes Disponíveis
 
-    Este projeto usa 5 agentes e 39 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
+    Este projeto usa 5 agentes e 40 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
     As skills estão em 3 diretórios (todos via symlink global):
 
     - `~/.config/opencode/skills/` — skills globais
@@ -643,7 +669,7 @@ Formato de conclusão:
     | Tarefa com plano escrito | `executing-plans` | Re-executar planos com checkpoints |
 
     > **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`)
-    > não podem chamar `task-build`.
+    > são isolados — cada um nega todos os outros subagentes. Apenas `task-build` pode chamá-los.
 
     ### Padrões de orquestração
 
@@ -767,7 +793,7 @@ Formato de conclusão:
 ## Notas de Implementação
 
 1. **O template é auto-contido**: Não depende de arquivos externos além dos
-   5 agentes e 39 skills que já estão disponíveis via symlink.
+   5 agentes e 40 skills que já estão disponíveis via symlink.
 
 2. **Placeholders obrigatórios**: Preencha todos os `{PLACEHOLDERS}` antes
    de usar o AGENTS.md. Os agentes leem este arquivo como contexto.
@@ -853,9 +879,24 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 
 **Verificação**: Usar `opencode debug agent <name>` para verificar permissões aplicadas.
 
-## 10. Referências
+## 10. Melhorias Recentes
 
-### 10.1 Arquivos do Sistema
+### Orquestração Multi-Agente (2026-06-22)
+
+- **Git delegado**: task-build delega TODAS as operações git para git-commit (criação de branch, cleanup, commits)
+- **RBAC**: agentes inferiores são isolados — cada um nega todos os outros subagentes
+- **Quality checks agnósticos**: auto-detect para Python, Node.js, Makefile
+- **State hashing**: detecção de loops idênticos nos retries
+- **Circuit breaker**: interrompe pipeline após 3+ falhas consecutivas
+- **Orçamento global**: máximo de 20 tentativas totais no pipeline
+- **Crash recovery**: retry automático + salvamento de estado
+- **Structured logging**: formato JSON com `trace_id` para rastreabilidade
+- **Audit trail**: log imutável de todas as ações dos agentes
+- **Skills do superpowers**: 14 skills do obra/superpowers instaladas
+
+## 11. Referências
+
+### 11.1 Arquivos do Sistema
 
 | Arquivo | Descrição |
 |---------|-----------|
@@ -867,7 +908,7 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 | `opencode.json` | Config do projeto (permissões, RBAC) |
 | `AGENTS.md` | Overview do repositório |
 
-### 10.2 Skills Relevantes
+### 11.2 Skills Relevantes
 
 | Skill | Usado por |
 |-------|-----------|
@@ -878,7 +919,7 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 | `staff-engineer-review` | code-review |
 | `code-reviewer` | code-review |
 
-### 10.3 Agentes Built-in do OpenCode
+### 11.3 Agentes Built-in do OpenCode
 
 O OpenCode possui agentes built-in que NÃO são configurados via `opencode.json`:
 - **`explore`**: Busca rápida de arquivos e código (uso interno do TUI)
@@ -886,7 +927,7 @@ O OpenCode possui agentes built-in que NÃO são configurados via `opencode.json
 
 Esses agentes são distintos dos 5 agentes customizados documentados aqui.
 
-### 10.4 Links Externos
+### 11.4 Links Externos
 
 - OpenCode Docs: https://opencode.ai
 - obra/superpowers: https://github.com/obra/superpowers

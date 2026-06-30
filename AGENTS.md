@@ -9,7 +9,7 @@ opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 39 skills (25 globais + 2 movidas de parecer_descritivo + 12 do obra/superpowers)
+│   ├── skills/                 ← 40 skills (26 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
@@ -61,6 +61,9 @@ opencode_termux/
 
 ## Setup em Device Novo
 
+Para instruções detalhadas de setup, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 4.2).
+
+Resumo rápido:
 ```bash
 git clone <url> opencode_termux
 cd opencode_termux
@@ -68,11 +71,6 @@ bash scripts/setup.sh
 source shell/aliases.sh        # ou adicionar ao ~/.bashrc
 cp .env.example .env           # e editar
 ```
-
-O `setup.sh`:
-1. Faz backup de `~/.config/opencode/` existente (se não for symlink)
-2. Cria symlink: `~/.config/opencode/` → `opencode_termux/.config/opencode/`
-3. Instala dependências npm do `.config/opencode/`
 
 ## Scripts de Execução
 
@@ -112,7 +110,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-39 skills em `.config/opencode/skills/` (25 globais + 2 movidas de `parecer_descritivo` + 12 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
+40 skills em `.config/opencode/skills/` (26 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -147,9 +145,27 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
 - **`opencode.json`**: Usa paths relativos `.config/opencode/skills/` e
   `{file:.config/opencode/agents/<name>.md}` para subagentes.
 - **RBAC syntax no opencode.json**: O formato correto para permissões de agentes
-  é `"agente": "perm"`, não `"perm": ["agente"]`. Exemplo correto:
-  `"rbac": { "task-build": "deny" }`. O formato array é inválido e silenciosamente
-  ignorado pelo OpenCode.
+  é `"agente": "perm"`, não `"perm": ["agente"]`. O formato array é inválido e
+  silenciosamente ignorado pelo OpenCode.
+  
+  **Exemplo correto** (cada subagente nega todos os outros):
+  ```json
+  "rbac": {
+    "task-build": "deny",
+    "git-commit": "deny",
+    "code-review": "deny",
+    "dev": "deny"
+  }
+  ```
+  
+  **Exemplo incorreto** (IGNORADO pelo OpenCode):
+  ```json
+  "rbac": {
+    "deny": ["task-build"]
+  }
+  ```
+  
+  → Detalhes completos: `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.4)
 - **`0.0.0.0` crasha dentro do proot**: O `opencode web --hostname 0.0.0.0` falha
   com `getifaddrs returned an error` porque o proot não expõe interfaces de rede.
   Use `127.0.0.1` (default) dentro do proot; o cloudflared conecta em `127.0.0.1`.
@@ -190,58 +206,23 @@ para acesso offline e versionamento no repositório.
 
 ## Agent Workflow — Orquestração
 
-> **Documentação completa**: Para deep-dive na orquestração, templates de configuração,
-> RBAC, mecanismos de robustez e gotchas, veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
+> **Visão geral**: Esta seção é um overview rápido dos workflows.
+> Para documentação completa (templates, RBAC, circuit breaker, crash recovery,
+> anti-padrões detalhados, etc.), veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
 ### Qual agente usar
 
-| Tarefa | Agente | Quando usar |
-|---|---|---|
-| Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
-| Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
-| Implementar código | `dev` | Executar tasks do plano com qualidade e conformidade |
-| Orquestrar entrega completa | `task-build` | Pipeline completo: planejar → implementar → revisar → commitar (git delegado para `git-commit`) |
-| Mudanças simples (1-3 arquivos) | `dev` | Edits, fixes, refactors pontuais |
-| Mudanças complexas (3+ arquivos) | `task-build` ou `task-planner` → `dev` → `code-review` | Planejar → implementar → revisar |
-| Criar commit | `git-commit` | Sempre após mudanças aprovadas (inclui criação de branch e cleanup) |
-| Revisão de PR/code | `code-review` | Após implementação, antes de merge |
-| Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
-| Tarefa com plano escrito | `executing-plans` | Re-executar planos com checkpoints |
+Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Qual agente usar").
 
-> **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) não podem chamar `task-build`.
+> **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) são isolados — cada um nega todos os outros subagentes. Apenas `task-build` pode chamá-los.
 
 ### Padrões de orquestração
 
-**Padrão simples** (mudança pontual):
-```
-1. explore → entender contexto
-2. dev → implementar
-3. git-commit → branch + commit + cleanup
-```
-
-**Padrão completo** (feature ou fix complexo):
-```
-1. task-build → ler AGENTS.md + receber tarefa
-2. task-planner → gerar plano adaptativo
-3. dev → implementar
-4. code-review → revisar qualidade (individual + consolidado)
-5. git-commit → branch + commit + cleanup
-```
-
-**Padrão de revisão** (após receber PR/issues):
-```
-1. code-review → analisar mudanças
-2. dev → aplicar feedback
-3. git-commit → commitar fixes
-```
+Para padrões detalhados (simples, completo, revisão), veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Padrões de orquestração").
 
 ### Regras de delegação
 
-1. **Nunca duplique trabalho** — se delegou para um agente, aguarde o resultado
-2. **Encadeie agentes** — passe o resultado de um como contexto do próximo
-3. **Use task_id** — para continuar sessão anterior, passe o task_id
-4. **Skills primeiro** — antes de implementar, verifique se há skill relevante
-5. **Docs antes de código** — sempre leia `docs/` relevante antes de modificar scripts
+Para regras de delegação detalhadas, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Regras de delegação").
 
 ### Uso de Skills
 
@@ -253,65 +234,34 @@ skill(name="test-master")      # criar testes
 skill(name="executing-plans")  # executar plano existente
 ```
 
-### Loop de trabalho
+### Loop de trabalho (referência rápida)
 
-```
-┌─────────────────────────────────────────────────┐
-│  0. Ler AGENTS.md                               │
-│     └─ entender convenções e gotchas             │
-│  1. Entender tarefa                              │
-│     └─ explore ou ler contexto                   │
-│  2. Planejar (se complexo)                       │
-│     └─ task-planner agent                        │
-│  3. Implementar                                  │
-│     └─ dev agent                                 │
-│  4. Verificar                                    │
-│     └─ code-review (individual por task)         │
-│  5. Revisão consolidada                          │
-│     └─ code-review (todas as tasks)              │
-│  6. Commitar + Push                              │
-│     └─ git-commit agent                          │
-└─────────────────────────────────────────────────┘
+Para o workflow detalhado (passos 0–8), veja `task-build.md` e `docs/MULTI_AGENT_ORCHESTRATION.md`.
+O loop resumido abaixo cobre os passos essenciais para pipelines orquestrados:
 
-Ou usar o agente `task-build` para orquestrar tudo automaticamente.
-```
+1. Ler AGENTS.md e carregar skills obrigatórias + dinâmicas
+2. Entender/receber a tarefa do usuário
+3. Verificar/criar plano (task-planner, se necessário)
+4. Apresentar plano e obter aprovação (gate)
+5. Criar feature branch (via git-commit)
+6. Para cada task: dev implementa → code-review revisa (individual)
+7. Revisão consolidada final (todas as tasks)
+8. Commitar (via git-commit) e gerar relatório
 
 > **Regra**: Code review é OBRIGATÓRIO antes de CADA commit (individual + consolidado).
 > task-build NUNCA edita arquivos — todas as mudanças são delegadas para dev.
 
-### Referências Doc por Fluxo
-
-| Fluxo | Docs para ler |
-|---|---|
-| **Setup em device novo** | `proot-distro/README.md`, `cloudflare/downloads.md`, `termux/filesystem-layout.md` |
-| **Debug do tunnel não subir** | `cloudflare/quick-tunnel.md`, `cloudflare/run-parameters.md` |
-| **Mudar porta/host do opencode** | `termux/filesystem-layout.md`, `cloudflare/config-file.md` |
-| **Adicionar notificação customizada** | `termux/termux-notification.md` |
-| **Atualizar cloudflared** | `cloudflare/downloads.md`, `cloudflare/run-parameters.md` |
-| **Migrar de Quick Tunnel para named tunnel** | `cloudflare/config-file.md`, `cloudflare/run-parameters.md` |
+**Notas**
+- Este resumo é uma visão de alto nível. Sempre siga o workflow completo em `task-build.md` ao usar o agente `task-build`.
+- Para fluxos simples (sem task-build), siga `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Loop de trabalho").
 
 ### Anti-padrões
 
-- ❌ **Pular explore** → implementar sem entender contexto causa erros
-- ❌ **Não usar skill** → re-inventar wheel quando skill já resolve
-- ❌ **Commitar sem review** → code quality degrada
-- ❌ **Assumir flags** → sempre confirmar na doc local antes de modificar scripts
-- ❌ **Não verificar versão** → `cloudflared version`, `proot-distro list` contra doc local
+Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 9.2).
 
 ## Melhorias Recentes
 
-### Orquestração Multi-Agente (2026-06-22)
-
-- **Git delegado**: task-build delega TODAS as operações git para git-commit (criação de branch, cleanup, commits)
-- **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) não podem chamar `task-build`
-- **Quality checks agnósticos**: auto-detect para Python, Node.js, Makefile
-- **State hashing**: detecção de loops idênticos nos retries
-- **Circuit breaker**: interrompe pipeline após 3+ falhas consecutivas
-- **Orçamento global**: máximo de 20 tentativas totais no pipeline
-- **Crash recovery**: retry automático + salvamento de estado
-- **Structured logging**: formato JSON com `trace_id` para rastreabilidade
-- **Audit trail**: log imutável de todas as ações dos agentes
-- **Skills do superpowers**: 12 novas skills do obra/superpowers instaladas
+Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
 ## Comandos Úteis
 
