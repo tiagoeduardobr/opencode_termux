@@ -22,14 +22,14 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 opencode_termux/
 ├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
 │   ├── opencode.jsonc             ← config global do opencode
-│   ├── skills/                    ← 27 skills (25 globais + 2 do parecer_descritivo)
+│   ├── skills/                    ← 40 skills (26 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system-patterns/
 │   │   ├── design-tokens/
 │   │   ├── fastapi-expert/
 │   │   └── ...
-│   └── agents/                    ← agentes subagent (git-commit, code-review)
+│   └── agents/                    ← subagentes (git-commit, code-review, task-planner, dev, task-build)
 │       ├── git-commit.md
 │       └── code-review.md
 ├── opencode.json                  ← config DO PROJETO (aponta para skills e agents locais)
@@ -41,10 +41,18 @@ opencode_termux/
 ├── run-cloudflare-tunnel.sh       ← script executado dentro do proot
 ├── shell/aliases.sh               ← aliases para bash
 ├── scripts/setup.sh               ← configuração inicial em qualquer device
-├── docs/termux/
-│   ├── filesystem-layout.md       ← paths, $PREFIX, $TMPDIR
-│   ├── termux-notification.md     ← API de notificações
-│   └── ssh-sftp-access.md         ← referência SSH/SFTP
+├── docs/                       ← documentação de referência
+│   ├── proot-distro/
+│   │   └── README.md           ← docs completas do proot-distro
+│   ├── termux/
+│   │   ├── filesystem-layout.md ← paths, $PREFIX, $TMPDIR
+│   │   ├── termux-notification.md ← API de notificações
+│   │   └── ssh-sftp-access.md   ← referência SSH/SFTP
+│   └── cloudflare/
+│       ├── quick-tunnel.md     ← Quick Tunnel / TryCloudflare
+│       ├── downloads.md        ← cloudflared arm64 .deb
+│       ├── config-file.md      ← YAML config structure
+│       └── run-parameters.md   ← tunnel run flags
 ├── .env                           ← configurações reais
 └── .env.example                   ← template de configuração
 ```
@@ -52,6 +60,9 @@ opencode_termux/
 > **📌 Como funciona**: `~/.config/opencode/` → symlink → `opencode_termux/.config/opencode/`
 > Skills e agents vivem no repositório e são referenciados globalmente pelo symlink.
 > Clone em qualquer device, rode `bash scripts/setup.sh`, e tudo funciona.
+
+> **📖 Documentação completa**: Para detalhes sobre orquestração de agents,
+> veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
 ---
 
@@ -112,19 +123,82 @@ opencode --version
 > **Por que `--force`?** O npm detecta o OS como "android" e bloqueia a instalação. `--force` contorna isso.
 > **Por que o symlink?** O npm global no proot não adiciona o binário ao PATH. O symlink garante que `opencode` seja encontrado.
 
-### 4.1. Antes da primeira execução
+### 4.1. Primeira execução do OpenCode
 
-1. **Wake lock** — Para evitar que o Android suspenda o Termux:
+Após instalar o OpenCode CLI (step 4), execute pela primeira vez:
+
+```bash
+opencode
+```
+
+**Por que é lento?**
+
+O OpenCode usa SQLite como banco de dados local. Na primeira execução:
+
+#### 1. Criação do banco de dados
+O banco é criado em: `~/.local/share/opencode/opencode.db`
+
+Se o diretório não existir, o OpenCode cria automaticamente.
+
+#### 2. Schema migrations (Drizzle ORM)
+O OpenCode usa Drizzle ORM para gerenciar o schema do banco. Na primeira vez, ele executa migrations que criam tabelas como `project`, `session`, `message`, `tool`, `participant`, `worktree`, além de índices e journal de migrations.
+
+#### 3. Inicialização de plugins
+O OpenCode baixa e inicializa `oh-my-opencode` (content checker) e verifica atualizações de plugins.
+
+#### 4. Carregamento de configuração
+Lê `~/.config/opencode/opencode.json` e `opencode.json` do diretório atual.
+
+---
+
+**Quanto tempo leva?**
+
+| Ambiente | Tempo estimado |
+|----------|----------------|
+| Desktop (Intel/AMD) | 5-15 segundos |
+| Termux (ARM64) | **30-90 segundos** |
+| Termux (ARM64, 1ª vez) | **2-5 minutos** |
+
+**O que você verá no terminal:**
+
+```
+$ opencode
+Loading configuration...
+Performing one time database migration...
+Database migration complete
+Initializing plugins...
+Loading models...
+Ready.
+```
+
+**Dicas importantes:**
+
+1. **Wake lock** — Execute antes para evitar que Android suspenda:
    ```bash
    termux-wake-lock
    ```
 
-2. **Primeira execução é lenta** — O OpenCode cria databases SQLite na primeira vez. Pode levar **5 a 10 minutos**. Aguarde a mensagem:
-   ```
-   Database migration complete
+2. **Não interrompa** — NÃO feche o terminal nem pressione Ctrl+C durante a migração. Isso pode corromper o banco.
+
+3. **Se travar** — Se não houver progresso por mais de 2 minutos:
+   ```bash
+   pkill -f opencode
+   rm ~/.local/share/opencode/opencode.db
+   opencode
    ```
 
-3. **Não interrompa** — Não feche o terminal nem pressione Ctrl+C durante a migração.
+4. **Primeira vez vs subsequentes**:
+   - **1ª vez**: 30-90s (migration + plugins)
+   - **2ª vez**: 2-5s (banco já existe)
+   - **Após update**: 5-15s (nova migration se necessário)
+
+**Problemas comuns:**
+
+| Problema | Causa | Solução |
+|----------|-------|---------|
+| "Database is locked" | Outro processo usando o banco | `pkill -f opencode` e tente novamente |
+| "Migration failed" | Banco corrompido | Delete `opencode.db` e reexecute |
+| Timeout na inicialização | Plugin não baixa | Verifique conexão com internet |
 
 ### 5. cloudflared
 
@@ -278,8 +352,8 @@ Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
 ```
 ~/.config/opencode/  ──symlink──►  opencode_termux/.config/opencode/
                                          │
-                                    skills/ (27 skills)
-                                    agents/ (git-commit.md, code-review.md)
+                                    skills/ (40 skills)
+                                    agents/ (git-commit.md, code-review.md, task-planner.md, dev.md, task-build.md)
                                     opencode.jsonc
 
 Todos os projetos enxergam skills e agentes via ~/.config/opencode/
@@ -322,6 +396,25 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 - O manager **não** aguarda o proot — usa `nohup` + `disown` + PID file
 - O stop é feito por um **script dedicado** (`opencode-web-stop.sh`) que manda kill graceful → force
 - Sem traps, sem raw mode, sem travamentos de terminal
+
+---
+
+## Skills e Subagentes
+
+40 skills em `.config/opencode/skills/` (26 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
+
+| Agente | Modo | Responsabilidade |
+|--------|------|------------------|
+| `task-build` | primary | Orquestra pipelines completas |
+| `task-planner` | subagent | Planeja tasks antes da implementação |
+| `dev` | subagent | Implementa código |
+| `code-review` | subagent | Revisa código |
+| `git-commit` | subagent | Cria commits semânticos |
+
+> **Nota**: `customize-opencode` é built-in do opencode (sem diretório em skills/)
+
+Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
+Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
 ---
 

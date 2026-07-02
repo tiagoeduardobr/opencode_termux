@@ -116,7 +116,7 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
 
 ## Dependências (device)
 
-- `npm install -g opencode-ai` (dentro do proot Ubuntu)
+- `npm install -g opencode-linux-arm64 --force` (dentro do proot Ubuntu)
 - `cloudflared` (dentro do proot, .deb arm64)
 
 ## Convenções e Gotchas
