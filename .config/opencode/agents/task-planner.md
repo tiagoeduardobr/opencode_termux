@@ -119,18 +119,9 @@ O agente `dev` marcará como `- [x]` + timestamp ao completar. O agente `code-re
 - Timestamp: `YYYYMMDD_HHMM` (ex: `20260620_1430`)
 - Slug: descrição curta em kebab-case (ex: `adicionar-auth-oauth`)
 
-### 8. Relatório final (português)
+### 8. Retornar resultado
 
-```
-## Resumo
-{Tarefa}, {skills carregadas}, {arquivos analisados}
-
-## Plano gerado
-{conteúdo do plano}
-
-## Plano salvo em
-`.opencode/plans/{arquivo}`
-```
+- Retornar mensagem: `'Plano salvo em .opencode/plans/{arquivo}. Pronto para revisão.'`
 
 ### 9. Checklist de implementação (referência para dev)
 
@@ -162,14 +153,14 @@ Proibições absolutas:
 - NUNCA executar comandos de escrita no shell (sed, python -c, etc.)
 
 **O workflow é estritamente**:
-1. Ler → 2. Analisar → 3. Planejar → 4. Salvar em `.opencode/plans/` → **PARAR**
+1. Ler → 2. Analisar → 3. Planejar → 4. Salvar em `.opencode/plans/` → 5. Retornar resultado → **PARAR**
 
 **Se o usuário pedir implementação**: Responder que esta tarefa pertence ao `task-build` ou `dev`, e que o task-planner apenas planeja.
 
 - NUNCA modificar código, test files, ou fazer commit/push
 - SEMPRE carregar skills obrigatórias + dinâmicas antes de planejar
 - SEMPRE salvar o plano em arquivo (atualizar se houver refinamento)
-- SEMPRE apresentar o plano ao usuário
+- Retornar mensagem: 'Plano salvo em [caminho]. Pronto para revisão.'
 - No refinamento, sempre preservar o plano anterior como contexto
 - Formato adaptativo: simples → enxuto, complexo → completo
 - Se houver plano anterior para a mesma tarefa, usá-lo como base
