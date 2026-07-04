@@ -106,12 +106,15 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `test-master` | global |
 | `web-design-guidelines` | global |
 
-## Subagentes (2)
+## Subagentes (5)
 
 | Nome | Prompt |
 |---|---|
 | `git-commit` | `.config/opencode/agents/git-commit.md` |
 | `code-review` | `.config/opencode/agents/code-review.md` |
+| `task-build` | `.config/opencode/agents/task-build.md` |
+| `task-planner` | `.config/opencode/agents/task-planner.md` |
+| `dev` | `.config/opencode/agents/dev.md` |
 
 ---
 
@@ -187,3 +190,13 @@ Error: Unexpected error
 A system error occurred: getifaddrs returned an error
 ```
 Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompleto). Solução: usar `127.0.0.1` (cloudflared conecta em localhost de qualquer forma).
+
+---
+
+## Mudanças Recentes (04/07/2026)
+
+- plan-reviewer skill instalada
+- Steps 4b/4c no task-build
+- Timeouts padronizados (10min plano, 5min código)
+- Gate de aprovação do task-planner simplificado
+- Contador atual: 41 skills (vs. 27 neste snapshot)

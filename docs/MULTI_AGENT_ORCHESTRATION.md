@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
 > **Última atualização**: 2026-06-30
-> **Versão do sistema**: 5 agentes + 40 skills
+> **Versão do sistema**: 5 agentes + 41 skills
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral
@@ -61,7 +61,7 @@ implementação, review e commit para os subagentes.
 **O que NÃO faz**:
 - Nunca modifica código (delega para `dev`)
 - Nunca executa git de escrita (delega para `git-commit`)
-- Nunca aprova automaticamente (gate de aprovação obrigatório)
+- Nunca aprova automaticamente — revisão do plan-reviewer + gate de aprovação obrigatórios antes de apresentar ao usuário
 - **SEMPRE lê AGENTS.md** antes de qualquer tarefa para entender convenções e gotchas
 - **Guia subagentes** com contexto de AGENTS.md quando delega tarefas
 
@@ -114,9 +114,14 @@ graph TD
     A[Usuário: tarefa] --> B[task-build]
     B --> B0[Ler AGENTS.md]
     B0 --> B1{Plano existente?}
-    B1 -->|Sim| E[Plano + Gate]
+    B1 -->|Sim| E[Apresentar ao usuário]
     B1 -->|Não| D[task-planner]
-    D --> E
+    D --> D2[plan-reviewer: revisar plano]
+    D2 --> D3[code-review: revisar plano]
+    D3 -->|Aprovado| D4{Gate pós-revisão}
+    D3 -->|Rejeitado| D4
+    D4 -->|Aprovado| E[Apresentar ao usuário]
+    D4 -->|Refinamento| D
     E -->|Aprovado| F[git-commit: criar branch]
     E -->|Refinamento| D
     F --> G[Para cada task]
@@ -157,7 +162,7 @@ graph TD
 opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
-├── skills/                      ← 40 skills (composição abaixo)
+├── skills/                      ← 41 skills (composição abaixo)
 └── agents/                      ← 5 agentes
     ├── task-build.md
     ├── task-planner.md
@@ -166,13 +171,17 @@ opencode_termux/.config/opencode/
     └── git-commit.md
 ```
 
-> **Composição das 40 skills**: 26 globais (incluindo 2 movidas de `parecer_descritivo`:
+> **Composição das 41 skills**: 27 globais (incluindo 2 movidas de `parecer_descritivo`:
 > `design-system-patterns` e `design-tokens`) + 14 do
 > [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
 > `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
 > `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,
 > `systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
 > `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`.
+
+| Skill | Categoria | Origem | Uso |
+|-------|-----------|--------|-----|
+| `plan-reviewer` | workflow | global | Revisão de planos antes de implementação |
 
 **LOCAL** (em cada projeto):
 
@@ -220,7 +229,7 @@ para compartilhar agentes e skills entre TODOS os projetos.
 **Por que symlink (não cópia)?**
 - **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
 - **Consistência**: todos os projetos usam as mesmas versões de agents e skills
-- **Economia de espaço**: uma única cópia de 40 skills + 5 agents
+- **Economia de espaço**: uma única cópia de 41 skills + 5 agents
 
 **O que cada projeto mantém LOCALMENTE:**
 - `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
@@ -345,8 +354,10 @@ Se agent crashar (timeout/erro API):
 | Agente | Timeout | Ação |
 |--------|---------|------|
 | `task-planner` | 5 min | QUESTION TOOL |
+| `plan-reviewer` | 3 min | Retry 1x → QUESTION TOOL |
 | `dev` | 10 min/task | QUESTION TOOL |
-| `code-review` | 5 min | QUESTION TOOL |
+| `code-review (plano)` | 10 min | QUESTION TOOL |
+| `code-review (código)` | 5 min | QUESTION TOOL |
 | `git-commit` | 5 min | Retry 1x → reportar |
 
 ## 7. Logging e Auditoria
@@ -523,13 +534,13 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 **Resumo do template**:
 - Cabeçalho com nome e descrição do projeto
 - Estrutura de diretórios do projeto
-- Lista de skills e subagentes disponíveis (5 agentes + 40 skills via symlink)
+- Lista de skills e subagentes disponíveis (5 agentes + 41 skills via symlink)
 - Convenções do projeto (código, quality checks, commits, testes, branches, backlog)
 - Workflow de orquestração (qual agente usar, padrões, regras de delegação)
 - Anti-padrões e gotchas específicas do projeto
 - Comandos úteis e leitura recomendada
 
-**Uso**: Copie o template para `AGENTS.md` na raiz do projeto e preencha todos os `{PLACEHOLDERS}`.
+**Uso**: Copie o template para `AGENTS.md` na raiz do projeto e preencha todos os `{PLACEHOLDERS}`. Consulte também `docs/SESSION_CONTEXT_20260618.md` para contexto da sessão de criação.
 
 ## 9. Gotchas e Práticas Recomendadas
 
@@ -541,7 +552,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 | Agent editando código sendo que shouldn't | Verificar `edit: "deny"` no opencode.json |
 | Git commit sem branch feature | task-build cria branch antes do pipeline |
 | Review não roda quality checks | code-review auto-detecta stack (Python/Node/Makefile) |
-| Plano sem gate de aprovação | QUESTION TOOL obrigatório após plano |
+| Plano sem gate de aprovação | plan-reviewer revisa + QUESTION TOOL obrigatório após plano |
 | Timestamp manual errado | Usar `date '+%d/%m/%Y:%H:%M'` — nunca digitar |
 | task-build editando código | Nunca — delegar para dev |
 | Skills dinâmicas não carregadas | Varredura automática em `~/.config/opencode/skills/` |
@@ -608,7 +619,7 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 
 ## 10. Melhorias Recentes
 
-Melhorias recentes incluem: git delegado, RBAC, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers.
+Melhorias recentes incluem: git delegado, RBAC, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente.
 
 ## 11. Referências
 
@@ -631,12 +642,30 @@ Melhorias recentes incluem: git delegado, RBAC, quality checks agnósticos, stat
 | `executing-plans` | task-build, task-planner, dev |
 | `systematic-debugging` | dev |
 | `spec-driven-development` | task-planner |
+| `plan-reviewer` | task-build (revisão de plano) |
 | `api-security-best-practices` | code-review |
 | `staff-engineer-review` | code-review |
 | `code-reviewer` | code-review |
 | `agent-restrictions` | code-review |
 
-### 11.3 Agentes Built-in do OpenCode
+### 11.3 Skills de Workflow
+
+Skills que orquestram fluxos de trabalho:
+
+| Skill | Descrição | Uso |
+|-------|-----------|-----|
+| `executing-plans` | Executa planos existentes | Pipeline de implementação |
+| `plan-reviewer` | Revisa planos antes de implementação | Gate de qualidade |
+| `spec-driven-development` | Cria specs antes de código | Projetos novos |
+| `writing-plans` | Escrita de planos | Planejamento |
+| `subagent-driven-development` | Desenvolvimento com subagents | Multi-agent |
+| `requesting-code-review` | Solicita review | Pré-merge |
+| `receiving-code-review` | Processa feedback de review | Pós-review |
+| `finishing-a-development-branch` | Finaliza branch | Pós-implementação |
+| `using-git-worktrees` | Isolamento de branch | Desenvolvimento |
+| `verification-before-completion` | Verificação pré-commit | Qualidade |
+
+### 11.4 Agentes Built-in do OpenCode
 
 O OpenCode possui agentes built-in que NÃO são configurados via `opencode.json`:
 - **`explore`**: Busca rápida de arquivos e código (uso interno do TUI)
@@ -644,7 +673,7 @@ O OpenCode possui agentes built-in que NÃO são configurados via `opencode.json
 
 Esses agentes são distintos dos 5 agentes customizados documentados aqui.
 
-### 11.4 Links Externos
+### 11.5 Links Externos
 
 - OpenCode Docs: https://opencode.ai
 - obra/superpowers: https://github.com/obra/superpowers

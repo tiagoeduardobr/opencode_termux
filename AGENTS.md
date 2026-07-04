@@ -9,7 +9,7 @@ opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 40 skills (26 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers)
+│   ├── skills/                 ← 41 skills (27 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system-patterns/   ← movido de parecer_descritivo
@@ -110,7 +110,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-40 skills em `.config/opencode/skills/` (26 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
+41 skills em `.config/opencode/skills/` (27 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -242,7 +242,7 @@ O loop resumido abaixo cobre os passos essenciais para pipelines orquestrados:
 1. Ler AGENTS.md e carregar skills obrigatórias + dinâmicas
 2. Entender/receber a tarefa do usuário
 3. Verificar/criar plano (task-planner, se necessário)
-4. Apresentar plano e obter aprovação (gate)
+4. Revisão do plano (4b) → Gate dinâmico (4c) → Apresentar plano ao usuário
 5. Criar feature branch (via git-commit)
 6. Para cada task: dev implementa → code-review revisa (individual)
 7. Revisão consolidada final (todas as tasks)
@@ -260,6 +260,11 @@ O loop resumido abaixo cobre os passos essenciais para pipelines orquestrados:
 Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 9.2).
 
 ## Melhorias Recentes
+
+- plan-reviewer skill instalada
+- Steps 4b/4c no task-build
+- Timeouts padronizados (10min plano, 5min código)
+- Gate de aprovação do task-planner simplificado
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
