@@ -34,7 +34,7 @@
 
 ## Skills e Subagentes Disponíveis
 
-Este projeto usa 5 agentes e 40 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
+Este projeto usa 5 agentes e 41 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
 As skills estão em 3 diretórios (todos via symlink global):
 
 - `~/.config/opencode/skills/` — skills globais
