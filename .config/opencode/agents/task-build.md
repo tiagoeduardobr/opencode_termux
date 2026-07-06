@@ -457,7 +457,7 @@ Para cada delegação, logar:
 Exemplo:
 ```
 [14:30] task-planner → "adicionar auth" → OK (2s)
-[14:30] branch → feature/adicionar-auth-jwt → OK (0.5s)
+[14:30] branch → feature/add-jwt-auth → OK (0.5s)
 [14:31] dev → task 1/3 → OK (15s)
 [14:32] code-review → task 1/3 → "Precisa de ajustes" (5s)
 [14:33] dev → task 1/3 (retry 1) → OK (10s)
