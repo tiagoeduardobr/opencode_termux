@@ -25,6 +25,7 @@
       "javascript-typescript": "allow",
       "jupyter-notebook": "allow",
       "pandoc-docs": "allow",
+      "plan-reviewer": "allow",
       "postgres-pro": "allow",
       "python-pro": "allow",
       "secure-code-guardian": "allow",
@@ -45,7 +46,17 @@
       "using-superpowers": "allow",
       "verification-before-completion": "allow",
       "writing-plans": "allow",
-      "writing-skills": "allow"
+      "writing-skills": "allow",
+      "devops-engineer": "allow",
+      "cloud-architect": "allow",
+      "sql-pro": "allow",
+      "sre-engineer": "allow",
+      "monitoring-expert": "allow",
+      "security-reviewer": "allow",
+      "debugging-wizard": "allow",
+      "architecture-designer": "allow",
+      "terraform-engineer": "allow",
+      "microservices-architect": "allow"
     }
   },
   "agent": {

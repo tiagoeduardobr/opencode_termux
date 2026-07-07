@@ -200,3 +200,10 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Timeouts padronizados (10min plano, 5min código)
 - Gate de aprovação do task-planner simplificado
 - Contador atual: 41 skills (vs. 27 neste snapshot)
+
+### Revisão Completa de Skills (07/07/2026)
+- `@opencode-ai/plugin` atualizado de 1.15.13 para 1.17.14
+- 10 novas skills instaladas do upstream synapse-ai-hub/opencode-skills
+- Skills: devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect
+- Total de skills: 41 → 51
+- Sincronização opencode.json corrigida (plan-reviewer adicionado)
