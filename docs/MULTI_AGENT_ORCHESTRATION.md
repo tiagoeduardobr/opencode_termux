@@ -171,8 +171,7 @@ opencode_termux/.config/opencode/
     └── git-commit.md
 ```
 
-> **Composição das 49 skills**: 27 globais (incluindo 2 movidas de `parecer_descritivo`:
-> `design-system` e `frontend-complete`) + 14 do
+> **Composição das 49 skills**: 27 globais + 14 do
 > [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
 > `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
 > `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,

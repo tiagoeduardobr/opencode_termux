@@ -51,8 +51,8 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 
 | Path | Motivo |
 |---|---|
-| `parecer_descritivo/.agents/skills/design-system-patterns/` | Movido para `opencode_termux/.config/opencode/skills/` |
-| `parecer_descritivo/.agents/skills/design-tokens/` | Movido para `opencode_termux/.config/opencode/skills/` |
+| `parecer_descritivo/.agents/skills/design-system-patterns/` (unificada em `design-system`) | Movido para `opencode_termux/.config/opencode/skills/` |
+| `parecer_descritivo/.agents/skills/design-tokens/` (unificada em `design-system`) | Movido para `opencode_termux/.config/opencode/skills/` |
 | `parecer_descritivo/run_opencode_web_cloudflare.sh` | Substituído por `opencode_termux/run-cloudflare-tunnel.sh` |
 
 ## Commits
@@ -62,7 +62,7 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 0f3ecd7 chore: remove .agents/skills/ and run_opencode_web_cloudflare.sh
   8 files changed, 2510 deletions(-)
 ```
-Remove `design-system-patterns/`, `design-tokens/`, `run_opencode_web_cloudflare.sh`.
+Remove `design-system-patterns/` (unificada em `design-system`), `design-tokens/` (unificada em `design-system`), `run_opencode_web_cloudflare.sh`.
 
 ### `opencode_termux` (branch `main`, pushado via SSH)
 O repositório foi criado com 2 commits:
@@ -88,13 +88,13 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `content-research-writer` | global |
 | `customize-opencode` | global (built-in) |
 | `data-science-expert` | global |
-| `design-system-patterns` | parecer_descritivo |
-| `design-tokens` | parecer_descritivo |
-| `designing-frontend-interfaces` | global |
+| `design-system-patterns` (unificada em `design-system`) | parecer_descritivo |
+| `design-tokens` (unificada em `design-system`) | parecer_descritivo |
+| `designing-frontend-interfaces` (unificada em `frontend-complete`) | global |
 | `documentation-and-adrs` | global |
 | `executing-plans` | global |
 | `fastapi-expert` | global |
-| `frontend-design` | global |
+| `frontend-design` (unificada em `frontend-complete`) | global |
 | `javascript-typescript` | global |
 | `jupyter-notebook` | global |
 | `pandoc-docs` | global |

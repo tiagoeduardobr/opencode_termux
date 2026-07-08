@@ -22,7 +22,7 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 opencode_termux/
 ├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
 │   ├── opencode.jsonc             ← config global do opencode
-│   ├── skills/                    ← 49 skills (27 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers + 10 novas upstream)
+│   ├── skills/                    ← 49 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system/
@@ -401,7 +401,7 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 
 ## Skills e Subagentes
 
-49 skills em `.config/opencode/skills/` (27 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
+49 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
 
 | Agente | Modo | Responsabilidade |
 |--------|------|------------------|
