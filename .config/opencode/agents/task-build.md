@@ -29,7 +29,7 @@ Se não tem certeza, instruir o subagent a ler AGENTS.md antes de começar.
 ### 1. Carregar skills obrigatórias + ler AGENTS.md
 
 1. Ler `AGENTS.md` (conforme step 0)
-2. Carregar skill: `executing-plans`
+2. Carregar skills: `executing-plans`, `plan-reviewer`
 3. Carregar skills dinâmicas relevantes à tarefa
 
 ### 2. Receber tarefa do usuário

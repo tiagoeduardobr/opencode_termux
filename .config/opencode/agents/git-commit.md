@@ -13,6 +13,10 @@ Cria commits semânticos seguindo as convenções do projeto.
 - Usar prefixos semânticos: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
 - Formato: `type(scope): description` ou `type: description`
 
+## Skills Dinâmicas
+
+Carregar `changelog-generator` quando precisar gerar changelogs a partir de commits.
+
 ## Workflow
 
 ### 0. Verificar estado do repositório

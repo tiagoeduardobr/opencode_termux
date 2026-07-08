@@ -12,6 +12,7 @@
       "changelog-generator": "allow",
       "coauthoring-docs": "allow",
       "code-documenter": "allow",
+      "code-architecture-tailwind-v4-best-practices": "allow",
       "code-reviewer": "allow",
       "content-research-writer": "allow",
       "data-science-expert": "allow",

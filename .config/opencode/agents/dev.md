@@ -12,7 +12,7 @@ Não mexe em git — delega para `git-commit`.
 
 ### 1. Carregar skills obrigatórias
 
-Sempre carregar: `executing-plans`, `systematic-debugging`.
+Sempre carregar: `executing-plans`, `systematic-debugging`, `verification-before-completion`.
 
 ### 2. Carregar skills dinâmicas (varredura automática)
 
