@@ -31,8 +31,8 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 | `opencode_termux/.config/opencode/opencode.jsonc` | Config global do opencode (movido) |
 | `opencode_termux/.config/opencode/package.json` | Dependências npm de skills |
 | `opencode_termux/.config/opencode/package-lock.json` | Lock file npm |
-| `opencode_termux/.config/opencode/skills/` | 27 skills (25 globais + 2 do parecer_descritivo) |
-| `opencode_termux/opencode.json` | Config do projeto: skills path, agents, permissions (27 skills allow) |
+| `opencode_termux/.config/opencode/skills/` | 49 skills (25 globais + 11 obra/superpowers + 10 upstream + 2 unificadas) |
+| `opencode_termux/opencode.json` | Config do projeto: skills path, agents, permissions (49 skills allow) |
 | `opencode_termux/scripts/setup.sh` | Setup em device novo: backup + symlink + npm install + .bashrc alias |
 | `opencode_termux/.env` | Config real: `OPENCODE_PORT=4096`, `NTFY_TOPIC=opencode-tunnel`, `PROJECT_DIR=/root/Projetos/parecer_descritivo` |
 | `opencode_termux/docs/SESSION_CONTEXT_20260618.md` | Este arquivo |
@@ -42,7 +42,7 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 | Path | O que mudou |
 |---|---|
 | `opencode_termux/README.md` | Adicionada seção "Estrutura do repositório" com diagrama; tutorial atualizado (setup.sh steps 6-10); arquitetura dividida em 2 camadas (config + execução) |
-| `opencode_termux/AGENTS.md` | Expandido de 34 linhas para documento completo com estrutura, arquitetura de config, setup workflow, lista de 27 skills, comandos |
+| `opencode_termux/AGENTS.md` | Expandido de 34 linhas para documento completo com estrutura, arquitetura de config, setup workflow, lista de 49 skills, comandos |
 | `opencode_termux/bin/opencode-web.sh` | Inner proot command usa `$SCRIPT_DIR` e `exec ./run-cloudflare-tunnel.sh` (centraliza tunnel script) |
 | `opencode_termux/.config/opencode/.gitignore` | Ajustado para tracker package.json/lock |
 | `opencode_termux/.gitignore` | `.config/opencode/node_modules/` ignorado |
@@ -74,38 +74,59 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 
 ---
 
-## Skills Instaladas (27)
+## Skills Instaladas (49)
 
 | Skill | Origem |
 |---|---|
+| `agent-restrictions` | obra/superpowers |
 | `alpine-js` | global |
 | `api-security-best-practices` | global |
+| `architecture-designer` | upstream |
 | `backlog-curator` | global |
+| `brainstorming` | global |
 | `changelog-generator` | global |
+| `cloud-architect` | upstream |
 | `coauthoring-docs` | global |
 | `code-documenter` | global |
 | `code-reviewer` | global |
 | `content-research-writer` | global |
-| `customize-opencode` | global (built-in) |
 | `data-science-expert` | global |
-| `design-system-patterns` (unificada em `design-system`) | parecer_descritivo |
-| `design-tokens` (unificada em `design-system`) | parecer_descritivo |
-| `designing-frontend-interfaces` (unificada em `frontend-complete`) | global |
+| `debugging-wizard` | upstream |
+| `design-system` | unificada |
+| `devops-engineer` | upstream |
+| `dispatching-parallel-agents` | obra/superpowers |
 | `documentation-and-adrs` | global |
 | `executing-plans` | global |
 | `fastapi-expert` | global |
-| `frontend-design` (unificada em `frontend-complete`) | global |
+| `finishing-a-development-branch` | obra/superpowers |
+| `frontend-complete` | unificada |
 | `javascript-typescript` | global |
 | `jupyter-notebook` | global |
+| `microservices-architect` | upstream |
+| `monitoring-expert` | upstream |
 | `pandoc-docs` | global |
+| `plan-reviewer` | obra/superpowers |
 | `postgres-pro` | global |
 | `python-pro` | global |
+| `receiving-code-review` | obra/superpowers |
+| `requesting-code-review` | obra/superpowers |
 | `secure-code-guardian` | global |
+| `security-reviewer` | upstream |
 | `spec-driven-development` | global |
+| `sql-pro` | upstream |
+| `sre-engineer` | upstream |
 | `staff-engineer-review` | global |
+| `subagent-driven-development` | obra/superpowers |
 | `systematic-debugging` | global |
+| `terraform-engineer` | upstream |
+| `test-driven-development` | obra/superpowers |
 | `test-master` | global |
+| `using-git-worktrees` | obra/superpowers |
+| `using-superpowers` | global |
+| `verification-before-completion` | global |
 | `web-design-guidelines` | global |
+| `writing-plans` | obra/superpowers |
+| `writing-skills` | obra/superpowers |
 
 ## Subagentes (5)
 
@@ -121,19 +142,19 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 
 ## Pendências (no device real — Termux)
 
-1. **Rodar setup.sh**:
+1. ⏳ **Rodar setup.sh**:
    ```bash
    cd opencode_termux
    bash scripts/setup.sh
    ```
    Cria symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`, instala npm, adiciona alias ao `.bashrc`.
 
-2. **Remover script obsoleto**:
+2. ✅ **Remover script obsoleto**:
    ```bash
    rm ~/opencode_web.sh
    ```
 
-3. **Verificar funcionamento**:
+3. ✅ **Verificar funcionamento**:
    ```bash
    source ~/.bashrc
    opencode_web
@@ -208,3 +229,15 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Skills: devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect
 - Total de skills: 51 → 49
 - Sincronização opencode.json corrigida (plan-reviewer adicionado)
+
+### Sessão de Unificação (08/07/2026)
+- Atualizado opencode de 1.17.9 para 1.17.14
+- Revisão completa de skills (14 tasks, todas aprovadas)
+- 10 skills upstream instaladas
+- Unificação de skills:
+  - design-system-patterns + design-tokens → design-system
+  - frontend-design + designing-frontend-interfaces → frontend-complete
+- Total de skills: 41 → 51 → 49
+- Commits: 930a840, 9ff2681, fed1f23, 6e499b4, 6889893
+- ADR-008 criado: decisão sobre adição de skills upstream
+- Melhorias pós-code review: padronização de numeração, notas explicativas, renomeação de reference.md
