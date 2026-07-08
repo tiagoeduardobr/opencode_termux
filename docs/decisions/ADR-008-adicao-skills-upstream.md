@@ -7,7 +7,7 @@ Accepted
 2026-07-07
 
 ## Context
-O repositório precisava de skills adicionais para cobrir áreas essenciais de DevOps, Cloud, SQL, SRE, Monitoramento, Segurança, Debug, Arquitetura, Terraform e Microservices. As skills existentes (41) não atendiam completamente a esses domínios, limitando a capacidade do agente em tarefas especializadas.
+O repositório precisava de skills adicionais para cobrir áreas essenciais de DevOps, Cloud, SQL, SRE, Monitoramento, Segurança, Debug, Arquitetura, Terraform e Microservices. As skills existentes (49) não atendiam completamente a esses domínios, limitando a capacidade do agente em tarefas especializadas.
 
 ## Decision
 Instalar 10 skills do repositório upstream `synapse-ai-hub/opencode-skills`, que mantém um catálogo atualizado e bem documentado de skills para o OpenCode.

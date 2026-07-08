@@ -14,6 +14,7 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 - **`parecer_descritivo`** consome skills/agents do `opencode_termux` via symlink global (sem alterações no seu `opencode.json`)
 - **Plans específicos** do projeto (`parecer_descritivo/.opencode/plans/`) permanecem lá, não no `opencode_termux`
 - **Skills de `parecer_descritivo/.agents/skills/`** (design-system-patterns, design-tokens) movidas para `opencode_termux/.config/opencode/skills/` e removidas de `parecer_descritivo`
+- **Unificação de skills**: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
 - **Repositório público** em `https://github.com/tiagoeduardobr/opencode_termux` (push via SSH)
 - **`opencode.json`** do `opencode_termux` usa paths relativos (`.config/opencode/...`)
 - **Fire-and-Forget**: Manager não gerencia ciclo de vida do proot — só inicia, notifica e sai. Stop por script separado
@@ -199,11 +200,11 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Steps 4b/4c no task-build
 - Timeouts padronizados (10min plano, 5min código)
 - Gate de aprovação do task-planner simplificado
-- Contador atual: 41 skills (vs. 27 neste snapshot)
+- Contador atual: 49 skills (vs. 27 neste snapshot)
 
 ### Revisão Completa de Skills (07/07/2026)
 - `@opencode-ai/plugin` atualizado de 1.15.13 para 1.17.14
 - 10 novas skills instaladas do upstream synapse-ai-hub/opencode-skills
 - Skills: devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect
-- Total de skills: 41 → 51
+- Total de skills: 51 → 49
 - Sincronização opencode.json corrigida (plan-reviewer adicionado)

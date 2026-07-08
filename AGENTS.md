@@ -9,11 +9,11 @@ opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 51 skills (27 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers + 10 novas upstream)
+│   ├── skills/                 ← 49 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
-│   │   ├── design-system-patterns/   ← movido de parecer_descritivo
-│   │   ├── design-tokens/            ← movido de parecer_descritivo
+│   │   ├── design-system/            ← unificado de design-system-patterns + design-tokens
+│   │   ├── frontend-complete/        ← unificado de frontend-design + designing-frontend-interfaces
 │   │   └── ... (35 outras)
 │   └── agents/                 ← subagentes (git-commit, code-review, task-planner, dev, task-build)
 │       ├── git-commit.md
@@ -110,7 +110,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-51 skills em `.config/opencode/skills/` (27 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
+49 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -266,6 +266,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Timeouts padronizados (10min plano, 5min código)
 - Gate de aprovação do task-planner simplificado
 - 10 novas skills upstream instaladas (devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect)
+- Unificação de skills de design/frontend: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
