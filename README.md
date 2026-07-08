@@ -22,11 +22,11 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 opencode_termux/
 ├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
 │   ├── opencode.jsonc             ← config global do opencode
-│   ├── skills/                    ← 41 skills (27 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers)
+│   ├── skills/                    ← 49 skills (27 globais incluindo 2 movidas de parecer_descritivo + 14 do obra/superpowers + 10 novas upstream)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
-│   │   ├── design-system-patterns/
-│   │   ├── design-tokens/
+│   │   ├── design-system/
+│   │   ├── frontend-complete/
 │   │   ├── fastapi-expert/
 │   │   └── ...
 │   └── agents/                    ← subagentes (git-commit, code-review, task-planner, dev, task-build)
@@ -352,7 +352,7 @@ Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
 ```
 ~/.config/opencode/  ──symlink──►  opencode_termux/.config/opencode/
                                          │
-                                     skills/ (41 skills)
+                                      skills/ (49 skills)
                                     agents/ (git-commit.md, code-review.md, task-planner.md, dev.md, task-build.md)
                                     opencode.jsonc
 
@@ -401,7 +401,7 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 
 ## Skills e Subagentes
 
-41 skills em `.config/opencode/skills/` (27 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers), além de `customize-opencode` (built-in do opencode, sem diretório).
+49 skills em `.config/opencode/skills/` (27 globais incluindo 2 movidas de `parecer_descritivo` + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
 
 | Agente | Modo | Responsabilidade |
 |--------|------|------------------|

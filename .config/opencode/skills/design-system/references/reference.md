@@ -1,6 +1,6 @@
-# Design Tokens - Reference
+# Design System — Reference
 
-Detailed reference material for design token architecture and theme systems.
+Consolidated reference material for design tokens, theming, component architecture, and design-to-code pipelines.
 
 ## Theme Switching (JavaScript)
 
@@ -362,3 +362,7 @@ $spacing-md: 1rem;
   padding: var(--spacing-4);
 }
 ```
+
+---
+
+> **Inspirado em:** synapse-ai-hub/skills/design-system-patterns, synapse-ai-hub/skills/design-tokens

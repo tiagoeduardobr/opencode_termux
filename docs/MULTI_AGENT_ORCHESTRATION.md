@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
 > **Última atualização**: 2026-06-30
-> **Versão do sistema**: 5 agentes + 41 skills
+> **Versão do sistema**: 5 agentes + 49 skills
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral
@@ -162,7 +162,7 @@ graph TD
 opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
-├── skills/                      ← 41 skills (composição abaixo)
+├── skills/                      ← 49 skills (composição abaixo)
 └── agents/                      ← 5 agentes
     ├── task-build.md
     ├── task-planner.md
@@ -171,8 +171,8 @@ opencode_termux/.config/opencode/
     └── git-commit.md
 ```
 
-> **Composição das 41 skills**: 27 globais (incluindo 2 movidas de `parecer_descritivo`:
-> `design-system-patterns` e `design-tokens`) + 14 do
+> **Composição das 49 skills**: 27 globais (incluindo 2 movidas de `parecer_descritivo`:
+> `design-system` e `frontend-complete`) + 14 do
 > [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
 > `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
 > `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,
@@ -229,7 +229,7 @@ para compartilhar agentes e skills entre TODOS os projetos.
 **Por que symlink (não cópia)?**
 - **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
 - **Consistência**: todos os projetos usam as mesmas versões de agents e skills
-- **Economia de espaço**: uma única cópia de 41 skills + 5 agents
+- **Economia de espaço**: uma única cópia de 49 skills + 5 agents
 
 **O que cada projeto mantém LOCALMENTE:**
 - `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
@@ -534,7 +534,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 **Resumo do template**:
 - Cabeçalho com nome e descrição do projeto
 - Estrutura de diretórios do projeto
-- Lista de skills e subagentes disponíveis (5 agentes + 41 skills via symlink)
+- Lista de skills e subagentes disponíveis (5 agentes + 49 skills via symlink)
 - Convenções do projeto (código, quality checks, commits, testes, branches, backlog)
 - Workflow de orquestração (qual agente usar, padrões, regras de delegação)
 - Anti-padrões e gotchas específicas do projeto
