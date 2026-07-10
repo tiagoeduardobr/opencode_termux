@@ -9,7 +9,7 @@ opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 49 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
+│   ├── skills/                 ← 50 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system/            ← unificado de design-system-patterns + design-tokens
@@ -110,7 +110,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-49 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
+50 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -212,17 +212,17 @@ para acesso offline e versionamento no repositório.
 
 ### Qual agente usar
 
-Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Qual agente usar").
+Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 1, "Quando usar task-build vs. abordagem manual").
 
 > **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) são isolados — cada um nega todos os outros subagentes. Apenas `task-build` pode chamá-los.
 
 ### Padrões de orquestração
 
-Para padrões detalhados (simples, completo, revisão), veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Padrões de orquestração").
+Para padrões detalhados (simples, completo, revisão), veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 3, "Fluxo de Orquestração").
 
 ### Regras de delegação
 
-Para regras de delegação detalhadas, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Regras de delegação").
+Para regras de delegação detalhadas, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.3, "Regras RBAC (quem pode chamar quem)").
 
 ### Uso de Skills
 
@@ -239,21 +239,21 @@ skill(name="executing-plans")  # executar plano existente
 Para o workflow detalhado (passos 0–8), veja `task-build.md` e `docs/MULTI_AGENT_ORCHESTRATION.md`.
 O loop resumido abaixo cobre os passos essenciais para pipelines orquestrados:
 
-1. Ler AGENTS.md e carregar skills obrigatórias + dinâmicas
-2. Entender/receber a tarefa do usuário
-3. Verificar/criar plano (task-planner, se necessário)
-4. Revisão do plano (4b) → Gate dinâmico (4c) → Apresentar plano ao usuário
-5. Criar feature branch (via git-commit)
-6. Para cada task: dev implementa → code-review revisa (individual)
-7. Revisão consolidada final (todas as tasks)
-8. Commitar (via git-commit) e gerar relatório
+0. Ler AGENTS.md e carregar skills obrigatórias + dinâmicas (SEMPRE)
+1. Entender/receber a tarefa do usuário
+2. Verificar/criar plano (task-planner, se necessário)
+3. Revisão do plano (plan-reviewer) → Gate dinâmico (4c) → Apresentar plano ao usuário
+4. Criar feature branch (via git-commit)
+5. Para cada task: dev implementa → code-review revisa (individual)
+6. Revisão consolidada final (todas as tasks)
+7. Commitar (via git-commit) e gerar relatório
 
 > **Regra**: Code review é OBRIGATÓRIO antes de CADA commit (individual + consolidado).
 > task-build NUNCA edita arquivos — todas as mudanças são delegadas para dev.
 
 **Notas**
 - Este resumo é uma visão de alto nível. Sempre siga o workflow completo em `task-build.md` ao usar o agente `task-build`.
-- Para fluxos simples (sem task-build), siga `docs/MULTI_AGENT_ORCHESTRATION.md` (seção "Loop de trabalho").
+- Para fluxos simples (sem task-build), siga `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 3.2, "Fluxo Simples (sem task-build)").
 
 ### Anti-padrões
 
@@ -261,11 +261,12 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 
 ## Melhorias Recentes
 
-- plan-reviewer skill instalada
+- plan-reviewer como skill obrigatória
 - Steps 4b/4c no task-build
-- Timeouts padronizados (10min plano, 5min código)
-- Gate de aprovação do task-planner simplificado
+- Timeouts padronizados (plan-reviewer=3min, code-review 10min/5min)
+- Code review explícito antes de cada commit
 - 10 novas skills upstream instaladas (devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect)
+- Criação manual de plano removida (task-build apenas delega)
 - Unificação de skills de design/frontend: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.

@@ -58,6 +58,11 @@ Cada agente **triangula** três fontes de informação:
 **O que faz**: Recebe tarefa do usuário, delega planejamento, criação de branch,
 implementação, review e commit para os subagentes.
 
+**Responsabilidades**:
+- `plan-reviewer` é skill obrigatória — sempre carrega antes de qualquer tarefa
+- Code review é obrigatório antes de cada commit (individual + consolidado)
+- Revisão consolidada final (step 6e) antes do commit final
+
 **O que NÃO faz**:
 - Nunca modifica código (delega para `dev`)
 - Nunca executa git de escrita (delega para `git-commit`)

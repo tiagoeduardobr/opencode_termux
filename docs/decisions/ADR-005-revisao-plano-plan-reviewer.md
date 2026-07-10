@@ -10,7 +10,7 @@ Accepted
 Planos gerados por `task-planner` podem conter erros, omissões ou abordagens subóptimas. Sem revisão, problemas só são descobertos durante a implementação, causando retrabalho.
 
 ## Decision
-Usar skill `plan-reviewer` no Step 4b do workflow para revisar planos antes da implementação. A revisão verifica completude, consistência e aderência ao template.
+Usar skill `plan-reviewer` (via `code-review`) no Step 4b do workflow para revisar planos antes da implementação. A revisão verifica completude, consistência e aderência ao template.
 
 ## Alternatives Considered
 - Sem revisão — Rejeitado: risco de planos deficientes, retrabalho caro
@@ -21,7 +21,7 @@ Usar skill `plan-reviewer` no Step 4b do workflow para revisar planos antes da i
 - **Positivo**: Planos verificados antes da implementação
 - **Positivo**: Redução de retrabalho
 - **Positivo**: Padrão de qualidade consistente
-- **Negativo**: Tempo adicional no pipeline (3min para revisão)
+- **Negativo**: Tempo adicional no pipeline (3min para plan-reviewer (interno), 10min para code-review (externo))
 - **Negativo**: Dependência de uma skill adicional
 
 ## Related

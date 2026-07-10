@@ -22,7 +22,7 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 opencode_termux/
 ├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
 │   ├── opencode.jsonc             ← config global do opencode
-│   ├── skills/                    ← 49 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
+│   ├── skills/                    ← 50 skills (27 globais + 14 do obra/superpowers + 8 novas upstream + plan-reviewer)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system/
@@ -352,7 +352,7 @@ Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
 ```
 ~/.config/opencode/  ──symlink──►  opencode_termux/.config/opencode/
                                          │
-                                      skills/ (49 skills)
+                                      skills/ (50 skills)
                                     agents/ (git-commit.md, code-review.md, task-planner.md, dev.md, task-build.md)
                                     opencode.jsonc
 
@@ -401,7 +401,7 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 
 ## Skills e Subagentes
 
-49 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
+50 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 8 novas upstream + plan-reviewer), além de `customize-opencode` (built-in do opencode, sem diretório).
 
 | Agente | Modo | Responsabilidade |
 |--------|------|------------------|
@@ -412,6 +412,10 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 | `git-commit` | subagent | Cria commits semânticos |
 
 > **Nota**: `customize-opencode` é built-in do opencode (sem diretório em skills/)
+
+> **Skills obrigatórias**: `executing-plans`, `systematic-debugging`, `verification-before-completion`, `plan-reviewer` — carregadas automaticamente pelo agent `task-build`.
+
+> **Regra**: Code review é **obrigatório** antes de cada commit (individual + consolidado).
 
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.

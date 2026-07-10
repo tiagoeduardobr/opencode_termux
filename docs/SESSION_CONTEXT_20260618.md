@@ -215,11 +215,13 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 
 ---
 
-## Mudanças Recentes (04/07/2026)
+## Mudanças Recentes (10/07/2026)
 
-- plan-reviewer skill instalada
-- Steps 4b/4c no task-build
-- Timeouts padronizados (10min plano, 5min código)
+- plan-reviewer obrigatório
+- Steps 0-8 padronizados
+- Timeouts plan-reviewer=3min
+- Criação manual de plano removida
+- Code review explícito antes de cada commit
 - Gate de aprovação do task-planner simplificado
 - Contador atual: 49 skills (vs. 27 neste snapshot)
 
