@@ -26,11 +26,10 @@ Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` **COMPLETO** e seguir as or
 que ajude o subagent a entender convenções e gotchas aplicáveis à tarefa.
 Se não tem certeza, instruir o subagent a ler AGENTS.md antes de começar.
 
-### 1. Carregar skills obrigatórias + ler AGENTS.md
+### 1. Carregar skills obrigatórias
 
-1. Ler `AGENTS.md` (conforme step 0)
-2. Carregar skills: `executing-plans`, `plan-reviewer`
-3. Carregar skills dinâmicas relevantes à tarefa
+1. Carregar skills: `executing-plans`, `plan-reviewer`
+2. Carregar skills dinâmicas relevantes à tarefa
 
 ### 2. Receber tarefa do usuário
 
@@ -39,15 +38,15 @@ Se não tem certeza, instruir o subagent a ler AGENTS.md antes de começar.
 
 ### 3. Verificar se já existe plano
 
-1. Verificar se há plano em `.opencode/plans/` para esta tarefa:
-   - Listar arquivos em `.opencode/plans/` (se diretório não existir ou estiver vazio → NÃO há plano)
-2. Se **SIM** → usar **QUESTION TOOL**:
-   - Header: `"Plano existente encontrado"`
-   - Options:
-      - `"Reutilizar plano existente (Recommended)"` → step 6 (apresentar ao usuário)
-     - `"Criar novo plano"` → step 4
-     - `"Sair"` → encerrar
-3. Se **NÃO** → step 4 (planejar do zero)
+Verificar se há plano em `.opencode/plans/` para esta tarefa:
+- Listar arquivos em `.opencode/plans/` (se diretório não existir ou estiver vazio → NÃO há plano)
+- Se **SIM** → usar **QUESTION TOOL**:
+  - Header: `"Plano existente encontrado"`
+  - Options:
+    - `"Reutilizar plano existente (Recommended)"` → step 4b (Revisar plano)
+    - `"Criar novo plano"` → step 4
+    - `"Sair"` → encerrar
+- Se **NÃO** → step 4
 
 ### 4. Delegar para task-planner
 
@@ -63,22 +62,9 @@ LOG: `[HH:MM] task-planner → "tarefa" → OK/ERRO`
 2. Se falhar novamente → usar **QUESTION TOOL**:
    - Header: `"task-planner falhou"`
    - Options:
-     - `"Criar plano manualmente"` → task-build cria plano simples (1-2 arquivos) e continua
      - `"Tentar novamente"` → retry com contexto adicional
      - `"Parar build"` → interrompe pipeline
-3. Se usuário escolher "Criar plano manualmente":
-   - Criar plano simples no formato:
-     ```
-     # Plano: {tarefa}
-     ## Objetivo
-     {descrição}
-     ## Tasks
-     - [ ] {task} — Acceptance: {critério} — Verify: {como confirmar}
-     ## Verificação
-     {como confirmar}
-     ```
-    - Salvar em `.opencode/plans/{timestamp}_{slug}.md`
-    - Continuar para step 6
+3. Se usuário escolher "Tentar novamente": task-build NÃO cria plano — apenas delega novamente para task-planner
 
 ### 4b. Revisar plano (code-review) — TIMEOUT: 10 min
 
@@ -100,7 +86,7 @@ task(subagent_type="code-review",
 
 **Distinção importante**:
 - `code-review (plano)`: Revisa plano markdown (step 4b) — timeout 10min
-- `code-review (código)`: Revisa código implementado (step 7b) — timeout 5min
+- `code-review (código)`: Revisa código implementado (step 6b) — timeout 5min
 
 ### 4c. Gate pós-revisão
 
@@ -110,7 +96,7 @@ Após code-review retornar veredito:
 Usar QUESTION TOOL:
 - Header: "Plano aprovado na revisão"
 - Options:
-  - "Iniciar implementação (Recommended)" → step 6
+  - "Iniciar implementação (Recommended)" → step 5
   - "Parar" → encerrar
 
 **Se [REJECT]**:
@@ -127,18 +113,18 @@ Usar QUESTION TOOL com opções dinâmicas baseadas no contexto:
   - "Sugerir algo"
 
 **Processar seleção**:
-- "Seguir sem sugestões" → step 6
+- "Seguir sem sugestões" → step 5
 - "Aplicar sugestões" → delegar para task-planner com contexto da revisão
 - "Parar para analisar" → exibir plano completo e aguardar
 - "Sugerir algo" → usar QUESTION TOOL para capturar sugestão
 
-### 6. Presentar plano + gate de aprovação
+### 5. Presentar plano + gate de aprovação
 
 Exibir o plano gerado ao usuário e usar **QUESTION TOOL**:
 
 - Header: `"Plano de implementação"`
 - Options:
-  - `"Aprovar plano (Recommended)"` → step 6b
+  - `"Aprovar plano (Recommended)"` → step 5b
   - `"Solicitar refinamento"` → volta ao step 4 com:
     - Plano anterior como contexto
     - Pedido de refinamento do usuário
@@ -148,10 +134,10 @@ Exibir o plano gerado ao usuário e usar **QUESTION TOOL**:
 **Máximo de 3 refinamentos.** Após 3, usar QUESTION TOOL:
 - Header: `"Muitos refinamentos"`
 - Options:
-  - `"Aprovar plano atual (Recommended)"` → step 6b
+  - `"Aprovar plano atual (Recommended)"` → step 5b
   - `"Parar build"` → encerrar
 
-### 6b. Criar feature branch (SEMPRE)
+### 5b. Criar feature branch (SEMPRE)
 
 Antes de executar tasks, delegar criação de branch para git-commit:
 
@@ -176,11 +162,18 @@ Antes de executar tasks, delegar criação de branch para git-commit:
 
 4. LOG: `[HH:MM] branch → feature/<slug> → OK/ERRO`
 
-### 7. Executar pipeline de tasks
+### 6. Executar pipeline de tasks
 
 Para cada task do plano:
 
-#### 7a. Delegar para dev
+#### REGRAS OBRIGATÓRIAS DO PIPELINE
+
+**APÓS CADA TASK CONCLUÍDA PELO DEV, SEMPRE delegar para code-review ANTES de ir para a próxima task.**
+- NUNCA pular code review
+- NUNCA ir direto para a próxima task sem code review
+- Code review é OBRIGATÓRIO mesmo que dev diga que está tudo certo
+
+#### 6a. Delegar para dev
 
 ```
 task(subagent_type="dev", description="Implementar task {N}", prompt="{task details from plan}")
@@ -200,7 +193,7 @@ Após implementar, marcar a task como concluída no backlog:
 
 LOG: `[HH:MM] dev → task N/M → OK/ERRO`
 
-#### 7b. Delegar para code-review
+#### 6b. Delegar para code-review
 
 ```
 task(subagent_type="code-review", description="Revisar task {N}", prompt="{context from dev implementation}. IMPORTANTE: Ler AGENTS.md antes de revisar. Verificar conformidade com convenções do projeto.")
@@ -208,15 +201,15 @@ task(subagent_type="code-review", description="Revisar task {N}", prompt="{conte
 
 LOG: `[HH:MM] code-review → task N/M → veredito`
 
-#### 7c. Tratar veredito
+#### 6c. Tratar veredito
 
-- **"Aprovado"** → próximo passo (7d ou step 8)
+- **"Aprovado"** → próximo passo (6d ou step 7)
 - **"Aprovação condicional"** → usar **QUESTION TOOL**:
   - Header: `"Aprovação condicional"`
   - Options:
     - `"Aceitar com ressalvas"` → próximo passo
-    - `"Corrigir"` → volta para 7a (conta como retry)
-- **"Precisa de ajustes"** → volta para 7a (automático)
+    - `"Corrigir"` → volta para 6a (conta como retry)
+- **"Precisa de ajustes"** → volta para 6a (automático)
 
 **Máximo de 3 tentativas por task.** Se após 3 tentativas ainda "Precisa de ajustes":
 - Usar **QUESTION TOOL**
@@ -228,11 +221,14 @@ LOG: `[HH:MM] code-review → task N/M → veredito`
 
 LOG: `[HH:MM] dev → task N/M (retry X) → OK/ERRO`
 
-#### 7d. Próxima task
+#### 6d. Próxima task
 
-Repetir step 7 para cada task do plano.
+ANTES de ir para a próxima task, VERIFICAR se code review (6b) foi concluído e aprovado.
+- Se 6b não foi feito → Fazer 6b primeiro
+- Se 6b retornou "Precisa de ajustes" → Voltar para 6a
+- Se 6b retornou "Aprovado" → Continuar para próxima task
 
-### 7e. Revisão final obrigatória
+### 6e. Revisão final obrigatória
 
 Após TODAS as tasks aprovadas pelo code-review individual, **ANTES** de delegar para git-commit:
 
@@ -245,7 +241,7 @@ task(subagent_type="code-review", description="Revisão final consolidada", prom
    - **"Aprovação condicional"** → usar **QUESTION TOOL**:
      - Header: `"Revisão consolidada"`
      - Options:
-       - `"Aceitar com ressalvas"` → step 8
+       - `"Aceitar com ressalvas"` → step 7
        - `"Corrigir"` → volta para dev (conta como retry)
    - **"Precisa de ajustes"** → volta para dev (conta como retry)
    - Máximo **2 tentativas adicionais**
@@ -254,12 +250,12 @@ task(subagent_type="code-review", description="Revisão final consolidada", prom
    - Usar **QUESTION TOOL**:
      - Header: `"Revisão consolidada não aprovada após 3 tentativas"`
      - Options:
-       - `"Aceitar com ressalvas"` → step 8
+       - `"Aceitar com ressalvas"` → step 7
        - `"Parar build"` → interrompe pipeline
 
 4. LOG: `[HH:MM] code-review → revisão final → veredito`
 
-### 8. Delegar para git-commit
+### 7. Delegar para git-commit
 
 Após todas as tasks aprovadas:
 
@@ -272,10 +268,10 @@ LOG: `[HH:MM] git-commit → commit → OK/ERRO`
 **Se git-commit falhar** → usar **QUESTION TOOL**:
 - Header: `"Commit falhou"`
 - Options:
-   - `"Corrigir e tentar novamente"` → volta ao step 8
+   - `"Corrigir e tentar novamente"` → volta ao step 7
   - `"Parar build"` → interrompe pipeline
 
-### 9. Relatório final
+### 8. Relatório final
 
 ```
 ## Resumo
@@ -352,7 +348,7 @@ Isso inclui, mas NÃO se limita a:
 ### Crash Recovery
 
 Se um agent crashar (timeout, erro de API, exceção não tratada):
-1. Retry 1x automátio com o mesmo prompt
+1. Retry 1x automático com o mesmo prompt
 2. Se falhar novamente → salvar estado atual (task_id, tentativa, output parcial)
 3. Usar **QUESTION TOOL**:
    - Header: `"Agent {agent} crashou"`
@@ -405,7 +401,7 @@ Se o pipeline falhar (dev não consegue após 3 tentativas, ou usuário escolhe 
 
 ### Skills
 - SEMPRE carregar `executing-plans` como skill obrigatória
-- Carregar `plan-reviewer` quando disponível (revisão de planos)
+- Carregar `plan-reviewer` como skill obrigatória (revisão de planos)
 - Carregar skills dinâmicas relevantes à tarefa
 
 ### Logging (structured)
@@ -472,5 +468,6 @@ Exemplo:
 | `task-planner` | 5 min | QUESTION TOOL: "Planejamento demorou. Continuar ou pular?" |
 | `dev` | 10 min por task | QUESTION TOOL: "Implementação demorou. Continuar ou pular task?" |
 | `code-review` (plano) | 10 min | QUESTION TOOL: "Revisão do plano demorou. Continuar ou pular?" |
+| `plan-reviewer` | 3 min | Retry 1x → se falhar, continuar sem revisão |
 | `code-review` (código) | 5 min | QUESTION TOOL: "Review demorou. Continuar ou pular?" |
 | `git-commit` | 5 min | Retry 1x → se falhar, reportar estado |
