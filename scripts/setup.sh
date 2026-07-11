@@ -53,6 +53,36 @@ else
 fi
 
 echo ""
+
+# ── 4. Tailscale (opcional) ──────────────────────────────────────────────
+echo ""
+echo "[INFO] Verificando Tailscale..."
+
+if command -v tailscale >/dev/null 2>&1; then
+    echo "[OK] Tailscale ja instalado"
+    if tailscale status >/dev/null 2>&1; then
+        echo "[OK] Tailscale ja configurado e autenticado"
+    else
+        echo ""
+        echo "  ⚠️  Tailscale instalado mas nao autenticado."
+        echo "     Execute: tailscale up"
+        echo "     (ou no Termux: pkg install tailscale && tailscale up)"
+    fi
+else
+    echo ""
+    echo "  Tailscale nao encontrado. Instalacao opcional:"
+    echo ""
+    echo "  Para instalar Tailscale no Termux:"
+    echo "    pkg install tailscale"
+    echo "    tailscale up    # autenticar no navegador"
+    echo ""
+    echo "  Apos instalado, use os comandos:"
+    echo "    opencode_tailscale          # iniciar OpenCode via Tailscale"
+    echo "    opencode_tailscale_stop     # parar servico"
+    echo ""
+fi
+
+echo ""
 echo "========================================"
 echo " Setup concluido!"
 echo "========================================"
