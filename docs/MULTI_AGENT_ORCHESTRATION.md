@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
 > **Última atualização**: 2026-06-30
-> **Versão do sistema**: 5 agentes + 49 skills
+> **Versão do sistema**: 5 agentes + 50 skills
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral
@@ -167,7 +167,7 @@ graph TD
 opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
-├── skills/                      ← 49 skills (composição abaixo)
+├── skills/                      ← 50 skills (composição abaixo)
 └── agents/                      ← 5 agentes
     ├── task-build.md
     ├── task-planner.md
@@ -176,7 +176,7 @@ opencode_termux/.config/opencode/
     └── git-commit.md
 ```
 
-> **Composição das 49 skills**: 27 globais + 14 do
+> **Composição das 50 skills**: 27 globais + 14 do
 > [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
 > `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
 > `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,
@@ -233,7 +233,7 @@ para compartilhar agentes e skills entre TODOS os projetos.
 **Por que symlink (não cópia)?**
 - **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
 - **Consistência**: todos os projetos usam as mesmas versões de agents e skills
-- **Economia de espaço**: uma única cópia de 49 skills + 5 agents
+- **Economia de espaço**: uma única cópia de 50 skills + 5 agents
 
 **O que cada projeto mantém LOCALMENTE:**
 - `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
@@ -243,6 +243,80 @@ para compartilhar agentes e skills entre TODOS os projetos.
 
 > **NUNCA copie** prompts `.md` dos agents ou diretórios de skills para o projeto.
 > Eles já estão disponíveis via symlink `~/.config/opencode/`.
+
+### 4.5 Como Adicionar Skills a um Projeto
+
+Quando configurar a orquestração em um projeto novo, siga estes passos para garantir que todas as skills necessárias estejam disponíveis:
+
+#### Passo 1: Ler o diretório de skills disponíveis
+
+```bash
+ls ~/.config/opencode/skills/
+```
+
+Isso lista todas as 50 skills disponíveis via symlink global.
+
+#### Passo 2: Identificar skills obrigatórias para o projeto
+
+Cada agente tem skills obrigatórias. Verifique quais seu projeto precisa:
+
+| Agente | Skills Obrigatórias |
+|--------|---------------------|
+| `task-build` | `executing-plans`, `plan-reviewer` |
+| `task-planner` | `spec-driven-development`, `executing-plans` |
+| `dev` | `executing-plans`, `systematic-debugging` |
+| `code-review` | `api-security-best-practices`, `staff-engineer-review`, `code-reviewer`, `agent-restrictions` |
+
+#### Passo 3: Adicionar skills ao opencode.json do projeto
+
+No `opencode.json` do projeto, adicione as skills necessárias na seção `permission.skill`:
+
+```json
+{
+  "permission": {
+    "skill": {
+      "executing-plans": "allow",
+      "plan-reviewer": "allow",
+      "systematic-debugging": "allow",
+      "spec-driven-development": "allow",
+      "api-security-best-practices": "allow",
+      "staff-engineer-review": "allow",
+      "code-reviewer": "allow",
+      "agent-restrictions": "allow"
+    }
+  }
+}
+```
+
+#### Passo 4: Adicionar skills dinâmicas (opcional)
+
+Para projetos que precisam de skills adicionais (ex: `frontend-complete`, `python-pro`, `fastapi-expert`), adicione-as também:
+
+```json
+{
+  "permission": {
+    "skill": {
+      "executing-plans": "allow",
+      "plan-reviewer": "allow",
+      "frontend-complete": "allow",
+      "python-pro": "allow"
+    }
+  }
+}
+```
+
+#### Passo 5: Verificar skills disponíveis
+
+```bash
+# Listar todas as skills
+ls ~/.config/opencode/skills/
+
+# Verificar se uma skill específica existe
+ls ~/.config/opencode/skills/ | grep -i "frontend"
+```
+
+> **IMPORTANTE**: Não copie skills para o projeto. Elas já estão disponíveis
+> via symlink `~/.config/opencode/`. Apenas declare-as no `opencode.json`.
 
 ## 5. RBAC e Permissões
 
@@ -538,7 +612,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 **Resumo do template**:
 - Cabeçalho com nome e descrição do projeto
 - Estrutura de diretórios do projeto
-- Lista de skills e subagentes disponíveis (5 agentes + 49 skills via symlink)
+- Lista de skills e subagentes disponíveis (5 agentes + 50 skills via symlink)
 - Convenções do projeto (código, quality checks, commits, testes, branches, backlog)
 - Workflow de orquestração (qual agente usar, padrões, regras de delegação)
 - Anti-padrões e gotchas específicas do projeto
