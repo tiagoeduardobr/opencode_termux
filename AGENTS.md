@@ -22,14 +22,17 @@ opencode_termux/
 │       ├── dev.md
 │       └── task-build.md
 ├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
+├── run-cloudflare-tunnel.sh    ← script executado dentro do proot (Cloudflare)
+├── run-opencode-tailscale.sh   ← script executado dentro do proot (Tailscale)
 ├── bin/
-│   ├── opencode-web.sh         ← manager fire-and-forget
-│   ├── opencode-web-stop.sh    ← stopper
-│   ├── termux-ssh.sh           ← inicia sshd + notifica IP
-│   └── termux-ssh-stop.sh      ← para sshd
-├── run-cloudflare-tunnel.sh    ← script executado dentro do proot
+│   ├── opencode-web.sh            ← wrapper Termux (Cloudflare)
+│   ├── opencode-web-stop.sh       ← stop script (Cloudflare)
+│   ├── opencode-tailscale.sh      ← wrapper Termux (Tailscale)
+│   ├── opencode-tailscale-stop.sh ← stop script (Tailscale)
+│   ├── termux-ssh.sh              ← inicia sshd + notifica IP
+│   └── termux-ssh-stop.sh         ← para sshd
 ├── shell/
-│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop)
+│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop, opencode_tailscale, opencode_tailscale_stop)
 ├── scripts/
 │   └── setup.sh                ← setup em device novo (backup, symlink, npm install)
 ├── docs/                       ← documentação de referência
@@ -92,6 +95,21 @@ Variáveis (via `.env` ou env var):
 ### `run-cloudflare-tunnel.sh`
 
 Executado **dentro do proot** (`--shared-tmp`). Sobe `opencode web` + `cloudflared tunnel` + ntfy push.
+
+### `bin/opencode-tailscale.sh`
+
+Wrapper fire-and-forget para expor OpenCode Web via Tailscale (alternativa ao Cloudflare Quick Tunnel).
+
+Variáveis (via `.env` ou env var):
+| Variável | Default | Descrição |
+|---|---|---|
+| `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
+| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web |
+| `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
+| `NOTIFY_FILE` | `$PREFIX/tmp/opencode_tailscale_url.txt` | Handoff da URL |
+| `PID_FILE` | `$PREFIX/tmp/opencode_tailscale.pid` | PID do processo |
+| `LOG_FILE` | `$PREFIX/tmp/opencode_tailscale.log` | Log da execução no proot |
+| `TAILSCALE_SERVE_HTTP` | `true` | Usar `tailscale serve --http` (HTTP) ou sem (HTTPS) |
 
 ### `bin/termux-ssh.sh`
 
@@ -188,6 +206,7 @@ para acesso offline e versionamento no repositório.
 | `docs/cloudflare/downloads.md` | `.deb` arm64, versões, checksums | `setup.sh`, README tutorial |
 | `docs/cloudflare/config-file.md` | YAML structure, `ingress:` rules | Não usado ainda (futuro) |
 | `docs/cloudflare/run-parameters.md` | `tunnel --url`, `--protocol`, log flags | `run-cloudflare-tunnel.sh` |
+| `docs/tailscale/README.md` | Tailscale setup, uso, troubleshooting | `opencode-tailscale.sh` (alternativa ao Cloudflare) |
 
 > **Staleness**: Estas docs são cópias estáticas de repositórios externos.
 > Data de snapshot: **19/06/2026**. Se alguma ferramenta quebrar após atualização,
@@ -203,6 +222,8 @@ para acesso offline e versionamento no repositório.
 | **Adicionar notificação customizada** | `termux/termux-notification.md` |
 | **Atualizar cloudflared** | `cloudflare/downloads.md`, `cloudflare/run-parameters.md` |
 | **Migrar de Quick Tunnel para named tunnel** | `cloudflare/config-file.md`, `cloudflare/run-parameters.md` |
+| **Setup Tailscale** | `tailscale/README.md` |
+| **Debug Tailscale** | `tailscale/README.md` (troubleshooting) |
 
 ## Agent Workflow — Orquestração
 
@@ -278,6 +299,10 @@ Para uma lista completa de melhorias, novidades e decisões recentes, consulte `
 opencode_web              # inicia OpenCode Web + tunnel
 opencode_web_stop         # para
 
+# Tailscale
+opencode_tailscale           # inicia OpenCode Web via Tailscale
+opencode_tailscale_stop      # para
+
 # SSH/SFTP
 termux_ssh                # inicia sshd + notifica IP
 termux_ssh_stop           # para sshd
@@ -286,4 +311,9 @@ termux_ssh_stop           # para sshd
 cat $PREFIX/tmp/opencode_web.pid   # PID
 cat $PREFIX/tmp/opencode_url.txt   # URL ativa
 cat $PREFIX/tmp/opencode_web.log   # Log de diagnóstico
+
+# Status Tailscale
+cat $PREFIX/tmp/opencode_tailscale.pid   # PID
+cat $PREFIX/tmp/opencode_tailscale_url.txt   # URL ativa
+cat $PREFIX/tmp/opencode_tailscale.log   # Log de diagnóstico
 ```

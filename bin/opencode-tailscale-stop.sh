@@ -28,7 +28,7 @@ kill -0 "$PID" 2>/dev/null && kill -9 "$PID" 2>/dev/null || true
 
 # Stop tailscale serve
 echo "[INFO] Parando tailscale serve..."
-tailscale serve --https=off 2>/dev/null || true
+tailscale serve --remove 2>/dev/null || true
 
 # Cleanup files
 rm -f "$PID_FILE" "$NOTIFY_FILE" "$LOG_FILE"
