@@ -21,7 +21,7 @@ opencode_termux/
 │       ├── task-planner.md
 │       ├── dev.md
 │       └── task-build.md
-├── opencode.json               ← config DO PROJETO (skills path, agents, permissions)
+├── opencode.json               ← config DO PROJETO (skills path, permissions)
 ├── run-cloudflare-tunnel.sh    ← script executado dentro do proot (Cloudflare)
 ├── run-opencode-tailscale.sh   ← script executado dentro do proot (Tailscale)
 ├── bin/
@@ -160,30 +160,24 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   `run-cloudflare-tunnel.sh` dentro do proot também carrega do CWD (que é o mesmo dir).
 - **`.config/opencode/.gitignore`**: Ignora `node_modules`, `bun.lock` e `.gitignore`
   — intencional (mantém package.json/lock versionados, exclui node_modules).
-- **`opencode.json`**: Usa paths relativos `.config/opencode/skills/` e
-  `{file:.config/opencode/agents/<name>.md}` para subagentes.
-- **RBAC syntax no opencode.json**: O formato correto para permissões de agentes
-  é `"agente": "perm"`, não `"perm": ["agente"]`. O formato array é inválido e
-  silenciosamente ignorado pelo OpenCode.
-  
-  **Exemplo correto** (cada subagente nega todos os outros):
-  ```json
-  "rbac": {
-    "task-build": "deny",
-    "git-commit": "deny",
-    "code-review": "deny",
-    "dev": "deny"
-  }
+- **`opencode.json`**: usa paths relativos `.config/opencode/skills/`.
+  Agentes são definidos via markdown em `.config/opencode/agents/` (auto-descobertos).
+- **`permission.task` (OpenCode 1.18.1)**: Substitui o `rbac` custom. Controla
+  quais subagentes um agente pode invocar via Task tool.
+
+  **Exemplo** (cada subagente nega todos os outros — `task: []`):
+  ```yaml
+  permission:
+    task: []
   ```
   
-  **Exemplo incorreto** (IGNORADO pelo OpenCode):
-  ```json
-  "rbac": {
-    "deny": ["task-build"]
-  }
-  ```
+  Agentes primários (ex: `task-build`) não precisam de `permission.task` —
+  podem chamar todos os subagentes por padrão.
   
-  → Detalhes completos: `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.4)
+  → Detalhes: `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.3)
+  
+- **Cores dos agentes**: Cada agente tem uma cor distinta no TUI:
+  `task-build`=blue, `task-planner`=green, `dev`=orange, `code-review`=purple, `git-commit`=gray.
 - **`0.0.0.0` crasha dentro do proot**: O `opencode web --hostname 0.0.0.0` falha
   com `getifaddrs returned an error` porque o proot não expõe interfaces de rede.
   Use `127.0.0.1` (default) dentro do proot; o cloudflared conecta em `127.0.0.1`.
@@ -235,7 +229,7 @@ para acesso offline e versionamento no repositório.
 
 Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 1, "Quando usar task-build vs. abordagem manual").
 
-> **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) são isolados — cada um nega todos os outros subagentes. Apenas `task-build` pode chamá-los.
+> **Isolamento**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) são isolados via `permission.task: []`. Apenas `task-build` (primary) pode chamá-los.
 
 ### Padrões de orquestração
 
@@ -243,7 +237,7 @@ Para padrões detalhados (simples, completo, revisão), veja `docs/MULTI_AGENT_O
 
 ### Regras de delegação
 
-Para regras de delegação detalhadas, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.3, "Regras RBAC (quem pode chamar quem)").
+Para regras de delegação detalhadas, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5.3, "Regras de Permissão (quem pode chamar quem)").
 
 ### Uso de Skills
 
@@ -282,6 +276,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 
 ## Melhorias Recentes
 
+- Migração para OpenCode 1.18.1: agentes em markdown puro (frontmatter YAML com `hidden`, `color`, `temperature`), permissões nativas (`permission.task`), `plan_enter`/`plan_exit` removidos
 - plan-reviewer como skill obrigatória
 - Steps 4b/4c no task-build
 - Timeouts padronizados (plan-reviewer=3min, code-review 10min/5min)

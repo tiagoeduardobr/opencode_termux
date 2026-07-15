@@ -1,6 +1,21 @@
 ---
-description: Implementa código — executa tasks do plano com qualidade e conformidade
+description: "Implementa código — executa tasks do plano com qualidade e conformidade"
 mode: subagent
+hidden: true
+color: orange
+temperature: 0.3
+permission:
+  bash:
+    "*": allow
+    "git *": deny
+  read: allow
+  glob: allow
+  grep: allow
+  edit: allow
+  write: allow
+  question: allow
+  skill: allow
+  task: []
 ---
 
 # Dev Agent

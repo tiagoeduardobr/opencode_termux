@@ -1,6 +1,33 @@
 ---
-description: Revisa código pós-implementação — qualidade, skills dinâmicas, plano vs execução
+description: "Revisa código pós-implementação — qualidade, skills dinâmicas, plano vs execução"
 mode: subagent
+hidden: true
+color: purple
+temperature: 0.1
+permission:
+  bash:
+    "*": allow
+    "sed *": deny
+    "sed -i *": deny
+    "awk *": deny
+    "python -c *": deny
+    "python3 -c *": deny
+    "node -e *": deny
+    "tee *": deny
+    "ruby -e *": deny
+    "perl -e *": deny
+    "cp *": deny
+    "mv *": deny
+    "install *": deny
+    "patch *": deny
+  read: allow
+  glob: allow
+  grep: allow
+  edit: deny
+  write: deny
+  question: allow
+  skill: allow
+  task: []
 ---
 
 # Code Review Agent

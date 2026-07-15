@@ -108,7 +108,7 @@ cleanup de branches stale.
 
 > **Idioma**: O `git-commit.md` tem frontmatter em inglês porque as
 > mensagens de commit devem ser em inglês (convenção `feat:`, `fix:`, etc.).
-> O `description` no `opencode.json` está em PT-BR.
+> O `description` no frontmatter `.md` está em PT-BR.
 
 ## 3. Fluxo de Orquestração
 
@@ -219,11 +219,11 @@ O `setup.sh`:
 
 - `skills.paths`: onde buscar skills
 - `permission.skill`: quais skills são permitidas
-- `agent.<name>.description`: descrição do agente
-- `agent.<name>.mode`: `primary` (TUI Tab) ou `subagent` (via Task tool)
-- `agent.<name>.prompt`: caminho do arquivo .md do agente (`{file:.config/opencode/agents/<name>.md}`)
-  - Resolve via symlink `~/.config/opencode/` — NÃO copie os .md para o projeto
-- `agent.<name>.permission`: permissões granulares (bash, read, edit, write, question, skill, rbac)
+- Agentes definidos em markdown em `.config/opencode/agents/` (auto-descobertos)
+- Frontmatter YAML: `description`, `mode`, `hidden`, `color`, `temperature`, `permission`
+- Permissões no frontmatter: bash (patterns), read, edit, write, question, skill, task
+- `hidden: true` para subagentes, `hidden: false` para primary
+- Cores: task-build=blue, task-planner=green, dev=orange, code-review=purple, git-commit=gray
 
 ### 4.4 Arquitetura de Config — Por que Symlink?
 
@@ -236,7 +236,7 @@ para compartilhar agentes e skills entre TODOS os projetos.
 - **Economia de espaço**: uma única cópia de 50 skills + 5 agents
 
 **O que cada projeto mantém LOCALMENTE:**
-- `opencode.json`: permissões, RBAC, e config do projeto (MÍNIMO: skills.paths + permission.skill)
+- `opencode.json`: permissões e config do projeto (MÍNIMO: skills.paths + permission.skill). Agentes definidos em markdown em `.config/opencode/agents/`.
 - `AGENTS.md`: convenções, gotchas, e workflow do projeto
 - `.opencode/plans/`: planos de implementação
 - `docs/PROJECT_BACKLOG_*.md`: backlog de tasks
@@ -318,86 +318,60 @@ ls ~/.config/opencode/skills/ | grep -i "frontend"
 > **IMPORTANTE**: Não copie skills para o projeto. Elas já estão disponíveis
 > via symlink `~/.config/opencode/`. Apenas declare-as no `opencode.json`.
 
-## 5. RBAC e Permissões
+## 5. Permissões e permission.task
 
-### 5.1 O que é RBAC
+### 5.1 Controle de delegação entre agentes
 
-**RBAC** (Role-Based Access Control) controla quais agentes podem chamar
-outros agentes. No OpenCode, é definido na seção `rbac` de cada agente
-no `opencode.json`.
+O OpenCode 1.18.1 usa `permission.task` para controlar quais subagentes um
+agente pode invocar via Task tool. Isso substitui o `rbac` custom usado
+anteriormente.
 
-### 5.2 Matriz de Permissões
-
-| Agente | bash | read | edit | write | question | skill | bash deny patterns |
-|--------|------|------|------|-------|----------|-------|-------------------|
-| `task-build` | permitido (git deny) | ✅ | ❌ | ❌ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
-| `task-planner` | permitido (git deny) | ✅ | ❌ | ✅ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch, git checkout -b* |
-| `dev` | permitido (`git *` deny) | ✅ | ✅ | ✅ | ✅ | ✅ | git * |
-| `code-review` | permitido (deny patterns) | ✅ | ❌ | ❌ | ✅ | ✅ | sed, python -c, node -e, tee, cp, mv, install, patch |
-| `git-commit` | permitido (merge/push ask) | ✅ | ❌ | ❌ | ✅ | ❌ | — |
-
-### 5.3 Regras RBAC (quem pode chamar quem)
-
-```
-task-build ──→ task-planner, dev, code-review, git-commit  (pode chamar todos)
-task-planner ──→ NÃO pode chamar NENHUM outro subagente
-dev ──→ NÃO pode chamar NENHUM outro subagente
-code-review ──→ NÃO pode chamar NENHUM outro subagente
-git-commit ──→ NÃO pode chamar NENHUM outro subagente
+**Formato**:
+```yaml
+permission:
+  task: []  # array vazio = não pode chamar ninguém
 ```
 
-**Isolamento completo entre subagentes**: Cada subagente (`git-commit`,
-`code-review`, `task-planner`, `dev`) tem `"rbac"` negando TODOS os
-outros 3 subagentes + `task-build`. Por exemplo, `git-commit` nega
-`task-build`, `code-review`, `task-planner` e `dev`.
+Regras são avaliadas em ordem; a última regra matching vence.
 
-**Por que isolamento total?**
-- **Segurança**: Subagentes com bash restrito não devem invocar agentes
-  com permissões diferentes (ex: `code-review` não deveria chamar `dev`
-  que tem write)
-- **Prevenção de loops**: Sem isolamento, um subagente poderia invocar
-  outro que invoca de volta, criando loops infinitos
-- **Responsabilidade única**: Cada subagente faz uma coisa — `dev`
-  implementa, `code-review` revisa, `git-commit` commita. A orquestração
-  fica com `task-build`
+### 5.2 Quem pode chamar quem
 
-**Por que `task-build` não tem seção `rbac`?**
-Porque é `mode: primary` — é o único agente invocado diretamente pelo
-usuário. Os 4 subagentes têm rbac deny para todos os pares para
-manter o isolamento completo.
+| Agente | `permission.task` | Pode chamar |
+|--------|-------------------|-------------|
+| `task-build` (primary) | Não definido | Todos os subagentes (padrão) |
+| `task-planner` (subagent) | `[]` | Ninguém |
+| `dev` (subagent) | `[]` | Ninguém |
+| `code-review` (subagent) | `[]` | Ninguém |
+| `git-commit` (subagent) | `[]` | Ninguém |
 
-### 5.4 Gotchas de Configuração
+### 5.3 Regras de Permissão (quem pode chamar quem)
 
-> ⚠️ **RBAC syntax**: O formato correto é `"agente": "perm"`, não
-> `"perm": ["agente"]`. O formato array é inválido e silenciosamente
-> ignorado pelo OpenCode.
+- agentes `primary` (ex: `task-build`) não precisam de `permission.task` —
+  podem chamar todos os subagentes por padrão.
+- agentes `subagent` têm `task: []` — não podem chamar ninguém.
+- Usuário sempre pode invocar qualquer subagente via `@mention`,
+  independente de `permission.task`.
 
-Exemplo correto (um subagente nega todos os outros):
-```json
-"rbac": {
-  "task-build": "deny",
-  "git-commit": "deny",
-  "code-review": "deny",
-  "dev": "deny"
-}
-```
+> **Sintaxe**: `permission.task` aceita um objeto com padrões glob para
+> controle granular:
+> ```json
+> "permission": {
+>   "task": {
+>     "*": "deny",
+>     "code-review": "allow"
+>   }
+> }
+> ```
+> No nosso caso, usamos `task: []` (array vazio) para bloquear tudo.
 
-Exemplo incorreto (IGNORADO pelo OpenCode):
-```json
-"rbac": {
-  "deny": ["task-build"]
-}
-```
+### 5.4 Gotchas
 
-### 5.5 Permissões Git por Agente
-
-| Agente | git deny | git ask | Pode fazer | Edição Indireta |
-|--------|----------|---------|------------|-----------------|
-| `task-build` | add, commit, push, merge, checkout -b*, branch -d/-D, reset, rebase, stash | — | status, log, diff | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
-| `task-planner` | commit, push, merge, checkout -b*, reset, rebase | — | status, log, diff, branch | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
-| `dev` | `git *` (tudo) | — | nada | ✅ (exceto git) |
-| `code-review` | — | — | status, log, diff, quality checks | ❌ sed, python -c, node -e, tee, cp, mv, install, patch |
-| `git-commit` | — | merge, push | commit, branch, checkout, branch -d/-D | ❌ |
+- `permission.task: []` significa "nenhum subagente permitido"
+- Se `permission.task` não for definido, o agente pode chamar TODOS
+  (padrão para primary agents)
+- O `rbac` custom antigo foi removido — usar `permission.task`
+- Cores dos agentes no TUI: `task-build`=blue, `task-planner`=green,
+  `dev`=orange, `code-review`=purple, `git-commit`=gray
 
 ## 6. Mecanismos de Robustez
 
@@ -514,6 +488,19 @@ Log imutável (append-only) de todas as ações:
 ---
 description: {descrição curta}
 mode: subagent
+hidden: true
+color: {cor}
+temperature: 0.2
+permission:
+  bash:
+    "*": allow
+    {comandos proibidos}: deny
+  read: allow
+  edit: deny
+  write: deny
+  question: allow
+  skill: allow
+  task: []
 ---
 
 # {Nome} Agent
@@ -626,15 +613,15 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 
 | Problema | Solução |
 |----------|---------|
-| RBAC array silenciosamente ignorado | Usar formato `"agente": "perm"` (não array) |
-| Agent editando código sendo que shouldn't | Verificar `edit: "deny"` no opencode.json |
+| `rbac` custom removido | Usar `permission.task` nativo do OpenCode 1.18.1 |
+| Agent editando código sendo que shouldn't | Verificar `edit: "deny"` no frontmatter .md |
 | Git commit sem branch feature | task-build cria branch antes do pipeline |
 | Review não roda quality checks | code-review auto-detecta stack (Python/Node/Makefile) |
 | Plano sem gate de aprovação | plan-reviewer revisa + QUESTION TOOL obrigatório após plano |
 | Timestamp manual errado | Usar `date '+%d/%m/%Y:%H:%M'` — nunca digitar |
 | task-build editando código | Nunca — delegar para dev |
 | Skills dinâmicas não carregadas | Varredura automática em `~/.config/opencode/skills/` |
-| Indirect file editing via bash | Usar padrões de negação no opencode.json (sed, python -c, etc.) + lista explícita nos prompts |
+| Indirect file editing via bash | Usar padrões de negação no frontmatter .md (sed, python -c, etc.) + lista explícita nos prompts |
 
 ### 9.2 Anti-padrões
 
@@ -663,7 +650,7 @@ task-build delega a edição para `dev`. Se precisar modificar um arquivo
 durante o pipeline, delegar: `task(subagent_type="dev", ...)`.
 
 **Isso inclui métodos indiretos**: sed, awk, python -c, node -e, tee, echo redirect, cp, mv, install, patch, git checkout -b*
-Todos estão bloqueados por padrões de negação no `opencode.json`.
+Todos estão bloqueados por padrões de negação no frontmatter `.md`.
 
 ### 9.5 Proibições de Edição Indireta
 
@@ -673,7 +660,7 @@ Agentes podem usar métodos alternativos (sed, python -c, tee) para modificar ar
 **Solução**: Duas camadas de proteção:
 
 1. **Prompt instructions**: Lista explícita de métodos proibidos nos prompts dos agentes
-2. **Permission system**: Padrões de negação no `opencode.json` que bloqueiam comandos específicos
+2. **Permission system**: Padrões de negação no frontmatter `.md` que bloqueiam comandos específicos
 
 **Métodos bloqueados para `task-build` e `task-planner`**:
 - `sed` / `awk` — edição via regex em shell
@@ -689,7 +676,7 @@ Agentes podem usar métodos alternativos (sed, python -c, tee) para modificar ar
 **Exceção**: `task-planner` pode salvar planos em `.opencode/plans/` (via `write: "allow"`).
 
 **Limitação conhecida**: Redirecionamento shell (`echo "content" > file`,
-`cat file1 > file2`) é difícil de bloquear via pattern matching no opencode.json.
+`cat file1 > file2`) é difícil de bloquear via pattern matching no frontmatter .md.
 A camada de prompt instructions cobre isso, mas a camada de permissão não.
 Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 
@@ -697,7 +684,7 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 
 ## 10. Melhorias Recentes
 
-Melhorias recentes incluem: git delegado, RBAC, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente.
+Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente.
 
 ## 11. Referências
 
@@ -710,7 +697,7 @@ Melhorias recentes incluem: git delegado, RBAC, quality checks agnósticos, stat
 | `.config/opencode/agents/dev.md` | Prompt do implementador |
 | `.config/opencode/agents/code-review.md` | Prompt do revisor |
 | `.config/opencode/agents/git-commit.md` | Prompt do gestor git |
-| `opencode.json` | Config do projeto (permissões, RBAC) |
+| `opencode.json` | Config do projeto (permissões) |
 | `AGENTS.md` | Overview do repositório |
 
 ### 11.2 Skills Relevantes
@@ -743,13 +730,33 @@ Skills que orquestram fluxos de trabalho:
 | `using-git-worktrees` | Isolamento de branch | Desenvolvimento |
 | `verification-before-completion` | Verificação pré-commit | Qualidade |
 
-### 11.4 Agentes Built-in do OpenCode
+### 11.4 Agentes Built-in do OpenCode 1.18.1
 
-O OpenCode possui agentes built-in que NÃO são configurados via `opencode.json`:
-- **`explore`**: Busca rápida de arquivos e código (uso interno do TUI)
-- **`compaction`**: Compactação de contexto (uso interno do TUI)
+O OpenCode 1.18.1 inclui 5 built-in agents que complementam nossos agentes custom:
 
-Esses agentes são distintos dos 5 agentes customizados documentados aqui.
+| Agente | Tipo | Descrição |
+|--------|------|-----------|
+| **Build** | primary | Agente padrão com todas as ferramentas habilitadas |
+| **Plan** | primary | Análise e planejamento sem modificar código (read-only) |
+| **General** | subagent | Propósito geral, full tools (exceto todo). Invocável via `@general` |
+| **Explore** | subagent | Fast read-only para explorar codebase. Invocável via `@explore` |
+| **Scout** | subagent | Read-only para pesquisa de dependências. Invocável via `@scout` |
+
+Além destes, há 3 hidden system agents de uso interno: **compaction**, **title**, **summary**.
+
+#### Relação com nossos agentes custom
+
+Nossos 5 agentes (`task-build`, `task-planner`, `dev`, `code-review`, `git-commit`) são especializados em orquestração de entrega e **não substituem** os built-ins:
+
+| Built-in | Nosso equivalente? | Uso recomendado |
+|----------|-------------------|-----------------|
+| **Build** | Parcial (task-build) | Uso geral/build manual. task-build é mais especializado |
+| **Plan** | Parcial (task-planner) | Análise ad-hoc rápida. task-planner gera planos SDD estruturados |
+| **General** | Não | Tasks complexas autônomas sem orquestração |
+| **Explore** | Não | Busca rápida na codebase pelo usuário |
+| **Scout** | Não | Pesquisar docs de dependências externas |
+
+> **Recomendação**: Built-ins e custom agents são complementares. Use `@explore` para buscas rápidas, `@general` para tasks autônomas, e nossos agents para pipelines orquestrados.
 
 ### 11.5 Links Externos
 

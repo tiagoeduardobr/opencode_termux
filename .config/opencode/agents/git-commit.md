@@ -1,6 +1,25 @@
 ---
-description: Cria commits semânticos seguindo as convenções do projeto
+description: "Cria commits semânticos seguindo as convenções do projeto"
 mode: subagent
+hidden: true
+color: gray
+temperature: 0.1
+permission:
+  bash:
+    "*": allow
+    "git merge *": ask
+    "git push *": ask
+    "git checkout -b*": allow
+    "git branch -d*": allow
+    "git branch -D*": allow
+    "git checkout main": allow
+  read: allow
+  glob: allow
+  grep: allow
+  edit: deny
+  write: deny
+  question: allow
+  task: []
 ---
 
 # Git Commit Agent

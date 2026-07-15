@@ -243,3 +243,28 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Commits: 930a840, 9ff2681, fed1f23, 6e499b4, 6889893
 - ADR-008 criado: decisão sobre adição de skills upstream
 - Melhorias pós-code review: padronização de numeração, notas explicativas, renomeação de reference.md
+
+### Migração OpenCode 1.18.1 (14/07/2026)
+
+**O que foi feito**:
+- Migração de `rbac` custom para `permission.task` nativo do OpenCode 1.18.1
+- Agentes migrados de JSON para markdown puro com frontmatter YAML enriquecido
+- Frontmatter dos 5 agentes (.config/opencode/agents/): `description`, `mode`, `hidden`, `color`, `temperature`, `permission`
+- `plan_enter`/`plan_exit` removidos (não mais necessários)
+- Seção `agent` removida do `opencode.json` (agentes auto-descobertos via `.md`)
+- Dependência `@opencode-ai/plugin` atualizada: ^1.17.14 → ^1.18.0 (resolve para 1.18.1)
+- Documentação atualizada: AGENTS.md, MULTI_AGENT_ORCHESTRATION.md, AGENTS_TEMPLATE.md
+- Built-in agents do 1.18.1 documentados (Build, Plan, General, Explore, Scout)
+
+**Arquivos modificados**:
+- `.config/opencode/agents/*.md` (5 arquivos — frontmatter enrich)
+- `opencode.json` (seção agent removida)
+- `.config/opencode/package.json`, `.config/opencode/package-lock.json` (plugin atualizado)
+- `AGENTS.md` (RBAC → permission.task, auto-descoberta)
+- `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5 reescrita, built-in agents 11.4)
+- `docs/AGENTS_TEMPLATE.md` (referências RBAC → permissões)
+
+**Skills**: 50 (inalterado)
+**Agentes**: 5 (task-build primary, task-planner/dev/code-review/git-commit subagents)
+
+**Branch**: feature/adaptacao-opencode-1-18

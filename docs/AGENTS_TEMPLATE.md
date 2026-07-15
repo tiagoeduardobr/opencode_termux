@@ -130,7 +130,7 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 
 ## Agent Workflow — Orquestração
 
-> **Documentação completa**: Para deep-dive na orquestração, RBAC,
+> **Documentação completa**: Para deep-dive na orquestração, permissões,
 > mecanismos de robustez e gotchas, veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
 ### Qual agente usar
@@ -148,7 +148,7 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 | Criar skill ou agent | `customize-opencode` | Seguir template do opencode |
 | Tarefa com plano escrito | `executing-plans` | Re-executar planos com checkpoints |
 
-> **RBAC**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`)
+> **Permissões**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`)
 > são isolados — cada um nega todos os outros subagentes. Apenas `task-build` pode chamá-los.
 
 ### Padrões de orquestração
@@ -225,8 +225,7 @@ Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 
 ## Gotchas deste Projeto
 
-- **RBAC syntax**: O formato correto é `"agente": "perm"`, não `"perm": ["agente"]`.
-  O formato array é silenciosamente ignorado pelo OpenCode.
+- **permission.task**: Controla quais subagentes um agente pode invocar. Array vazio (`[]`) = não chama ninguém. Primary agents sem `task` chamam todos.
 
 <!-- ============================================================
      INSTRUÇÕES: Liste armadilhas conhecidas deste projeto específico.
@@ -276,7 +275,7 @@ Ou usar o agente `task-build` para orquestrar tudo automaticamente.
    tudo que um dev humano precisaria saber para não quebrar o projeto.
 
 2. **Referência externa**: O AGENTS.md aponta para `MULTI_AGENT_ORCHESTRATION.md`
-   para deep-dive. Não duplique a documentação de RBAC, circuit breaker, etc.
+   para deep-dive. Não duplique a documentação de permissões, circuit breaker, etc.
 
 3. **Versão**: Adicione `> **Versão**: {DATE}` no topo do AGENTS.md para
    rastrear atualizações.

@@ -1,6 +1,42 @@
 ---
-description: Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita
+description: "Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita"
 mode: primary
+hidden: false
+color: blue
+temperature: 0.2
+permission:
+  bash:
+    "*": allow
+    "sed *": deny
+    "sed -i *": deny
+    "awk *": deny
+    "python -c *": deny
+    "python3 -c *": deny
+    "node -e *": deny
+    "tee *": deny
+    "ruby -e *": deny
+    "perl -e *": deny
+    "cp *": deny
+    "mv *": deny
+    "install *": deny
+    "patch *": deny
+    "git add *": deny
+    "git commit *": deny
+    "git push *": deny
+    "git merge *": deny
+    "git checkout -b*": deny
+    "git branch -d*": deny
+    "git branch -D*": deny
+    "git reset *": deny
+    "git rebase *": deny
+    "git stash *": deny
+  read: allow
+  glob: allow
+  grep: allow
+  edit: deny
+  write: deny
+  question: allow
+  skill: allow
 ---
 
 # Build Agent

@@ -1,6 +1,39 @@
 ---
-description: Planeja tarefas antes da implementação — análise de codebase, escopo, dependências, riscos
+description: "Planeja tarefas antes da implementação — análise de codebase, escopo, dependências, riscos"
 mode: subagent
+hidden: true
+color: green
+temperature: 0.2
+permission:
+  bash:
+    "*": allow
+    "sed *": deny
+    "sed -i *": deny
+    "awk *": deny
+    "python -c *": deny
+    "python3 -c *": deny
+    "node -e *": deny
+    "tee *": deny
+    "ruby -e *": deny
+    "perl -e *": deny
+    "cp *": deny
+    "mv *": deny
+    "install *": deny
+    "patch *": deny
+    "git commit *": deny
+    "git push *": deny
+    "git merge *": deny
+    "git checkout -b*": deny
+    "git reset *": deny
+    "git rebase *": deny
+  read: allow
+  glob: allow
+  grep: allow
+  edit: deny
+  write: allow
+  question: allow
+  skill: allow
+  task: []
 ---
 
 # Task Planner Agent
