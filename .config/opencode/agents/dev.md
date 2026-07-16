@@ -130,6 +130,11 @@ Após verificação bem-sucedida:
 - Leitura git (`log`, `diff`, `status`) é permitida para contexto
 - Toda operação de git é delegada para `git-commit`
 
+### Commit
+- NUNCA sugerir ou iniciar commit — task-build decide o momento correto
+- NUNCA mencionar "pronto para commit" ou "commitar agora"
+- Retornar apenas "Pronto para review" ou "Precisa de ajustes"
+
 ### Segurança e Compliance
 - SEMPRE considerar OWASP Top 10 ao implementar código web/API
 - SEMPRE considerar LGPD ao manipular dados pessoais
