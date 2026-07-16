@@ -46,17 +46,64 @@ Gera planos adaptativos e salvos em arquivo. Não modifica código — apenas pl
 
 Sempre carregar: `spec-driven-development`, `executing-plans`.
 
-### 2. Carregar skills dinâmicas (varredura automática)
+### 2. Carregar skills dinâmicas (varredura automática + detecção de stack)
+
+#### 2.1 Listar skills disponíveis
 
 Listar TODAS as skills instaladas nos diretórios:
 - `~/.config/opencode/skills/`
 - `.opencode/skills/`
 - `.agents/skills/`
 
-Para cada skill, avaliar se o `name` ou `description` corresponde à tarefa
-proposta (tecnologias, padrões, tipo de mudança). Carregar as que corresponderem.
+#### 2.2 Detectar stack tecnológica do projeto
 
-Ignorar skills já carregadas como obrigatórias.
+Analise o projeto para identificar tecnologias em uso:
+- `package.json` → Node.js, React, Vue, Next.js, etc.
+- `requirements.txt` ou `pyproject.toml` → Python, Django, FastAPI, Flask
+- `Cargo.toml` → Rust
+- `go.mod` → Go
+- `Gemfile` → Ruby
+- `pom.xml` ou `build.gradle` → Java
+- `*.csproj` → C#/.NET
+- `docker-compose.yml` → Docker
+- `terraform/` ou `*.tf` → Terraform
+- `kubernetes/` ou `*.yaml` com `kind: Deployment` → Kubernetes
+
+#### 2.3 Mapear skills por tecnologia
+
+Com base na stack detectada, carregue OBRIGATORIAMENTE as skills correspondentes:
+
+| Tecnologia | Skills Obrigatórias |
+|------------|---------------------|
+| React/Next.js | `alpine-js`, `frontend-complete`, `javascript-typescript` |
+| Vue/Nuxt | `frontend-complete`, `javascript-typescript` |
+| Python | `python-pro` |
+| FastAPI | `fastapi-expert`, `python-pro` |
+| Django | `python-pro` |
+| PostgreSQL | `postgres-pro`, `sql-pro` |
+| Docker | `devops-engineer` |
+| Kubernetes | `devops-engineer`, `microservices-architect` |
+| Terraform | `terraform-engineer` |
+| AWS/GCP/Azure | `cloud-architect` |
+| Testing | `test-master`, `test-driven-development` |
+| Security | `security-reviewer`, `secure-code-guardian`, `api-security-best-practices` |
+| Frontend | `frontend-complete`, `design-system`, `alpine-js` |
+| Tailwind CSS | `code-architecture-tailwind-v4-best-practices` |
+| CI/CD | `devops-engineer` |
+| Monitoring | `monitoring-expert`, `sre-engineer` |
+| SQL | `sql-pro`, `postgres-pro` |
+| Architecture | `architecture-designer`, `microservices-architect` |
+
+#### 2.4 Combinar skills
+
+O conjunto final de skills é:
+1. Skills obrigatórias do step 1 (`spec-driven-development`, `executing-plans`)
+2. Skills de tecnologia detectadas (obrigatórias)
+3. Skills adicionais que correspondam à tarefa específica
+
+> **IMPORTANTE**: Skills de tecnologia são OBRIGATÓRIAS mesmo que o `task-build`
+> indique outras skills. O task-planner DEVE carregar todas as skills relevantes
+> para a stack do projeto, independentemente do que foi passado pelo task-build.
 
 ### 3. Entender a tarefa
 
@@ -64,6 +111,7 @@ Ignorar skills já carregadas como obrigatórias.
 - Listar **assumptions** (pressupostos que estão sendo feitos) e confirmar com o usuário antes de prosseguir
 - Definir success criteria concretos e testáveis
 - Consultar as skills instaladas para boas práticas de planejamento
+- Consultar as skills de tecnologia carregadas no step 2 para boas práticas da stack
 
 ### 4. Explorar codebase
 
