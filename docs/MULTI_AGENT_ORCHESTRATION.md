@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
-> **Última atualização**: 2026-06-30
-> **Versão do sistema**: 5 agentes + 50 skills
+> **Última atualização**: 2026-07-16
+> **Versão do sistema**: 5 agentes + 50 skills + OpenCode 1.18.2
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral
@@ -323,7 +323,7 @@ ls ~/.config/opencode/skills/ | grep -i "frontend"
 
 ### 5.1 Controle de delegação entre agentes
 
-O OpenCode 1.18.1 usa `permission.task` para controlar quais subagentes um
+O OpenCode 1.18.2 usa `permission.task` para controlar quais subagentes um
 agente pode invocar via Task tool. Isso substitui o `rbac` custom usado
 anteriormente.
 
@@ -345,9 +345,10 @@ Regras são avaliadas em ordem; a última regra matching vence.
 | `code-review` (subagent) | `[]` | Ninguém |
 | `git-commit` (subagent) | `[]` | Ninguém |
 
-> **⚠️ WARN**: A coluna `permission.task` reflete a configuração no `opencode.json`.
-> `permission.task` NÃO funciona no frontmatter .md (ver seção 9.6.3).
-> Atualmente os subagentes NÃO têm `task: []` em lugar nenhum — podem chamar outros subagentes.
+> **⚠️ WARN**: `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md.
+> No **OpenCode 1.18.2**, subagentes são isolados por padrão (`subagent_depth=0`) —
+> não precisam de `permission.task: []` para não chamarem outros subagentes.
+> `permission.task` no JSON ainda funciona para controle granular quando necessário.
 
 ### 5.3 Regras de Permissão (quem pode chamar quem)
 
@@ -359,6 +360,10 @@ Regras são avaliadas em ordem; a última regra matching vence.
 
 > **⚠️ Nota**: `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md.
 > Ver seção 9.6.3 para detalhes.
+
+> **Novo no 1.18.2**: Subagentes não podem mais lançar subagentes aninhados por padrão.
+> A configuração `subagent_depth=0` (default) impede que subagentes chamem outros
+> subagentes. Para permitir, configure `subagent_depth` no `opencode.json` do projeto.
 
 > **Sintaxe**: `permission.task` aceita um objeto com padrões glob para
 > controle granular:
@@ -382,7 +387,7 @@ Regras são avaliadas em ordem; a última regra matching vence.
   `dev`=orange, `code-review`=purple, `git-commit`=gray
 
 > **⚠️ Nota**: As regras acima valem para `permission.task` em `opencode.json`.
-> No frontmatter .md, `permission.task` é ignorado pelo parser do OpenCode 1.18.1 (ver 9.6.3).
+> No frontmatter .md, `permission.task` é ignorado pelo parser do OpenCode 1.18.2 (ver 9.6.3).
 
 ## 6. Mecanismos de Robustez
 
@@ -729,10 +734,15 @@ Cores nomeadas (purple, orange, gray, etc.) não precisam de aspas.
 | `permission.question` | ✅ Sim | ✅ Sim |
 | **`permission.task`** | **❌ Não** | **✅ Sim** |
 
-**Problema**: O parser YAML do OpenCode 1.18.1 ignora `task` dentro de `permission:` no frontmatter .md.
+**Problema**: O parser YAML do OpenCode 1.18.2 ignora `task` dentro de `permission:` no frontmatter .md.
 
 **Workaround**: Configurar `permission.task` no `opencode.json` do projeto (seção `"agent"`),
 não no frontmatter .md. Ou aceitar que subagentes podem chamar outros subagentes.
+
+> **NOTA para 1.18.2**: Com a atualização para OpenCode 1.18.2, subagentes são
+> isolados por padrão (`subagent_depth=0`). O workaround acima é menos crítico
+> agora, mas `permission.task` no `opencode.json` ainda funciona para controle
+> granular quando necessário.
 
 #### 9.6.4 Validar YAML antes de aplicar
 
@@ -774,7 +784,7 @@ genéricos (como `python3 -c "import yaml; ..."`) podem falhar.
 
 ## 10. Melhorias Recentes
 
-Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente.
+Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente, subagent_depth.
 
 ## 11. Referências
 
@@ -820,9 +830,9 @@ Skills que orquestram fluxos de trabalho:
 | `using-git-worktrees` | Isolamento de branch | Desenvolvimento |
 | `verification-before-completion` | Verificação pré-commit | Qualidade |
 
-### 11.4 Agentes Built-in do OpenCode 1.18.1
+### 11.4 Agentes Built-in do OpenCode 1.18.2
 
-O OpenCode 1.18.1 inclui 5 built-in agents que complementam nossos agentes custom:
+O OpenCode 1.18.2 inclui 5 built-in agents que complementam nossos agentes custom:
 
 | Agente | Tipo | Descrição |
 |--------|------|-----------|

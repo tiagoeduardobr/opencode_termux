@@ -162,11 +162,11 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   — intencional (mantém package.json/lock versionados, exclui node_modules).
 - **`opencode.json`**: usa paths relativos `.config/opencode/skills/`.
   Agentes são definidos via markdown em `.config/opencode/agents/` (auto-descobertos).
-- **`permission.task` (OpenCode 1.18.1)**: Substitui o `rbac` custom. Controla
+- **`permission.task` (OpenCode 1.18.2)**: Substitui o `rbac` custom. Controla
   quais subagentes um agente pode invocar via Task tool.
 
   > **⚠️ WARN**: `permission.task` NÃO é suportado no frontmatter .md dos agentes.
-  > O parser do OpenCode 1.18.1 ignora este campo em arquivos .md.
+  > O parser do OpenCode 1.18.2 ignora este campo em arquivos .md.
   > Para configurar isolamento de subagentes, use `opencode.json` do projeto (seção `"agent"`).
   > Ver seção 9.6.3 de `docs/MULTI_AGENT_ORCHESTRATION.md` para detalhes.
 
@@ -235,7 +235,7 @@ para acesso offline e versionamento no repositório.
 
 Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 1, "Quando usar task-build vs. abordagem manual").
 
-> **Isolamento**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) NÃO possuem `permission.task: []` no frontmatter (não suportado pelo parser do OpenCode 1.18.1). Para isolar subagentes, configure `permission.task` no `opencode.json` do projeto.
+ > **Isolamento**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) NÃO possuem `permission.task: []` no frontmatter (não suportado pelo parser do OpenCode 1.18.2). Para isolar subagentes, configure `permission.task` no `opencode.json` do projeto.
 
 ### Padrões de orquestração
 
@@ -290,6 +290,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - 10 novas skills upstream instaladas (devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect)
 - Criação manual de plano removida (task-build apenas delega)
 - Unificação de skills de design/frontend: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
+- Atualização para OpenCode 1.18.2: subagentes isolados por padrão (`subagent_depth`), `@opencode-ai/plugin` `^1.18.0` → `^1.18.2`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 

@@ -268,3 +268,21 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 **Agentes**: 5 (task-build primary, task-planner/dev/code-review/git-commit subagents)
 
 **Branch**: feature/adaptacao-opencode-1-18
+
+### Atualização OpenCode 1.18.2 (16/07/2026)
+
+**O que foi feito**:
+- Atualização de OpenCode 1.18.1 para 1.18.2 (CLI + plugin)
+- Mudança principal: subagentes não lançam subagentes aninhados por padrão (`subagent_depth=0`)
+- `@opencode-ai/plugin`: `^1.18.0` → `^1.18.2`
+- `permission.task` menos crítico: isolamento agora é default
+
+**Arquivos modificados**:
+- `.config/opencode/package.json` (plugin ^1.18.0 → ^1.18.2)
+- `.config/opencode/package-lock.json` (atualizado pelo npm install)
+- `AGENTS.md` (referências 1.18.1→1.18.2, nota subagent_depth)
+- `docs/MULTI_AGENT_ORCHESTRATION.md` (seções 5, 9.6.3, 10, 11.4)
+- `docs/SESSION_CONTEXT_20260618.md` (esta entrada)
+
+**Skills**: 50 (inalterado)
+**Agentes**: 5 (inalterado)
