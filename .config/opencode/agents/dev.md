@@ -1,8 +1,8 @@
 ---
 description: "Implementa código — executa tasks do plano com qualidade e conformidade"
 mode: subagent
-hidden: true
-color: orange
+hidden: false
+color: "#FFA500"
 temperature: 0.3
 permission:
   bash:
@@ -15,7 +15,6 @@ permission:
   write: allow
   question: allow
   skill: allow
-  task: []
 ---
 
 # Dev Agent

@@ -165,12 +165,18 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
 - **`permission.task` (OpenCode 1.18.1)**: Substitui o `rbac` custom. Controla
   quais subagentes um agente pode invocar via Task tool.
 
-  **Exemplo** (cada subagente nega todos os outros — `task: []`):
-  ```yaml
-  permission:
-    task: []
+  > **⚠️ WARN**: `permission.task` NÃO é suportado no frontmatter .md dos agentes.
+  > O parser do OpenCode 1.18.1 ignora este campo em arquivos .md.
+  > Para configurar isolamento de subagentes, use `opencode.json` do projeto (seção `"agent"`).
+  > Ver seção 9.6.3 de `docs/MULTI_AGENT_ORCHESTRATION.md` para detalhes.
+
+  No `opencode.json`, o formato é:
+  ```json
+  "permission": {
+    "task": []
+  }
   ```
-  
+
   Agentes primários (ex: `task-build`) não precisam de `permission.task` —
   podem chamar todos os subagentes por padrão.
   
@@ -229,7 +235,7 @@ para acesso offline e versionamento no repositório.
 
 Para tabela completa de qual agente usar para cada tarefa, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 1, "Quando usar task-build vs. abordagem manual").
 
-> **Isolamento**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) são isolados via `permission.task: []`. Apenas `task-build` (primary) pode chamá-los.
+> **Isolamento**: agentes inferiores (`dev`, `code-review`, `task-planner`, `git-commit`) NÃO possuem `permission.task: []` no frontmatter (não suportado pelo parser do OpenCode 1.18.1). Para isolar subagentes, configure `permission.task` no `opencode.json` do projeto.
 
 ### Padrões de orquestração
 
@@ -276,7 +282,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 
 ## Melhorias Recentes
 
-- Migração para OpenCode 1.18.1: agentes em markdown puro (frontmatter YAML com `hidden`, `color`, `temperature`), permissões nativas (`permission.task`), `plan_enter`/`plan_exit` removidos
+- Migração para OpenCode 1.18.1: agentes em markdown puro (frontmatter YAML com `hidden`, `color`, `temperature`), permissões nativas (`permission.task` — funciona via `opencode.json`, NÃO no frontmatter .md), `plan_enter`/`plan_exit` removidos
 - plan-reviewer como skill obrigatória
 - Steps 4b/4c no task-build
 - Timeouts padronizados (plan-reviewer=3min, code-review 10min/5min)

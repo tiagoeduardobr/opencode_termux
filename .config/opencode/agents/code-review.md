@@ -1,8 +1,8 @@
 ---
 description: "Revisa código pós-implementação — qualidade, skills dinâmicas, plano vs execução"
 mode: subagent
-hidden: true
-color: purple
+hidden: false
+color: "#9D00FF"
 temperature: 0.1
 permission:
   bash:
@@ -27,7 +27,6 @@ permission:
   write: deny
   question: allow
   skill: allow
-  task: []
 ---
 
 # Code Review Agent

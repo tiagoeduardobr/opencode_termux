@@ -2,7 +2,7 @@
 description: "Orquestra o fluxo completo de entrega — planeja, implementa, revisa e commita"
 mode: primary
 hidden: false
-color: blue
+color: "#0000FF"
 temperature: 0.2
 permission:
   bash:

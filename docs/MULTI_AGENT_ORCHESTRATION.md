@@ -221,8 +221,9 @@ O `setup.sh`:
 - `permission.skill`: quais skills são permitidas
 - Agentes definidos em markdown em `.config/opencode/agents/` (auto-descobertos)
 - Frontmatter YAML: `description`, `mode`, `hidden`, `color`, `temperature`, `permission`
-- Permissões no frontmatter: bash (patterns), read, edit, write, question, skill, task
-- `hidden: true` para subagentes, `hidden: false` para primary
+- Permissões no frontmatter: bash (patterns), read, glob, grep, edit, write, question, skill
+- NOTA: `permission.task` NÃO funciona no frontmatter .md — ver seção 9.6.3
+- `hidden: false` para todos os agentes (visíveis no TUI)
 - Cores: task-build=blue, task-planner=green, dev=orange, code-review=purple, git-commit=gray
 
 ### 4.4 Arquitetura de Config — Por que Symlink?
@@ -344,6 +345,10 @@ Regras são avaliadas em ordem; a última regra matching vence.
 | `code-review` (subagent) | `[]` | Ninguém |
 | `git-commit` (subagent) | `[]` | Ninguém |
 
+> **⚠️ WARN**: A coluna `permission.task` reflete a configuração no `opencode.json`.
+> `permission.task` NÃO funciona no frontmatter .md (ver seção 9.6.3).
+> Atualmente os subagentes NÃO têm `task: []` em lugar nenhum — podem chamar outros subagentes.
+
 ### 5.3 Regras de Permissão (quem pode chamar quem)
 
 - agentes `primary` (ex: `task-build`) não precisam de `permission.task` —
@@ -351,6 +356,9 @@ Regras são avaliadas em ordem; a última regra matching vence.
 - agentes `subagent` têm `task: []` — não podem chamar ninguém.
 - Usuário sempre pode invocar qualquer subagente via `@mention`,
   independente de `permission.task`.
+
+> **⚠️ Nota**: `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md.
+> Ver seção 9.6.3 para detalhes.
 
 > **Sintaxe**: `permission.task` aceita um objeto com padrões glob para
 > controle granular:
@@ -372,6 +380,9 @@ Regras são avaliadas em ordem; a última regra matching vence.
 - O `rbac` custom antigo foi removido — usar `permission.task`
 - Cores dos agentes no TUI: `task-build`=blue, `task-planner`=green,
   `dev`=orange, `code-review`=purple, `git-commit`=gray
+
+> **⚠️ Nota**: As regras acima valem para `permission.task` em `opencode.json`.
+> No frontmatter .md, `permission.task` é ignorado pelo parser do OpenCode 1.18.1 (ver 9.6.3).
 
 ## 6. Mecanismos de Robustez
 
@@ -488,7 +499,7 @@ Log imutável (append-only) de todas as ações:
 ---
 description: {descrição curta}
 mode: subagent
-hidden: true
+hidden: false
 color: {cor}
 temperature: 0.2
 permission:
@@ -500,8 +511,9 @@ permission:
   write: deny
   question: allow
   skill: allow
-  task: []
 ---
+
+> **NOTA**: `permission.task` NÃO é suportado no frontmatter .md — ver seção 9.6.3.
 
 # {Nome} Agent
 
@@ -613,7 +625,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 
 | Problema | Solução |
 |----------|---------|
-| `rbac` custom removido | Usar `permission.task` nativo do OpenCode 1.18.1 |
+| `rbac` custom removido | `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md — ver seção 9.6.3 |
 | Agent editando código sendo que shouldn't | Verificar `edit: "deny"` no frontmatter .md |
 | Git commit sem branch feature | task-build cria branch antes do pipeline |
 | Review não roda quality checks | code-review auto-detecta stack (Python/Node/Makefile) |
@@ -622,6 +634,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 | task-build editando código | Nunca — delegar para dev |
 | Skills dinâmicas não carregadas | Varredura automática em `~/.config/opencode/skills/` |
 | Indirect file editing via bash | Usar padrões de negação no frontmatter .md (sed, python -c, etc.) + lista explícita nos prompts |
+| YAML frontmatter mal formatado quebra o parser | Ver seção 9.6 — hex colors, `*` alias, `permission.task`, validação, delimitadores |
 
 ### 9.2 Anti-padrões
 
@@ -681,6 +694,83 @@ A camada de prompt instructions cobre isso, mas a camada de permissão não.
 Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 
 **Verificação**: Usar `opencode debug agent <name>` para verificar permissões aplicadas.
+
+### 9.6 YAML Frontmatter Gotchas
+
+> **Lição aprendida em 15/07/2026**: Edição manual dos frontmatters dos agentes
+> causou quebras no OpenCode 1.18.1. Estas são as armadilhas conhecidas.
+
+#### 9.6.1 Hex colors precisam de aspas
+
+| Correto | Incorreto | Problema |
+|---------|-----------|----------|
+| `color: "#FFA500"` | `color: #FFA500` | `#` é início de comentário YAML — valor fica null |
+
+**Regra**: Qualquer cor hex DEVE estar entre aspas duplas: `color: "#HEXCODE"`.
+Cores nomeadas (purple, orange, gray, etc.) não precisam de aspas.
+
+#### 9.6.2 `*` é alias YAML — usar aspas na chave
+
+| Correto | Incorreto | Problema |
+|---------|-----------|----------|
+| `"*": allow` | `*: allow` | YAML tenta resolver como alias de referência |
+
+**Regra**: Chaves com `*` DEVEM ter aspas: `"*": allow`, `"git *": deny`.
+
+#### 9.6.3 `permission.task` NÃO funciona no frontmatter .md
+
+| Campo | Suportado no frontmatter .md | Suportado no opencode.json |
+|-------|:---:|:---:|
+| `permission.bash` | ✅ Sim | ✅ Sim |
+| `permission.read` | ✅ Sim | ✅ Sim |
+| `permission.edit` | ✅ Sim | ✅ Sim |
+| `permission.write` | ✅ Sim | ✅ Sim |
+| `permission.skill` | ✅ Sim | ✅ Sim |
+| `permission.question` | ✅ Sim | ✅ Sim |
+| **`permission.task`** | **❌ Não** | **✅ Sim** |
+
+**Problema**: O parser YAML do OpenCode 1.18.1 ignora `task` dentro de `permission:` no frontmatter .md.
+
+**Workaround**: Configurar `permission.task` no `opencode.json` do projeto (seção `"agent"`),
+não no frontmatter .md. Ou aceitar que subagentes podem chamar outros subagentes.
+
+#### 9.6.4 Validar YAML antes de aplicar
+
+Sempre validar o frontmatter YAML após edição manual:
+
+```bash
+# Validar frontmatter de um agente específico
+python3 -c "
+import yaml
+content = open('.config/opencode/agents/arquivo.md').read()
+fm = content.split('---')[1]
+yaml.safe_load(fm)
+print('YAML válido')
+"
+
+# Validar TODOS os agentes de uma vez
+for f in .config/opencode/agents/*.md; do
+  python3 -c "
+import yaml
+content = open('$f').read()
+fm = content.split('---')[1]
+yaml.safe_load(fm)
+print('$f: OK')
+" 2>&1 || echo "$f: FALHA"
+done
+```
+
+**Alternativa**: `opencode debug agent <nome>` para verificar parsing pelo OpenCode.
+
+#### 9.6.5 Delimitadores `---` no body do markdown
+
+| Correto | Incorreto | Problema |
+|---------|-----------|----------|
+| `### Seção` | `---` (isolado no body) | Parsers YAML ingênuos interpretam como fim do frontmatter |
+
+**Regra**: O body do markdown NÃO deve conter `---` isolados como separadores de seção.
+Usar `###` ou `####` em vez disso. O parser do OpenCode é robusto, mas parsers YAML
+genéricos (como `python3 -c "import yaml; ..."`) podem falhar.
 
 ## 10. Melhorias Recentes
 

@@ -1,8 +1,8 @@
 ---
 description: "Cria commits semânticos seguindo as convenções do projeto"
 mode: subagent
-hidden: true
-color: gray
+hidden: false
+color: "#808080"
 temperature: 0.1
 permission:
   bash:
@@ -19,7 +19,6 @@ permission:
   edit: deny
   write: deny
   question: allow
-  task: []
 ---
 
 # Git Commit Agent

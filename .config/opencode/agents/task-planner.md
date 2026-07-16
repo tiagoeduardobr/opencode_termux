@@ -1,8 +1,8 @@
 ---
 description: "Planeja tarefas antes da implementação — análise de codebase, escopo, dependências, riscos"
 mode: subagent
-hidden: true
-color: green
+hidden: false
+color: "#00FF00"
 temperature: 0.2
 permission:
   bash:
@@ -33,7 +33,6 @@ permission:
   write: allow
   question: allow
   skill: allow
-  task: []
 ---
 
 # Task Planner Agent
