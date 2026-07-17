@@ -286,3 +286,15 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 
 **Skills**: 50 (inalterado)
 **Agentes**: 5 (inalterado)
+
+### Atualização OpenCode 1.18.3 (17/07/2026)
+
+- Atualização de OpenCode 1.18.2 para 1.18.3 (CLI + plugin)
+- Conteúdo do 1.18.3: desktop bugfixes (scrolling, startup readiness, help button, custom agent selector), atalho seta pra cima no subagent picker
+- Nada que afete o workflow de agentes ou permissões — atualização mantida por boa prática
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.3 --force`) — versão 1.18.2 → 1.18.3
+  - `.config/opencode/package.json` (plugin ^1.18.2 → ^1.18.3)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.2→1.18.3)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
