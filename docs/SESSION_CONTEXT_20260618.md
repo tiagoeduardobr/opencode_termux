@@ -298,3 +298,21 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.2→1.18.3)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.4 (21/07/2026)
+
+- Atualização de OpenCode 1.18.3 para 1.18.4 (CLI + plugin)
+- Conteúdo do 1.18.4:
+  - Desktop v2: redesign completo (attachment cards, session view, toggle de layout)
+  - Suporte GPT-5.6 via Azure AI + adaptive thinking para Kimi models
+  - Navegação: Mod+N para tabs, middle-click sessões, paleta busca sessões
+  - Fix: subagentes não lançam subagentes aninhados por padrão
+  - Fix: Azure Cognitive Services endpoint
+  - Estabilidade: project picker crashes, cold-load times
+- Nada que afete o workflow CLI — mudanças são Desktop v2 e providers
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.4 --force`) — versão 1.18.3 → 1.18.4
+  - `.config/opencode/package.json` (plugin ^1.18.3 → ^1.18.4)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.3→1.18.4)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
