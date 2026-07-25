@@ -293,6 +293,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Atualização para OpenCode 1.18.2: subagentes isolados por padrão (`subagent_depth`), `@opencode-ai/plugin` `^1.18.0` → `^1.18.2`
 - Atualização para OpenCode 1.18.3: patch de desktop, `@opencode-ai/plugin` `^1.18.2` → `^1.18.3`
 - Atualização para OpenCode 1.18.4: Desktop v2 layout, fix subagentes aninhados, `@opencode-ai/plugin` `^1.18.3` → `^1.18.4`
+- Atualização para OpenCode 1.18.5: fix Claude adaptive thinking, fix Mistral reasoning/caching, `@opencode-ai/plugin` `^1.18.4` → `^1.18.5`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 

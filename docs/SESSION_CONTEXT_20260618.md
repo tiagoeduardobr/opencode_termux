@@ -316,3 +316,21 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.3→1.18.4)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.5 (24/07/2026)
+
+- Atualização de OpenCode 1.18.4 para 1.18.5 (CLI + plugin)
+- Conteúdo do 1.18.5:
+  - Fix: Claude adaptive thinking handling (mais formatos de resposta)
+  - Fix: OpenAI Responses phase que quebrava conversas
+  - Fix: preservar symlinks no grep (community PR)
+  - Fix: Mistral reasoning history + prompt caching
+  - Fix: MiniMax M3 thinking variant selection
+  - Desktop: suporte current server + bugfixes various
+- Nada que afete o workflow CLI — fixes são de providers e Desktop
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.5 --force`) — versão 1.18.4 → 1.18.5
+  - `.config/opencode/package.json` (plugin ^1.18.4 → ^1.18.5)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.4→1.18.5)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
