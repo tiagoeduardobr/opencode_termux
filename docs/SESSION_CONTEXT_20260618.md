@@ -334,3 +334,19 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.4→1.18.5)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.10 (30/07/2026)
+
+- Atualização de OpenCode 1.18.5 para 1.18.10 (CLI + plugin) — pulou 1.18.6–1.18.9
+- Conteúdo do 1.18.6: fix cache de repositório por branch
+- Conteúdo do 1.18.7: desktop (macOS titlebar, project selector scroll)
+- Conteúdo do 1.18.8: MCP OAuth flows, reconnect MCP após sessão expirada, fix Gemini sampling
+- Conteúdo do 1.18.9: compat legacy MCP SDK clients, desktop V2 sidecar opt-in
+- Conteúdo do 1.18.10: descobrimento automático de modelos Modal, desktop fixes
+- Nada que afete o workflow CLI — mudanças são Desktop e MCP fixes
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.10 --force`) — versão 1.18.5 → 1.18.10
+  - `.config/opencode/package.json` (plugin ^1.18.5 → ^1.18.10)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.5→1.18.10)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
