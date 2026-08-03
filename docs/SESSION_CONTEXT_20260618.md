@@ -350,3 +350,18 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.5→1.18.10)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.11 (01/08/2026)
+
+- Atualização de OpenCode 1.18.10 para 1.18.11 (CLI + plugin)
+- Conteúdo do 1.18.11:
+  - Fix: MCP SSE connections presas em reconnect loops após erros do servidor
+  - Fix: provider model configs com reasoning fields interleaved (`reasoning_text`)
+  - Desktop: links externos no browser, stale session tab state, file tree clipping
+- Nada que afete o workflow CLI — fixes são MCP/desktop
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.11 --force`) — versão 1.18.10 → 1.18.11
+  - `.config/opencode/package.json` (plugin ^1.18.10 → ^1.18.11)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.10→1.18.11)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)

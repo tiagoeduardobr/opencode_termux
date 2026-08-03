@@ -295,6 +295,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Atualização para OpenCode 1.18.4: Desktop v2 layout, fix subagentes aninhados, `@opencode-ai/plugin` `^1.18.3` → `^1.18.4`
 - Atualização para OpenCode 1.18.5: fix Claude adaptive thinking, fix Mistral reasoning/caching, `@opencode-ai/plugin` `^1.18.4` → `^1.18.5`
 - Atualização para OpenCode 1.18.10: MCP OAuth/reconnect, legacy MCP compat, `@opencode-ai/plugin` `^1.18.5` → `^1.18.10`
+- Atualização para OpenCode 1.18.11: fix MCP SSE reconnect loops, fix provider reasoning fields, `@opencode-ai/plugin` `^1.18.10` → `^1.18.11`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
