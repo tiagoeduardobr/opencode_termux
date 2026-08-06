@@ -365,3 +365,16 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.10→1.18.11)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.13 (04/08/2026)
+
+- Atualização de OpenCode 1.18.11 para 1.18.13 (CLI + plugin) — pulou 1.18.12
+- Conteúdo do 1.18.12: fix Azure GPT-5.5+ com reasoning, desktop composer lag
+- Conteúdo do 1.18.13: TUI PR reviews com número/URL no contexto, desktop RTL layout support, i18n
+- Nada que afete o workflow CLI — mudanças são Desktop/TUI
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.13 --force`) — versão 1.18.11 → 1.18.13
+  - `.config/opencode/package.json` (plugin ^1.18.11 → ^1.18.13)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.11→1.18.13)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
