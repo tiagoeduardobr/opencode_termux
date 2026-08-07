@@ -297,6 +297,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Atualização para OpenCode 1.18.10: MCP OAuth/reconnect, legacy MCP compat, `@opencode-ai/plugin` `^1.18.5` → `^1.18.10`
 - Atualização para OpenCode 1.18.11: fix MCP SSE reconnect loops, fix provider reasoning fields, `@opencode-ai/plugin` `^1.18.10` → `^1.18.11`
 - Atualização para OpenCode 1.18.13: TUI PR context, desktop RTL/i18n, `@opencode-ai/plugin` `^1.18.11` → `^1.18.13`
+- Atualização para OpenCode 1.18.15: xAI device-code flow, retry de erros transientes, `@opencode-ai/plugin` `^1.18.13` → `^1.18.15`
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 

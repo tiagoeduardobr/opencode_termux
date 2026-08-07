@@ -1,7 +1,7 @@
 # Orquestração Multi-Agente — Guia Completo
 
 > **Última atualização**: 2026-07-16
-> **Versão do sistema**: 5 agentes + 50 skills + OpenCode 1.18.13
+> **Versão do sistema**: 5 agentes + 50 skills + OpenCode 1.18.15
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
 ## 1. Visão Geral

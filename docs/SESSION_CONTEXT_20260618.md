@@ -378,3 +378,16 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.11→1.18.13)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.15 (07/08/2026)
+
+- Atualização de OpenCode 1.18.13 para 1.18.15 (CLI + plugin) — pulou 1.18.14
+- Conteúdo do 1.18.14: xAI login device-code flow, retry de erros transientes, cache writes em ACP, remote workspace directory fix
+- Conteúdo do 1.18.15: fix ordem cronológica de mensagens, revert/fork chronology, blob attachments web UI, desktop i18n/JSON export, TUI clipboard/cursor style
+- Nada que afete o workflow CLI — mudanças são Core fixes/Desktop/TUI
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.15 --force`) — versão 1.18.13 → 1.18.15
+  - `.config/opencode/package.json` (plugin ^1.18.13 → ^1.18.15)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.13→1.18.15)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
