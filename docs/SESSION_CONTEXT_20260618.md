@@ -391,3 +391,17 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.13→1.18.15)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Atualização OpenCode 1.18.18 (13/08/2026)
+
+- Atualização de OpenCode 1.18.15 para 1.18.18 (CLI + plugin) — pulou 1.18.16 e 1.18.17
+- Conteúdo do 1.18.16: config parsing ignora campos desconhecidos, register projects do Home
+- Conteúdo do 1.18.17: session compaction melhora turns recentes, caps de retries + jitter, PDF attachments Copilot, DeepSeek V4 Flash defaults
+- Conteúdo do 1.18.18: fix Kimi system prompt (Moonshot/Kimi), fix xhigh reasoning effort xAI
+- Nada que afete o workflow CLI — mudanças são Core fixes/Desktop
+- Arquivos alterados:
+  - `opencode` CLI global (`npm install -g opencode-linux-arm64@1.18.18 --force`) — versão 1.18.15 → 1.18.18
+  - `.config/opencode/package.json` (plugin ^1.18.15 → ^1.18.18)
+  - `.config/opencode/package-lock.json` (atualizado via npm install)
+  - `AGENTS.md` (referências 1.18.15→1.18.18)
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
