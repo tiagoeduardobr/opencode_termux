@@ -20,7 +20,7 @@ if [ -f "$SSHD_PID_FILE" ] && kill -0 "$(cat "$SSHD_PID_FILE")" 2>/dev/null; the
     echo "[INFO] sshd ja esta rodando (PID $(cat "$SSHD_PID_FILE"))."
 else
     echo "[INFO] Iniciando sshd na porta $SSH_PORT..."
-    sshd -p "$SSH_PORT"
+    sshd -D -p "$SSH_PORT" &
     echo $! > "$SSHD_PID_FILE"
     echo "[INFO] sshd iniciado (PID $!)."
 fi

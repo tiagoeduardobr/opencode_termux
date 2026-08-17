@@ -15,6 +15,13 @@ if [ ! -f "$SSHD_PID_FILE" ]; then
 fi
 
 PID=$(cat "$SSHD_PID_FILE")
+
+if [ -z "$PID" ]; then
+    echo "[WARN] PID file vazio. Limpando..."
+    rm -f "$SSHD_PID_FILE"
+    exit 0
+fi
+
 echo "[INFO] Parando sshd (PID $PID)..."
 
 kill "$PID" 2>/dev/null
