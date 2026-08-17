@@ -21,8 +21,10 @@ if [ -f "$SSHD_PID_FILE" ] && kill -0 "$(cat "$SSHD_PID_FILE")" 2>/dev/null; the
 else
     echo "[INFO] Iniciando sshd na porta $SSH_PORT..."
     sshd -D -p "$SSH_PORT" &
-    echo $! > "$SSHD_PID_FILE"
-    echo "[INFO] sshd iniciado (PID $!)."
+    SSHD_PID=$!
+    echo "$SSHD_PID" > "$SSHD_PID_FILE"
+    disown "$SSHD_PID" 2>/dev/null || true
+    echo "[INFO] sshd iniciado (PID $SSHD_PID)."
 fi
 
 DEVICE_IP=$(ip addr show 2>/dev/null | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1 | head -1)

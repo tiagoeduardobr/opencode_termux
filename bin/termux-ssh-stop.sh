@@ -35,7 +35,7 @@ kill -0 "$PID" 2>/dev/null && kill -9 "$PID" 2>/dev/null || true
 
 rm -f "$SSHD_PID_FILE"
 
-timeout 5 termux-notification --id termux-ssh --delete 2>/dev/null || true
+# Notificação limpa automaticamente pelo Android (id + ongoing)
 
 stty sane 2>/dev/null || true
 
