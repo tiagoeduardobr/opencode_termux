@@ -149,8 +149,10 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   — substitui o bash, evita processo orfão. Não refatorar para `bash -c` sem `exec`.
 - **Fire-and-forget**: `disown` + PID file — o opencode tem bug onde Ctrl+C não
   termina (#21505). O manager só inicia e sai; use `opencode_web_stop` para parar.
-- **`kill -0`**: Padrão POSIX para testar se processo existe. O stop script faz
-  graceful kill (SIGTERM), espera 3s, depois `kill -9`. Não confundir com sinal 0.
+- **`kill -0`**: Padrão POSIX para testar se processo existe, mas retorna 0 para
+  processos zumbis (não é teste suficiente de vida). O stop script combina
+  `kill -0` com `is_zombie()` para detectar zumbis antes de tentar matar.
+  A limpeza de órfãos agora roda por padrão (mesmo sem PID file).
 - **`stty sane`** no stop: Reset de terminal pós-proot (quirk Termux). Não remover.
 - **`termux-notification-remove`** removido: Causa abertura de configurações de bateria
   em MIUI/Xiaomi. A notificação com `--id` e `--ongoing` é limpa automaticamente
@@ -299,6 +301,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Atualização para OpenCode 1.18.13: TUI PR context, desktop RTL/i18n, `@opencode-ai/plugin` `^1.18.11` → `^1.18.13`
 - Atualização para OpenCode 1.18.15: xAI device-code flow, retry de erros transientes, `@opencode-ai/plugin` `^1.18.13` → `^1.18.15`
 - Atualização para OpenCode 1.18.18: config parsing robusto, retry caps, fix Kimi/xAI, `@opencode-ai/plugin` `^1.18.15` → `^1.18.18`
+- Stop script melhorado (14/08/2026, dc4f00a): limpeza de órfãos e zumbis por padrão — carrega .env, mata proot zombie-aware, limpa run-cloudflare-tunnel.sh + porta + cloudflared (com porta), nunca pkill -f "opencode web" (risco TUI); validado no device (4 cenários)
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 

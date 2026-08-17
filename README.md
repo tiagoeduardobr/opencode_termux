@@ -394,7 +394,7 @@ opencode-web.sh  ──proot──►  run-cloudflare-tunnel.sh
 O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não termina o processo (#21505), e o processo deixa órfãos (#20899). Com Fire-and-Forget:
 
 - O manager **não** aguarda o proot — usa `nohup` + `disown` + PID file
-- O stop é feito por um **script dedicado** (`opencode-web-stop.sh`) que manda kill graceful → force
+- O stop é feito por um **script dedicado** (`opencode-web-stop.sh`) que mata o proot graceful → force e limpa processos órfãos/zumbis por padrão
 - Sem traps, sem raw mode, sem travamentos de terminal
 
 ---
@@ -442,7 +442,14 @@ Variáveis (via `.env` ou env var):
 
 ### `bin/opencode-web-stop.sh`
 
-Para o serviço: kill graceful → kill -9 → cleanup (PID file, notify file, wake lock, notification).
+Para o serviço e limpa processos órfãos/zumbis.
+
+1. **Carrega `.env`** via `$SCRIPT_DIR` com defaults (`OPENCODE_PORT`=4096, `OPENCODE_HOSTNAME`=127.0.0.1) — usa as mesmas variáveis do `bin/opencode-web.sh` (vide tabela acima).
+2. **Mata o proot** graceful → force: SIGTERM, espera 3×1s checando se virou zumbi, depois SIGKILL se ainda vivo.
+3. **Limpeza de órfãos** — roda **sempre** (mesmo sem PID file): `run-cloudflare-tunnel.sh` + processo na porta do OpenCode + `cloudflared tunnel` (match por padrão com a porta).
+4. **Nunca** usa `pkill -f "opencode web"` — risco de matar a sessão TUI.
+5. **Verificação final**: zumbis → log INFO (serão reaped pelo init), vivos → log WARN.
+6. **Cleanup**: remove PID file, notify file, log file; executa `stty sane` e `termux-wake-unlock`.
 
 ### `run-cloudflare-tunnel.sh`
 
@@ -530,7 +537,7 @@ opencode plugin nim-sync -g
 | Como saber a URL atual? | No momento da inicialização ela aparece no terminal e chega por ntfy.sh. Depois, `cat $PREFIX/tmp/opencode_url.txt`. |
 | O que é `--shared-tmp`? | Faz o `/tmp` do proot compartilhar o mesmo diretório do Termux nativo (`$PREFIX/tmp`), permitindo que o manager leia o notify file. |
 | `termux-wake-lock` falha? | Instale `termux-api` (F-Droid) ou ignore — o wake lock não é estritamente necessário. |
-| O tunnel caiu e não sobe de novo? | `opencode_web_stop` primeiro, depois `opencode_web` novamente. |
+| O tunnel caiu e não sobe de novo? | `opencode_web_stop` primeiro, depois `opencode_web` novamente (o stop agora limpa órfãos/zumbis por padrão). |
 | `opencode web` vs `opencode serve`? | Ambos funcionam. `web` é a interface web (recomendado). `serve` expõe via SSE. |
 | Como mudar a porta? | Edite `.env`: `OPENCODE_PORT=8080`. |
 | Posso rodar sem cloudflared? | Sim, mas o acesso será apenas local (`http://127.0.0.1:4096`). Edite `run-cloudflare-tunnel.sh` e remova o cloudflared. |
