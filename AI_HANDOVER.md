@@ -252,6 +252,59 @@ Adicionada seção `### Commit` nas Regras do dev.md:
 2. Tailscale ainda não instalado no device (instruções em `docs/tailscale/README.md`)
 3. `docs/tailscale/README.md` ainda usa `pkg install tailscale` (INCORRETO — precisa compilar do fonte)
 
+## Sessão de 2026-08-17 — SSH/SFTP Access para Termux
+
+### Resumo
+Implementação de scripts para acesso SSH/SFTP ao Termux via Termius, com notificação push ntfy.sh incluindo botão de copiar.
+
+### Contexto
+Usuário queria acessar arquivos do Termux remotamente via SFTP. Pesquisou sobre opções (JuiceSSH, Termius) e escolheu Termius. Pedeu para criar script que:
+- Inicia sshd se não estiver rodando
+- Detecta IP do dispositivo
+- Envia notificação ntfy push com comando SSH formatado (botão copiar via `copy` action do ntfy)
+- Envia notificação local Termux com botão copiar
+
+### Descoberta Importante
+ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <value>` — copia valor para o clipboard do Android. Isso permite que o usuário copie o comando SSH com um toque na notificação.
+
+### Arquivos Criados
+
+| Arquivo | Descrição |
+|---|---|
+| `bin/termux-ssh.sh` | Script principal: inicia sshd, detecta IP, envia notificações (ntfy + Termux local) |
+| `bin/termux-ssh-stop.sh` | Script de parada: graceful kill → force kill → cleanup |
+| `docs/termux/ssh-sftp-access.md` | Documentação de referência SSH/SFTP |
+
+### Arquivos Modificados
+
+| Arquivo | Mudança |
+|---|---|
+| `shell/aliases.sh` | Adicionados aliases `termux_ssh` e `termux_ssh_stop` |
+| `.env` | Adicionada variável `SSH_PORT=8022` |
+| `.env.example` | Adicionada variável `SSH_PORT=8022` |
+| `AGENTS.md` | Seção SSH em scripts, docs e comandos úteis |
+| `README.md` | Estrutura, seção SSH/SFTP, referência dos scripts, 3 perguntas FAQ |
+
+### Commit
+- `b5b6e7f` — `feat: add SSH/SFTP access scripts for remote Termux file management`
+- Pushed para `main → origin/main`
+
+### Padrões do Projeto Confirmados
+- Shebang Termux: `#!/data/data/com.termux/files/usr/bin/bash`
+- `[INFO]`/`[ERROR]`/`[OK]` messages (sem cores)
+- `.env` loading via `$SCRIPT_DIR` com `set -a; source ...; set +a`
+- PID file pattern com `kill -0`
+- `termux-notification` com `--id`, `--ongoing`, `--button1`/`--button2`
+- Stop script: graceful kill → 3×1s wait → force kill → cleanup
+- ntfy push: `curl -s -d "..." "https://ntfy.sh/$NTFY_TOPIC" >/dev/null 2>&1 || true`
+
+### Uso
+```bash
+termux_ssh          # inicia sshd + notifica IP
+termux_ssh_stop     # para sshd
+```
+Porta padrão: 8022. Autenticação via senha (`passwd`).
+
 ---
 
 *Documento gerado em 2026-08-17. Atualizar após mudanças significativas no repositório.*
