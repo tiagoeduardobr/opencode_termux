@@ -1,4 +1,4 @@
-# AI_HANDOVER — 2026-08-14
+# AI_HANDOVER — 2026-08-17
 
 > Snapshot auto-contido da sessão. Criado antes da exclusão da DB do OpenCode
 > (`~/.local/share/opencode/opencode.db`, ~856MB + WAL 279MB) para preservar
@@ -82,6 +82,77 @@ Reescrita do stop script (32→140 linhas) com:
 - **Follow-up conhecido**: `bin/opencode-tailscale-stop.sh` tem o mesmo problema de órfãos (fora de escopo desta sessão)
 - **Testes integrados**: todos validados no device (4 cenários descritos acima)
 
+## Sessão de 2026-07-11 — Integração Tailscale
+
+### Problema
+O Cloudflare Quick Tunnel bloqueia SSE (Server-Sent Events), que o OpenCode Web usa
+em `/global/event` para notificações em tempo real. O frontend precisava de refresh
+manual. Tailscale foi escolhido como alternativa — VPN mesh que preserva SSE/WebSocket.
+
+### Implementação (commits 7c048b3 + 49ee73c)
+7 arquivos criados/modificados via workflow completo (task-build → code-review → commit):
+
+| Arquivo | Tipo | Descrição |
+|---|---|---|
+| `run-opencode-tailscale.sh` | Novo | Script proot que inicia opencode web e sinaliza prontidão |
+| `bin/opencode-tailscale.sh` | Novo | Wrapper Termux: wake lock, proot, tailscale serve, notificações |
+| `bin/opencode-tailscale-stop.sh` | Novo | Stop script: graceful kill, stty sane, wake-unlock |
+| `docs/tailscale/README.md` | Novo | Documentação completa (235 linhas) |
+| `shell/aliases.sh` | Modificado | Adicionados aliases `opencode_tailscale` / `opencode_tailscale_stop` |
+| `scripts/setup.sh` | Modificado | Seção 4 opcional para Tailscale |
+| `.env.example` | Modificado | Variável `TAILSCALE_SERVE_HTTP=true` |
+| `AGENTS.md` | Modificado | Estrutura, scripts, comandos e referências Tailscale |
+
+### Descoberta Crítica: Tailscale NÃO funciona dentro do proot
+O daemon `tailscaled` precisa de permissões de netlink que o proot não fornece:
+```
+netmon.New: route ip+net: netlinkrib: permission denied
+```
+Mesmo com `--tun=userspace-networking`, o erro persiste. **Tailscale só funciona no host (Termux).**
+
+### Solução: Compilar Tailscale do fonte no Termux
+Os binários pré-compilados de `pkgs.tailscale.com` não funcionam no Termux (Bionic libc).
+A solução é compilar do fonte:
+
+```bash
+# Fora do proot, no Termux
+pkg install golang -y
+cd "$HOME"
+git clone https://github.com/tailscale/tailscale --depth=1
+cd tailscale
+go install tailscale.com/cmd/tailscale{,d}
+```
+
+Aliases para `~/.bashrc`:
+```bash
+export PATH="$HOME/go/bin:$PATH"
+alias tailscaled='tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055 --socket $PREFIX/var/run/tailscaled.sock --statedir $HOME/.config/tailscale/'
+alias tailscale='tailscale --socket $PREFIX/var/run/tailscaled.sock'
+```
+
+Iniciar:
+```bash
+mkdir -p $HOME/.config/tailscale $PREFIX/var/run
+tailscaled &
+tailscale up
+```
+
+> **Fonte**: github.com/termux/termux-packages/issues/10166
+> **Nota**: Em alguns dispositivos pode continuar dando `netlinkrib` mesmo compilado do fonte.
+
+### Estado Atual
+- Código commitado em `main` (commits `7c048b3` + `49ee73c`)
+- Scripts criados e funcionais (documentados em `docs/tailscale/README.md`)
+- Tailscale **ainda não instalado no device** — instruções de instalação corretas acima
+- Documentação em `docs/tailscale/README.md` ainda usa `pkg install tailscale` (INCORRETO — precisa ser atualizado com as instruções corretas de compilação)
+- `bin/opencode-tailscale-stop.sh` usa `tailscale serve --remove` (corrigido na segunda revisão)
+
+### Pendências
+1. **Atualizar `docs/tailscale/README.md`** — substituir `pkg install tailscale` pelas instruções corretas de compilação
+2. **Testar Tailscale no device** — compilar do fonte e verificar se funciona
+3. **Testar `tailscale serve`** — verificar se consegue expor porta 4096 na rede Tailscale
+4. **Se `netlinkrib` persistir** — considerar alternativa: localhost.run (SSH tunnel gratuito)
+
 ---
 
-*Documento gerado em 2026-08-14. Atualizar após mudanças significativas no repositório.*
+*Documento gerado em 2026-08-17. Atualizar após mudanças significativas no repositório.*
