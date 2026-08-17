@@ -12,7 +12,7 @@ excluir a DB — este documento garante que o contexto da sessão não se perca.
 
 ## Estado do Repositório
 
-- Branch: `main` em commit `dc4f00a`
+- Branch: `main` em commit `3497e95`
 - Sincronizado com `origin/main`
 - Working tree limpo (sem alterações pendentes)
 - OpenCode versão: 1.18.18
@@ -191,6 +191,66 @@ Cada upgrade tocou os mesmos 6 arquivos:
 - **Pattern de upgrade**: branch `feature/upgrade-opencode-X-Y-Z` → npm install → dev edita → git-commit commit + merge + delete branch
 - **Permission.task**: não funciona em frontmatter .md (parser ignora); usar `opencode.json` (documentado em 9.6.3 de MULTI_AGENT_ORCHESTRATION.md)
 - **subagent_depth=0**: subagentes isolados por padrão no OpenCode 1.18.2+
+
+## Sessão de 2026-08-17 — Ajustes de Coerência Documental e Agentes
+
+### Resumo
+Correção de inconsistências documentais e ajustes nos agentes do sistema multi-agente.
+
+### Mudanças Implementadas
+
+| Commit | Descrição |
+|--------|-----------|
+| `19676cf` | 23 inconsistências corrigidas em 5 arquivos (AGENTS.md, MULTI_AGENT_ORCHESTRATION.md, SESSION_CONTEXT, README.md, ADR-005) |
+| `ba0df7f` | MULTI_AGENT_ORCHESTRATION.md: skill count 49→50, nova seção 4.5 "Como Adicionar Skills a um Projeto" |
+| `a83ec74` | task-planner.md: detecção obrigatória de skills por tecnologia (17 stacks mapeadas) |
+| `3497e95` | dev.md: regra explícita "NUNCA sugerir commit" — task-build controla momento |
+
+### Detalhes por Mudança
+
+#### Coerência Documental (19676cf)
+- ADR-005: plan-reviewer invocado via code-review, timeouts corrigidos
+- MULTI_AGENT_ORCHESTRATION.md seção 2.1: plan-reviewer, code review, revisão consolidada
+- AGENTS.md: steps 0-8, melhorias atualizadas, referências quebradas corrigidas
+- SESSION_CONTEXT: data 10/07/2026, 7 mudanças documentadas
+- README.md: 50 skills, plan-reviewer, code review, aritmética corrigida
+
+#### task-planner.md — Skills por Tecnologia (a83ec74)
+17 stacks mapeados com skills obrigatórios:
+| Tecnologia | Skills Obrigatórios |
+|------------|---------------------|
+| React Native | `react-native-best-practices` |
+| Expo | `expo-*` (conforme módulo) |
+| Python | `python-pro` |
+| FastAPI | `fastapi-expert` |
+| PostgreSQL | `postgres-pro`, `sql-pro` |
+| Terraform | `terraform-engineer` |
+| Kubernetes | `devops-engineer` |
+| AWS/Azure/GCP | `cloud-architect` |
+| Frontend Web | `frontend-complete`, `code-architecture-tailwind-v4-best-practices` |
+| React | `javascript-typescript` |
+| Data Science | `data-science-expert` |
+| Monitoring | `monitoring-expert` |
+| Security | `security-reviewer`, `secure-code-guardian`, `api-security-best-practices` |
+| Architecture | `architecture-designer`, `microservices-architect` |
+| SRE | `sre-engineer` |
+| Git | `using-git-worktrees` |
+
+Regra: skills de tecnologia são OBRIGATÓRIOS mesmo que task-build indique outros.
+
+#### dev.md — Não Sugerir Commit (3497e95)
+Adicionada seção `### Commit` nas Regras do dev.md:
+```markdown
+### Commit
+- NUNCA sugerir ou iniciar commit — task-build decide o momento correto
+- NUNCA mencionar "pronto para commit" ou "commitar agora"
+- Retornar apenas "Pronto para review" ou "Precisa de ajustes"
+```
+
+### Pendências Conhecidas
+1. `bin/opencode-tailscale-stop.sh` tem o mesmo problema de órfãos (fora de escopo)
+2. Tailscale ainda não instalado no device (instruções em `docs/tailscale/README.md`)
+3. `docs/tailscale/README.md` ainda usa `pkg install tailscale` (INCORRETO — precisa compilar do fonte)
 
 ---
 
