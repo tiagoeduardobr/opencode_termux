@@ -285,9 +285,29 @@ ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <valu
 | `AGENTS.md` | Seção SSH em scripts, docs e comandos úteis |
 | `README.md` | Estrutura, seção SSH/SFTP, referência dos scripts, 3 perguntas FAQ |
 
-### Commit
-- `b5b6e7f` — `feat: add SSH/SFTP access scripts for remote Termux file management`
-- Pushed para `main → origin/main`
+### Commits
+| Commit | Descrição |
+|---|---|
+| `b5b6e7f` | `feat: add SSH/SFTP access scripts for remote Termux file management` |
+| `f733ba4` | `docs: update AI_HANDOVER.md with SSH/SFTP session context` |
+| `4f3884c` | `fix: sshd port flag, stop script env loading, agents comment` |
+| `6e9968e` | `fix: sshd foreground mode for correct PID tracking` |
+| `1a32670` | `fix: add disown, quote PID, remove invalid --delete flag` |
+
+Todos os commits foram push para `main → origin/main`.
+
+### Issues Encontrados e Corrigidos (Code Review)
+
+| # | Severidade | Issue | Fix | Commit |
+|---|---|---|---|---|
+| 1 | Crítico | `sshd` sem flag `-p` — porta do `.env` ignorada | `sshd -D -p "$SSH_PORT" &` | `4f3884c` |
+| 2 | Importante | `termux-ssh-stop.sh` não carregava `.env` | Adicionado `SCRIPT_DIR` + source `.env` | `4f3884c` |
+| 3 | Menor | AGENTS.md comment desatualizado | Comentário atualizado com 6 aliases | `4f3884c` |
+| 4 | Crítico | PID tracking quebrado — `sshd` sem `-D` e `&` | `sshd -D -p "$SSH_PORT" &` (foreground mode) | `6e9968e` |
+| 5 | Importante | Stop script sem validação de PID vazio | Adicionada validação `if [ -z "$PID" ]` | `6e9968e` |
+| 6 | Menor | `disown` ausente — sshd podia morrer com SIGHUP | Adicionado `disown` após background | `1a32670` |
+| 7 | Menor | `echo $!` sem quotes | `echo "$SSHD_PID"` | `1a32670` |
+| 8 | Menor | `--delete` pode não existir no `termux-notification` | Substituído por comentário | `1a32670` |
 
 ### Padrões do Projeto Confirmados
 - Shebang Termux: `#!/data/data/com.termux/files/usr/bin/bash`
@@ -296,6 +316,8 @@ ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <valu
 - PID file pattern com `kill -0`
 - `termux-notification` com `--id`, `--ongoing`, `--button1`/`--button2`
 - Stop script: graceful kill → 3×1s wait → force kill → cleanup
+- `sshd -D` para foreground mode (PID tracking correto)
+- `disown` para proteger processos background contra SIGHUP
 - ntfy push: `curl -s -d "..." "https://ntfy.sh/$NTFY_TOPIC" >/dev/null 2>&1 || true`
 
 ### Uso
