@@ -153,6 +153,45 @@ tailscale up
 3. **Testar `tailscale serve`** — verificar se consegue expor porta 4096 na rede Tailscale
 4. **Se `netlinkrib` persistir** — considerar alternativa: localhost.run (SSH tunnel gratuito)
 
+## Sessão de 2026-08-17 — Upgrades Sequenciais do OpenCode (1.18.2 → 1.18.18)
+
+### Resumo
+Cadeia de upgrades do OpenCode (CLI + plugin) de 1.18.3 até 1.18.18, realizados
+ao longo de múltiplas sessões. Cada upgrade seguiu o mesmo pipeline:
+branch → npm install → plugin bump + docs → commit → merge direto (fast-forward).
+
+### Commits de Upgrade (em ordem cronológica)
+| Commit | Versão | Data | Destaque |
+|--------|--------|------|----------|
+| `84e3547` | 1.18.3 | ~Jul 16 | Desktop bugfixes, subagent picker |
+| `ec40e00` | 1.18.4 | ~Jul 20 | Desktop v2 layout, subagentes aninhados, GPT-5.6 Azure |
+| `072dcea` | 1.18.5 | ~Jul 24 | Fix Claude adaptive thinking, Mistral reasoning |
+| `65b296a` | 1.18.10 | ~Jul 28 | MCP OAuth/reconnect, legacy MCP compat |
+| `57db19e` | 1.18.11 | ~Aug 1 | Fix MCP SSE reconnect loops, provider reasoning |
+| `f391510` | 1.18.13 | ~Aug 4 | TUI PR context, desktop RTL/i18n |
+| `d9f52d4` | 1.18.15 | ~Aug 7 | xAI device-code flow, retry caps |
+| `834e3ca` | 1.18.18 | Aug 13 | Config parsing robusto, retry caps, fix Kimi/xAI |
+
+### Versões Puladas (com justificativa)
+- **1.18.6–1.18.9**: patches de core/desktop, sem impacto no workflow → saltou para 1.18.10
+- **1.18.12**: Azure GPT-5.5+ reasoning fix → saltou para 1.18.13 (junto com desktop i18n)
+- **1.18.14**: xAI device-code flow → saltou para 1.18.15 (retry caps)
+
+### Arquivos Modificados por Upgrade
+Cada upgrade tocou os mesmos 6 arquivos:
+1. `opencode` CLI global (`npm install -g opencode-linux-arm64@X.Y.Z --force`)
+2. `.config/opencode/package.json` (plugin `^old` → `^new`)
+3. `.config/opencode/package-lock.json` (via `npm install`)
+4. `AGENTS.md` (nova linha em "Melhorias Recentes")
+5. `docs/MULTI_AGENT_ORCHESTRATION.md` (linha 4 — versão do sistema)
+6. `docs/SESSION_CONTEXT_20260618.md` (nova seção por upgrade)
+
+### Decisões de Workflow
+- **Merge direto sempre**: usuário nunca quer PRs — merges são fast-forward
+- **Pattern de upgrade**: branch `feature/upgrade-opencode-X-Y-Z` → npm install → dev edita → git-commit commit + merge + delete branch
+- **Permission.task**: não funciona em frontmatter .md (parser ignora); usar `opencode.json` (documentado em 9.6.3 de MULTI_AGENT_ORCHESTRATION.md)
+- **subagent_depth=0**: subagentes isolados por padrão no OpenCode 1.18.2+
+
 ---
 
 *Documento gerado em 2026-08-17. Atualizar após mudanças significativas no repositório.*
