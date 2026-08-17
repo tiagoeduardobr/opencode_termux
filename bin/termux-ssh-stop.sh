@@ -1,6 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    set -a; source "$SCRIPT_DIR/.env"; set +a
+fi
+
 SSHD_PID_FILE="${SSHD_PID_FILE:-$PREFIX/tmp/termux_sshd.pid}"
 
 if [ ! -f "$SSHD_PID_FILE" ]; then

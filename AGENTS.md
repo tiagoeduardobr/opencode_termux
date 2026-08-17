@@ -32,7 +32,7 @@ opencode_termux/
 │   ├── termux-ssh.sh              ← inicia sshd + notifica IP
 │   └── termux-ssh-stop.sh         ← para sshd
 ├── shell/
-│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop, opencode_tailscale, opencode_tailscale_stop)
+│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop, opencode_tailscale, opencode_tailscale_stop, termux_ssh, termux_ssh_stop)
 ├── scripts/
 │   └── setup.sh                ← setup em device novo (backup, symlink, npm install)
 ├── docs/                       ← documentação de referência
