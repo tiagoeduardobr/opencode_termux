@@ -46,6 +46,20 @@ Não modifica código e não mexe em git — delega tudo para subagentes.
 
 ## Workflow
 
+### Routing
+
+Tabela de roteamento — qual agente usar para cada tipo de tarefa:
+
+| Tipo de Tarefa | Agente(s) | Pipeline |
+|----------------|-----------|----------|
+| Feature complexa (3+ arquivos) | task-build (orquestra) | task-planner → dev → code-review → git-commit |
+| Fix pontual (1-2 arquivos) | dev + git-commit | dev → git-commit |
+| Revisão de código | code-review | code-review → relatório |
+| Criar plano | task-planner | task-planner → plan-reviewer → code-review |
+| Criar commit | git-commit | git-commit |
+| Criar branch (isolado) | git-commit | git-commit (branch-only) |
+| Debug/systematic | dev | dev → systematic-debugging |
+
 ### 0. Ler AGENTS.md (SEMPRE)
 
 Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` **COMPLETO** e seguir as orientações descritas nele.
@@ -58,9 +72,14 @@ Antes de qualquer tarefa, **SEMPRE** ler `AGENTS.md` **COMPLETO** e seguir as or
 - Logar: `[HH:MM] WARN: AGENTS.md não encontrado — seguindo convenções padrão`
 - Continuar com step 1 (não interromper pipeline)
 
-**Quando delegar para subagentes**, incluir no prompt trecho relevante do AGENTS.md
-que ajude o subagent a entender convenções e gotchas aplicáveis à tarefa.
-Se não tem certeza, instruir o subagent a ler AGENTS.md antes de começar.
+**Quando delegar para subagentes**, incluir no prompt trecho relevante do AGENTS.md:
+- **Budget**: MÁXIMO 200 linhas de AGENTS.md por prompt de subagente
+- **Filtrar por seção aplicável**:
+  - Scripts Termux/proot → incluir "Convenções e Gotchas"
+  - Orquestração/multi-agent → incluir "Agent Workflow — Orquestração"
+  - Qualquer tarefa → incluir "Leitura Recomendada por Tarefa"
+- **Excluir** seções não relacionadas (economizar tokens)
+- Se não tem certeza, instruir o subagente a ler AGENTS.md antes de começar
 
 ### 1. Carregar skills obrigatórias
 
@@ -94,13 +113,12 @@ task(subagent_type="task-planner", description="Planejar tarefa", prompt="{taref
 LOG: `[HH:MM] task-planner → "tarefa" → OK/ERRO`
 
 **Se task-planner falhar ou retornar vazio:**
-1. Retry 1x automático com o mesmo prompt
-2. Se falhar novamente → usar **QUESTION TOOL**:
+1. Retry 2x automático com o mesmo prompt (consistente com Retry Policy: 3 tentativas totais). Se falhar → usar **QUESTION TOOL**:
    - Header: `"task-planner falhou"`
    - Options:
      - `"Tentar novamente"` → retry com contexto adicional
      - `"Parar build"` → interrompe pipeline
-3. Se usuário escolher "Tentar novamente": task-build NÃO cria plano — apenas delega novamente para task-planner
+2. Se usuário escolher "Tentar novamente": task-build NÃO cria plano — apenas delega novamente para task-planner
 
 ### 4b. Revisar plano (code-review) — TIMEOUT: 10 min
 
@@ -186,7 +204,7 @@ Antes de executar tasks, delegar criação de branch para git-commit:
    ```
    task(subagent_type="git-commit",
         description="Criar feature branch",
-        prompt="Criar e checkout branch {branch}. Execute: git checkout -b {branch}")
+        prompt="Criar e checkout branch {branch}. Execute: git checkout -b {branch}. NÃO executar commit, push, merge ou sugerir implementação. Retornar APENAS confirmação de que a branch foi criada e qual branch estamos agora.")
    ```
 
 3. Se o branch já existir, usar **QUESTION TOOL**:
@@ -385,7 +403,20 @@ Isso inclui, mas NÃO se limita a:
 
 Se um agent crashar (timeout, erro de API, exceção não tratada):
 1. Retry 1x automático com o mesmo prompt
-2. Se falhar novamente → salvar estado atual (task_id, tentativa, output parcial)
+2. Delegar para dev para salvar checkpoint:
+   - Criar diretório `.opencode/dead-letter/` se não existir
+   - Salvar arquivo `.opencode/dead-letter/{timestamp}_{task_id}_checkpoint.md` com campos:
+     - task_id, tentativa, output_partial, hash_ciclo, retries_contador, branch, timestamp (ISO 8601)
+     - **resumivel**: true/false — indica se a task pode ser retomada
+     - **proximo_passo**: qual step do workflow retomar (6a, 6b, etc.)
+     - **contexto_necessario**: dados que o agente precisa ao retomar (branch, plano, task_id)
+   - Formato: Markdown estruturado (consistente com Dead Letter Queue)
+
+   > **Nota**: Checkpoint (Crash Recovery) e Dead Letter Queue são mecanismos distintos:
+   > - **Checkpoint** = recuperação intermediária — permite retomar task interrompida
+   > - **Dead Letter Queue** = falha permanente — registro para análise futura
+   > Os schemas são intencionalmente diferentes (checkpoint inclui `resumivel`, `proximo_passo`; DLQ inclui `Agente`, `Plano`, `Erro`).
+
 3. Usar **QUESTION TOOL**:
    - Header: `"Agent {agent} crashou"`
    - Options:
@@ -394,30 +425,109 @@ Se um agent crashar (timeout, erro de API, exceção não tratada):
      - `"Parar build"` → interrompe pipeline
 4. Estado salvo permite continuação em sessão futura via `task_id`
 
+### Dead Letter Queue
+
+Para falhas não recuperáveis (esgotar retries ou "Parar build" com trabalho parcial):
+
+**Formato do path**: `.opencode/dead-letter/{timestamp}_{task_id}.md`
+
+**Campos do arquivo**:
+```markdown
+# Dead Letter: {task_id}
+
+- **Agente**: {nome do agente}
+- **Timestamp**: {ISO 8601}
+- **Branch**: {branch ativa}
+- **Plano**: {path do plano}
+- **Tentativas**: {total de retries realizados}
+- **Erro**: {erro capturado}
+
+## Prompt Enviado
+{prompt original}
+
+## Output Parcial
+{último output do agente}
+```
+
+**Quando gravar**:
+- Após esgotar retries (3x) de um agente
+- Após "Parar build" do usuário com trabalho parcial
+
+**Nota**: O task-build NÃO cria o diretório `.opencode/dead-letter/` — instrui dev a criar se necessário.
+
 ### Auto-correção
 - Se `code-review` retornar "Precisa de ajustes", voltar para `dev` automaticamente
 - Máximo de 3 tentativas por task antes de escalar via QUESTION TOOL
+
+### Retry Policy
+
+Todas as delegações seguem política de retry unificada:
+
+- **Backoff exponencial**: 2s → 4s → 8s (base × 2^n, onde n = tentativa - 1)
+- **Jitter**: Adicionar `rand(0, 2^n)` segundos ao delay (evita thundering herd)
+- **Máximo**: 3 tentativas totais por delegação (1 original + 2 retries). 
+  Ref: "Auto-correção" define mesmo limite de 3 tentativas antes de QUESTION TOOL.
+- **Aplicar a**: task-planner (step 4), dev retries (step 6c), git-commit retries (step 7)
+- **Exceção**: Crash recovery (step 1) usa retry único (1x) sem backoff — política separada
+
+**Exemplo de cálculo**:
+| Tentativa | Base (2^n) | Jitter (0-2^n) | Delay Total |
+|-----------|------------|----------------|-------------|
+| 1 (retry 1) | 2s | rand(0, 2s) | 2-4s |
+| 2 (retry 2) | 4s | rand(0, 4s) | 4-8s |
+| 3 (retry 3) | 8s | rand(0, 8s) | 8-16s |
+
+### Contratos de Output
+
+Cada subagente deve retornar output padronizado:
+
+**task-planner**:
+- ✅ Sucesso: `"Plano salvo em {path}. Pronto para revisão."`
+- ❌ Erro: `"Falha ao planejar: {motivo}"`
+
+**dev**:
+- ✅ Sucesso: Lista de arquivos modificados + resumo da implementação + confirmação de marcação no backlog
+- ❌ Erro: `"Falha ao implementar task {id}: {motivo}"`
+
+**code-review (plano)**:
+- ✅ Sucesso: Veredito `[OKAY]` ou `[REJECT]` + motivos
+- ❌ Erro: `"Falha ao revisar plano: {motivo}"`
+
+**code-review (código)**:
+- ✅ Sucesso: `"Aprovado"` | `"Aprovação condicional"` | `"Precisa de ajustes"` + detalhes
+- ❌ Erro: `"Falha ao revisar task {id}: {motivo}"`
+
+**git-commit**:
+- ✅ Sucesso: Hash do commit + branch
+- ❌ Erro: `"Falha no commit: {motivo}"`
 
 ### Detecção de Ciclos (state hashing + circuit breaker)
 
 Após cada tentativa de dev + code-review:
 1. Gerar hash do output do dev (primeiros 100 chars do resumo + lista de arquivos alterados)
 2. Comparar com hash da tentativa anterior
-3. Se hash_identicos ≥ 3 vezes consecutivas → **CIRCUIT BREAKER ABRE**:
+3. Se hash_identicos ≥ 3 vezes consecutivas → **CIRCUIT BREAKER ABRE** (estado OPEN):
    - Usar QUESTION TOOL:
      - Header: `"Loop detectado — mesmo output produzido 3 vezes"`
      - Options:
-       - `"Forçar abordagem diferente"` → dev recebe contexto adicional + reseta contador
+       - `"Forçar abordagem diferente"` → **Transição para HALF_OPEN**: aguardar recovery timeout (30s), depois retry 1x com prompt modificado (instruir dev a usar abordagem diferente)
        - `"Pular task"` → continua com warning
        - `"Parar build"` → interrompe pipeline
+   - Se retry em HALF_OPEN for **bem-sucedido** → circuit breaker **FECHA** (volta ao normal, reseta contador)
+   - Se retry em HALF_OPEN **falhar** → circuit breaker **reabre** (QUESTION TOOL novamente)
+   - **Limite**: Máximo 2 ciclos HALF_OPEN → se falhar novamente, "Parar build" automático (sem QUESTION TOOL)
 4. Circuit breaker é resetado quando nova task começa
 
 ### Circuit Breaker (falhas em cascata)
 
-Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review:
-- Interromper pipeline imediatamente
-- Usar **QUESTION TOOL**:
-  - Header: `"Falhas em cascata detectadas — 3+ tasks falharam no review"`
+Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review → **CIRCUIT BREAKER ABRE** (estado OPEN):
+- **Recovery timeout**: Aguardar 30 segundos antes de prosseguir
+- **Transição para HALF_OPEN**: Retry 1x com prompt modificado (instruir dev a usar abordagem diferente)
+- Se retry em HALF_OPEN for **bem-sucedido** → circuit breaker **FECHA** (volta ao normal, reseta contador)
+- Se retry em HALF_OPEN **falhar**:
+   - **Limite**: Máximo 1 ciclo HALF_OPEN → se falhar novamente, "Parar build" automático (sem QUESTION TOOL)
+   - Usar **QUESTION TOOL**:
+     - Header: `"Falhas em cascata detectadas — 3+ tasks falharam no review"`
   - Options:
     - `"Revisar abordagem"` → volta ao step 4 (task-planner) para replanejar
     - `"Aprovar com ressalvas"` → commit o que foi aprovado

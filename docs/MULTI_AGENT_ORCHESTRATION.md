@@ -394,22 +394,37 @@ Regras são avaliadas em ordem; a última regra matching vence.
 ### 6.1 Circuit Breaker
 
 Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review:
-- Interromper pipeline imediatamente
-- QUESTION TOOL: "Revisar abordagem" / "Aprovar com ressalvas" / "Parar build"
+- Transição para estado **HALF_OPEN** com recovery timeout de 30s
+- Retry 1x com prompt modificado (instruir dev a usar abordagem diferente)
+- Se retry em HALF_OPEN for bem-sucedido → circuit breaker FECHA (volta ao normal)
+- Se retry em HALF_OPEN falhar → circuit breaker reabre (QUESTION TOOL novamente)
+- **Limite**: Máximo 2 ciclos HALF_OPEN → se falhar novamente, "Parar build" automático (sem QUESTION TOOL)
 
 ### 6.2 State Hashing (Detecção de Loops)
 
 Após cada tentativa de dev + code-review:
 1. Gerar hash do output do dev (100 chars do resumo + arquivos alterados)
 2. Comparar com hash da tentativa anterior
-3. Se idêntico 3 vezes → "Loop detectado" → QUESTION TOOL
+3. Se idêntico 3 vezes → transição para **HALF_OPEN** com recovery timeout de 30s
+   - Retry 1x com prompt modificado (instruir dev a usar abordagem diferente)
+   - Se retry em HALF_OPEN for bem-sucedido → circuit breaker FECHA
+   - Se retry em HALF_OPEN falhar → reabre (QUESTION TOOL novamente)
+   - **Limite**: Máximo 2 ciclos HALF_OPEN → se falhar novamente, "Parar build" automático
 
 ### 6.3 Crash Recovery
 
 Se agent crashar (timeout/erro API):
 1. Retry 1x automático com o mesmo prompt
-2. Se falhar → salvar estado (task_id, tentativa, output parcial)
+2. Se falhar → salvar checkpoint expandido com campos:
+   - `task_id`, `tentativa`, `output_partial`, `hash_ciclo`, `retries_contador`, `branch`, `timestamp`
+   - **resumivel**: true/false — indica se a task pode ser retomada
+   - **proximo_passo**: qual step do workflow retomar (6a, 6b, etc.)
+   - **contexto_necessario**: dados que o agente precisa ao retomar (branch, plano, task_id)
 3. QUESTION TOOL → continuação via task_id em sessão futura
+
+**Distinção entre Checkpoint e Dead Letter Queue**:
+- **Checkpoint** = recuperação intermediária — permite retomar task interrompida (schema com `resumivel`, `proximo_passo`, `contexto_necessario`)
+- **Dead Letter Queue** = falha permanente — registro para análise futura (schema distinto com `Agente`, `Plano`, `Erro`)
 
 ### 6.4 Orçamento Global
 

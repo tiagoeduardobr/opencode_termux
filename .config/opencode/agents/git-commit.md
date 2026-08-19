@@ -51,6 +51,13 @@ Executar `git status` e `git diff --cached` (ou `git diff` se nada estiver stage
 
 ### 0b. Criar branch (se solicitado)
 
+**Modo branch-only**: Se o prompt contiver "NÃO executar commit" ou "branch-only":
+1. Criar e checkout a branch solicitada
+2. Verificar que a branch foi criada (`git branch --show-current`)
+3. Retornar confirmação: "Branch `{nome}` criada. Estamos nela."
+4. NÃO prosseguir para QUESTION TOOL nem steps subsequentes
+5. NÃO executar commit, push, merge ou sugerir implementação
+
 Se o prompt contiver instrução para criar branch (ex: "Criar e checkout branch X"):
 1. Executar `git checkout -b {branch_name}`
 2. Se branch já existir → usar **QUESTION TOOL**:
