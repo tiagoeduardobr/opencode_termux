@@ -138,6 +138,8 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `task-planner` | `.config/opencode/agents/task-planner.md` |
 | `dev` | `.config/opencode/agents/dev.md` |
 
+> Prompts reforçados em 19–21/08/2026 (detalhes em `docs/MULTI_AGENT_ORCHESTRATION.md` §2 e §10).
+
 ---
 
 ## Pendências (no device real — Termux)
@@ -405,3 +407,13 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
   - `.config/opencode/package-lock.json` (atualizado via npm install)
   - `AGENTS.md` (referências 1.18.15→1.18.18)
   - `docs/MULTI_AGENT_ORCHESTRATION.md` (versão do sistema)
+
+### Melhorias nos Agentes (19–21/08/2026)
+
+Cinco rodadas de melhorias baseadas em pesquisa de boas práticas da comunidade:
+
+- **task-build** (`58fc4ea`, 19/08): routing table, circuit breaker, output contracts, context budgeting, crash recovery, dead letter queue
+- **dev** (`609d579`, 19/08): pre-analysis decomposition, stop conditions, output template, auto-verificação, few-shot pattern, escalation ladder
+- **task-planner** (`68e2b11`, 20/08): Given/When/Then acceptance, framework de risco, evaluator-optimizer loop, feature list JSON
+- **code-review** (`825294a`, 20/08): persona Senior Reviewer, OWASP security scan, depth tiers, output contract
+- **git-commit** (`5a1bf2b`, 21/08): 11 types Conventional Commits, atomic commits, pre-commit validation, body/footer format, Co-Authored-By

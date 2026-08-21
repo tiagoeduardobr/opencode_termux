@@ -1,6 +1,6 @@
 # Orquestração Multi-Agente — Guia Completo
 
-> **Última atualização**: 2026-07-16
+> **Última atualização**: 2026-08-21
 > **Versão do sistema**: 5 agentes + 50 skills + OpenCode 1.18.18
 > **Complementa**: `AGENTS.md` (overview do repositório)
 
@@ -63,6 +63,14 @@ implementação, review e commit para os subagentes.
 - Code review é obrigatório antes de cada commit (individual + consolidado)
 - Revisão consolidada final (step 6e) antes do commit final
 
+**Novas capacidades (commit `58fc4ea`, 19/08/2026)**:
+- Retry policy unificada com backoff exponencial + jitter (2s→4s→8s, máx. 3 tentativas por delegação)
+- Output contracts padronizados para os 5 subagentes (formato fixo de sucesso/erro)
+- Routing table com 7 mapeamentos tipo-de-tarefa → agente → pipeline
+- Context budgeting: máx. 200 linhas de AGENTS.md por prompt de subagente
+- Branch-only delegation guard: criação/deleção de branch exclusivamente via `git-commit`
+- Circuit breaker HALF_OPEN (ver seção 6.1) e checkpoints expandidos com `resumivel`, `proximo_passo`, `contexto_necessario` (ver seção 6.3)
+
 **O que NÃO faz**:
 - Nunca modifica código (delega para `dev`)
 - Nunca executa git de escrita (delega para `git-commit`)
@@ -75,6 +83,16 @@ implementação, review e commit para os subagentes.
 **O que faz**: Analisa codebase, gera planos adaptativos salvos em
 `.opencode/plans/{timestamp}_{slug}.md`.
 
+**Novas capacidades (commit `68e2b11`, 20/08/2026)**:
+- Critérios de aceitação Given/When/Then (step 3a)
+- Escala numérica de complexidade (step 6a) e heurísticas de decomposição (step 6.1)
+- Matriz de dependências entre tasks
+- Framework de risco em 3 dimensões (probabilidade × impacto × mitigação)
+- Checkpoints para planos com mais de 6 tasks (step 6b)
+- Evaluator-optimizer loop: máx. 2 iterações de auto-revisão do plano (step 6c)
+- Feature list JSON estruturada (step 6d)
+- Tabela de 8 anti-padrões de planejamento
+
 **O que NÃO faz**:
 - Nunca modifica código
 - Nunca faz commit/push/merge
@@ -83,6 +101,19 @@ implementação, review e commit para os subagentes.
 
 **O que faz**: Implementa código seguindo o plano, roda verificações internas
 (build/test/lint auto-detect), marca tasks no backlog.
+
+**Novas capacidades (commit `609d579`, 19/08/2026)**:
+- Pré-análise com decomposição da task antes de implementar (Decompose Pattern)
+- Stop conditions explícitas (blocos PARAR / NÃO PARAR / NÃO FAZER)
+- Output template padronizado com 6 seções
+- Auto-verificação interna com 3 categorias de erro (sintaxe/tipo, lógica, dependência/config)
+- 8 restrições de escopo (não refatorar fora do escopo, não inventar dependências, etc.)
+- Citação de arquivos com números de linha ("baseado em {file}:{line}")
+- Few-shot pattern: buscar 1–2 exemplos similares no codebase antes de implementar
+- Escalation ladder quando bloqueado (auto-resolver → pesquisar → QUESTION TOOL)
+- Timeout policy com 4 parâmetros (leitura, implementação, verificação, total)
+- Context budget: máx. 5 skills dinâmicas por task
+- Tabela de anti-padrões a evitar
 
 **O que NÃO faz**:
 - Nunca executa comandos git de escrita
@@ -93,6 +124,18 @@ implementação, review e commit para os subagentes.
 **O que faz**: Revisa diff, roda quality checks (auto-detect para Python/Node/Makefile),
 verifica conclusão de TODOs no backlog, compara plano vs. implementação.
 
+**Novas capacidades (commit `825294a`, 20/08/2026)**:
+- Persona Senior Reviewer com rigor técnico
+- Structured findings com severidade formal (Critical/High/Medium/Low)
+- Context gathering além do diff (5 steps)
+- Security scan dedicado (OWASP Top 10)
+- Source of truth discipline (plano como referência de aceitação)
+- Formato no-findings: Findings / Residual Risks / Gaps
+- Checks por framework (Python, Node.js, Shell, Docker)
+- Depth tiers: Basic / Standard / Comprehensive
+- Output contract com 3 vereditos (Aprovado / Aprovação condicional / Precisa de ajustes)
+- Tabela de 10 anti-padrões do reviewer
+
 **O que NÃO faz**:
 - Nunca modifica código
 - Nunca faz commit
@@ -101,6 +144,19 @@ verifica conclusão de TODOs no backlog, compara plano vs. implementação.
 
 **O que faz**: Cria commits semânticos (em inglês), gerencia branches, push, merge,
 cleanup de branches stale.
+
+**Novas capacidades (commit `5a1bf2b`, 21/08/2026)**:
+- Tipos Conventional Commits completos (+style, perf, build, ci, revert)
+- Regra 50/72 e modo imperativo nas mensagens
+- Staging strategy: `git add -p` com fallback não-interativo
+- Atomic commits (sem `git add -A`)
+- Validação pré-commit: secrets, .env, build artifacts
+- Formato completo de mensagem (body/footer via heredoc)
+- Breaking change detection (`!` + footer BREAKING CHANGE)
+- Scope auto-detection
+- Convenção Co-Authored-By
+- Multi-commit workflow
+- Output contract para integração com task-build
 
 **O que NÃO faz**:
 - Nunca modifica código fonte ou testes (`edit: "deny"`, `write: "deny"`)
@@ -801,6 +857,22 @@ genéricos (como `python3 -c "import yaml; ..."`) podem falhar.
 
 Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente, subagent_depth.
 
+### Reforço dos prompts dos agentes (19–21/08/2026)
+
+Cinco rodadas de melhorias nos prompts dos 5 agentes (~870 linhas adicionadas),
+uma por agente, em ordem cronológica:
+
+| Data | Commit | Agente | Rodada de melhorias |
+|------|--------|--------|---------------------|
+| 19/08/2026 | `58fc4ea` | `task-build` | 10 melhorias no workflow: retry policy com backoff exponencial + jitter, output contracts, routing table, context budgeting, branch-only delegation guard |
+| 19/08/2026 | `609d579` | `dev` | 12 melhorias de prompt engineering: decomposição pré-análise, stop conditions, escalation ladder, timeout policy, context budget |
+| 20/08/2026 | `68e2b11` | `task-planner` | Templates estruturados, framework de risco, checkpoints, anti-padrões |
+| 20/08/2026 | `825294a` | `code-review` | Melhorias baseadas em pesquisa 2025–2026: severidade formal, security scan OWASP Top 10, depth tiers |
+| 21/08/2026 | `5a1bf2b` | `git-commit` | Best practices da comunidade: Conventional Commits completos, regra 50/72, atomic commits |
+
+> Detalhes por agente nas seções 2.1–2.5. As seções 6.1–6.3 (circuit breaker,
+> state hashing, crash recovery) já haviam sido atualizadas no commit `58fc4ea`.
+
 ## 11. Referências
 
 ### 11.1 Arquivos do Sistema
@@ -821,6 +893,7 @@ Melhorias recentes incluem: git delegado, permission.task, quality checks agnós
 |-------|-----------|
 | `executing-plans` | task-build, task-planner, dev |
 | `systematic-debugging` | dev |
+| `verification-before-completion` | dev |
 | `spec-driven-development` | task-planner |
 | `plan-reviewer` | task-build (revisão de plano) |
 | `api-security-best-practices` | code-review |

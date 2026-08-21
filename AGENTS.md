@@ -302,6 +302,11 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Atualização para OpenCode 1.18.15: xAI device-code flow, retry de erros transientes, `@opencode-ai/plugin` `^1.18.13` → `^1.18.15`
 - Atualização para OpenCode 1.18.18: config parsing robusto, retry caps, fix Kimi/xAI, `@opencode-ai/plugin` `^1.18.15` → `^1.18.18`
 - Stop script melhorado (14/08/2026, dc4f00a): limpeza de órfãos e zumbis por padrão — carrega .env, mata proot zombie-aware, limpa run-cloudflare-tunnel.sh + porta + cloudflared (com porta), nunca pkill -f "opencode web" (risco TUI); validado no device (4 cenários)
+- Melhorias nos agentes (19–21/08/2026): 5 rodadas de melhorias baseadas em pesquisa de boas práticas da comunidade — task-build (`58fc4ea`)
+- Melhorias nos agentes (19–21/08/2026): dev (`609d579`)
+- Melhorias nos agentes (19–21/08/2026): task-planner (`68e2b11`)
+- Melhorias nos agentes (19–21/08/2026): code-review (`825294a`)
+- Melhorias nos agentes (19–21/08/2026): git-commit (`5a1bf2b`)
 
 Para uma lista completa de melhorias, novidades e decisões recentes, consulte `docs/MULTI_AGENT_ORCHESTRATION.md`.
 

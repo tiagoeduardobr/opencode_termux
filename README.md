@@ -411,6 +411,8 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 | `code-review` | subagent | Revisa código |
 | `git-commit` | subagent | Cria commits semânticos |
 
+> Prompts dos 5 agentes reforçados em 19–21/08/2026 (`58fc4ea`, `609d579`, `68e2b11`, `825294a`, `5a1bf2b`) — detalhes em `docs/MULTI_AGENT_ORCHESTRATION.md`.
+
 > **Nota**: `customize-opencode` é built-in do opencode (sem diretório em skills/)
 
 > **Skills obrigatórias**: `executing-plans`, `systematic-debugging`, `verification-before-completion`, `plan-reviewer` — carregadas automaticamente pelo agent `task-build`.
