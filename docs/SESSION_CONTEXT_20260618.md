@@ -417,3 +417,15 @@ Cinco rodadas de melhorias baseadas em pesquisa de boas práticas da comunidade:
 - **task-planner** (`68e2b11`, 20/08): Given/When/Then acceptance, framework de risco, evaluator-optimizer loop, feature list JSON
 - **code-review** (`825294a`, 20/08): persona Senior Reviewer, OWASP security scan, depth tiers, output contract
 - **git-commit** (`5a1bf2b`, 21/08): 11 types Conventional Commits, atomic commits, pre-commit validation, body/footer format, Co-Authored-By
+
+### Atualização OpenCode 1.18.21 (23/08/2026)
+
+Cadeia de upgrades de 1.18.18 para 1.18.21 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+|--------|------|-----------|
+| 1.18.19 | 20/08/2026 | Cloudflare AI Gateway passthroughs (OpenAI/Anthropic), Codex rate limits, fix Qwen sampling defaults, fix /connect providers, ignore malformed pricing, OpenAI websocket fallback, web search Go provider, compat v1 DBs |
+| 1.18.20 | 21/08/2026 | **subagent failures resumíveis com task_id + surfaced** (relevante ao workflow multi-agente), permission requests de subagentes respondidas durante `opencode run`, retry network_error (+variantes), Cerebras max_completion_tokens, retry xAI capacity errors |
+| 1.18.21 | 21/08/2026 | continue on unknown finish reason, Vertex AI eu/us multi-region via REP endpoints |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
