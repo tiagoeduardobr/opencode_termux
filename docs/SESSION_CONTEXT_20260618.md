@@ -429,3 +429,16 @@ Cadeia de upgrades de 1.18.18 para 1.18.21 (direto), seguindo pipeline consolida
 | 1.18.21 | 21/08/2026 | continue on unknown finish reason, Vertex AI eu/us multi-region via REP endpoints |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
+### Atualização OpenCode 1.18.25 (27/08/2026)
+
+Cadeia de upgrades de 1.18.21 para 1.18.25 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+|--------|------|-----------|
+| 1.18.22 | 21/08/2026 | Removido messaging/pricing desatualizado do OpenCode Go, fix device login links (URLs relativas/base path), fix textVerbosity para providers OpenAI-compatible, atualizado Amazon Bedrock |
+| 1.18.23 | 21/08/2026 | Fix Cloudflare AI Gateway routing (non-Workers via REST API), fix modelos Anthropic via AI Gateway (IDs com ponto → slug com traço), fix parent session IDs em headers, fix GitHub auth OIDC |
+| 1.18.24 | 27/08/2026 | Fix Bedrock reasoning cache (empty messages), Azure sign-in via Microsoft Entra ID (Azure CLI), V1 lê config V2, fix archived sessions no desktop |
+| 1.18.25 | 27/08/2026 | Fix Azure auth (Azure CLI sign-in sem Bun) |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
