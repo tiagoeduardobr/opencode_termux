@@ -15,18 +15,21 @@ excluir a DB — este documento garante que o contexto da sessão não se perca.
 - Branch: `main` em commit `3497e95`
 - Sincronizado com `origin/main`
 - Working tree limpo (sem alterações pendentes)
-- OpenCode versão: 1.18.18
+- OpenCode versão: 1.18.25
 - Device: Poco X7 Pro, Android 14, MIUI HyperOS, Termux
 
 ## Sessão de 2026-08-14 — Melhoria do Stop Script
 
 ### Problema
+
 O `bin/opencode-web-stop.sh` original matava apenas o PID do proot via PID_FILE.
 Processos órfãos (`run-cloudflare-tunnel.sh`, `opencode web`, `cloudflared`) sobreviviam
 à morte do proot. Processos zumbis `<defunct>` não morriam com `kill` comum.
 
 ### Solução (commit dc4f00a)
+
 Reescrita do stop script (32→140 linhas) com:
+
 1. Carregamento de `.env` via `$SCRIPT_DIR` com defaults
 2. Helpers `is_zombie()` e `kill_graceful()` (SIGTERM → 3×1s → SIGKILL, zombie-aware)
 3. Limpeza de órfãos que roda **sempre** (mesmo sem PID_FILE):
@@ -39,6 +42,7 @@ Reescrita do stop script (32→140 linhas) com:
 6. Cleanup: PID file, notify file, log, `stty sane`, `termux-wake-unlock`
 
 ### Validação no Device (4 cenários)
+
 1. Stop normal (service rodando)
 2. Reprodução do bug real (`kill -9` do proot, verificando limpeza de órfãos)
 3. Dry run (sem serviço ativo)
@@ -47,7 +51,7 @@ Reescrita do stop script (32→140 linhas) com:
 ## Arquitetura dos Scripts
 
 | Script | Local | Função |
-|--------|-------|--------|
+| -------- | ------- | -------- |
 | `bin/opencode-web.sh` | Host Termux | Manager fire-and-forget: inicia proot com opencode web + cloudflared tunnel |
 | `run-cloudflare-tunnel.sh` | Dentro do proot | Executa `opencode web` + `cloudflared tunnel` + ntfy push |
 | `bin/opencode-web-stop.sh` | Host Termux | **Novo**: mata proot + limpa órfãos/zumbis por padrão |
@@ -78,22 +82,24 @@ Reescrita do stop script (32→140 linhas) com:
 ## Pendências / Conhecimento Útil
 
 - **DB do OpenCode**: para excluir, `rm ~/.local/share/opencode/opencode.db ~/.local/share/opencode/opencode.db-wal ~/.local/share/opencode/opencode.db-shm`
-- **Recriar contexto do stop script**: plano detalhado em `.opencode/plans/20260814_1142_stop-script-zombies.md`
+- **Recriar contexto do stop script**: plano detalhado em `.opencode/plans/archive/20260814_1142_stop-script-zombies.md`
 - **Follow-up conhecido**: `bin/opencode-tailscale-stop.sh` tem o mesmo problema de órfãos (fora de escopo desta sessão)
 - **Testes integrados**: todos validados no device (4 cenários descritos acima)
 
 ## Sessão de 2026-07-11 — Integração Tailscale
 
 ### Problema
+
 O Cloudflare Quick Tunnel bloqueia SSE (Server-Sent Events), que o OpenCode Web usa
 em `/global/event` para notificações em tempo real. O frontend precisava de refresh
 manual. Tailscale foi escolhido como alternativa — VPN mesh que preserva SSE/WebSocket.
 
 ### Implementação (commits 7c048b3 + 49ee73c)
+
 7 arquivos criados/modificados via workflow completo (task-build → code-review → commit):
 
 | Arquivo | Tipo | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `run-opencode-tailscale.sh` | Novo | Script proot que inicia opencode web e sinaliza prontidão |
 | `bin/opencode-tailscale.sh` | Novo | Wrapper Termux: wake lock, proot, tailscale serve, notificações |
 | `bin/opencode-tailscale-stop.sh` | Novo | Stop script: graceful kill, stty sane, wake-unlock |
@@ -104,13 +110,17 @@ manual. Tailscale foi escolhido como alternativa — VPN mesh que preserva SSE/W
 | `AGENTS.md` | Modificado | Estrutura, scripts, comandos e referências Tailscale |
 
 ### Descoberta Crítica: Tailscale NÃO funciona dentro do proot
+
 O daemon `tailscaled` precisa de permissões de netlink que o proot não fornece:
-```
+
+```text
 netmon.New: route ip+net: netlinkrib: permission denied
 ```
+
 Mesmo com `--tun=userspace-networking`, o erro persiste. **Tailscale só funciona no host (Termux).**
 
 ### Solução: Compilar Tailscale do fonte no Termux
+
 Os binários pré-compilados de `pkgs.tailscale.com` não funcionam no Termux (Bionic libc).
 A solução é compilar do fonte:
 
@@ -124,6 +134,7 @@ go install tailscale.com/cmd/tailscale{,d}
 ```
 
 Aliases para `~/.bashrc`:
+
 ```bash
 export PATH="$HOME/go/bin:$PATH"
 alias tailscaled='tailscaled --tun=userspace-networking --socks5-server=localhost:1055 --outbound-http-proxy-listen=localhost:1055 --socket $PREFIX/var/run/tailscaled.sock --statedir $HOME/.config/tailscale/'
@@ -131,6 +142,7 @@ alias tailscale='tailscale --socket $PREFIX/var/run/tailscaled.sock'
 ```
 
 Iniciar:
+
 ```bash
 mkdir -p $HOME/.config/tailscale $PREFIX/var/run
 tailscaled &
@@ -141,6 +153,7 @@ tailscale up
 > **Nota**: Em alguns dispositivos pode continuar dando `netlinkrib` mesmo compilado do fonte.
 
 ### Estado Atual
+
 - Código commitado em `main` (commits `7c048b3` + `49ee73c`)
 - Scripts criados e funcionais (documentados em `docs/tailscale/README.md`)
 - Tailscale **ainda não instalado no device** — instruções de instalação corretas acima
@@ -148,21 +161,24 @@ tailscale up
 - `bin/opencode-tailscale-stop.sh` usa `tailscale serve --remove` (corrigido na segunda revisão)
 
 ### Pendências
+
 1. **Atualizar `docs/tailscale/README.md`** — substituir `pkg install tailscale` pelas instruções corretas de compilação
 2. **Testar Tailscale no device** — compilar do fonte e verificar se funciona
 3. **Testar `tailscale serve`** — verificar se consegue expor porta 4096 na rede Tailscale
 4. **Se `netlinkrib` persistir** — considerar alternativa: localhost.run (SSH tunnel gratuito)
 
-## Sessão de 2026-08-17 — Upgrades Sequenciais do OpenCode (1.18.2 → 1.18.18)
+## Sessão de 2026-08-17 — Upgrades Sequenciais do OpenCode (1.18.2 → 1.18.25)
 
 ### Resumo
-Cadeia de upgrades do OpenCode (CLI + plugin) de 1.18.3 até 1.18.18, realizados
+
+Cadeia de upgrades do OpenCode (CLI + plugin) de 1.18.3 até 1.18.25, realizados
 ao longo de múltiplas sessões. Cada upgrade seguiu o mesmo pipeline:
 branch → npm install → plugin bump + docs → commit → merge direto (fast-forward).
 
 ### Commits de Upgrade (em ordem cronológica)
+
 | Commit | Versão | Data | Destaque |
-|--------|--------|------|----------|
+| -------- | -------- | ------ | ---------- |
 | `84e3547` | 1.18.3 | ~Jul 16 | Desktop bugfixes, subagent picker |
 | `ec40e00` | 1.18.4 | ~Jul 20 | Desktop v2 layout, subagentes aninhados, GPT-5.6 Azure |
 | `072dcea` | 1.18.5 | ~Jul 24 | Fix Claude adaptive thinking, Mistral reasoning |
@@ -171,14 +187,21 @@ branch → npm install → plugin bump + docs → commit → merge direto (fast-
 | `f391510` | 1.18.13 | ~Aug 4 | TUI PR context, desktop RTL/i18n |
 | `d9f52d4` | 1.18.15 | ~Aug 7 | xAI device-code flow, retry caps |
 | `834e3ca` | 1.18.18 | Aug 13 | Config parsing robusto, retry caps, fix Kimi/xAI |
+| `d04a640` | 1.18.21 | Aug 24 | subagent failures resumíveis (task_id), retry network errors, Vertex AI REP routing |
+| `0ef9e23` | 1.18.25 | Aug 28 | fix Azure auth (CLI sign-in sem Bun), fix Bedrock reasoning cache, Azure Entra ID sign-in, V1 lê config V2 |
 
 ### Versões Puladas (com justificativa)
+
 - **1.18.6–1.18.9**: patches de core/desktop, sem impacto no workflow → saltou para 1.18.10
 - **1.18.12**: Azure GPT-5.5+ reasoning fix → saltou para 1.18.13 (junto com desktop i18n)
 - **1.18.14**: xAI device-code flow → saltou para 1.18.15 (retry caps)
+- **1.18.19–1.18.20**: AI Gateway passthroughs + subagent failures resumíveis (task_id) → saltou para 1.18.21
+- **1.18.22–1.18.24**: fixes de providers/AI Gateway/Azure → saltou para 1.18.25 (junto com Azure Entra ID)
 
 ### Arquivos Modificados por Upgrade
+
 Cada upgrade tocou os mesmos 6 arquivos:
+
 1. `opencode` CLI global (`npm install -g opencode-linux-arm64@X.Y.Z --force`)
 2. `.config/opencode/package.json` (plugin `^old` → `^new`)
 3. `.config/opencode/package-lock.json` (via `npm install`)
@@ -187,6 +210,7 @@ Cada upgrade tocou os mesmos 6 arquivos:
 6. `docs/SESSION_CONTEXT_20260618.md` (nova seção por upgrade)
 
 ### Decisões de Workflow
+
 - **Merge direto sempre**: usuário nunca quer PRs — merges são fast-forward
 - **Pattern de upgrade**: branch `feature/upgrade-opencode-X-Y-Z` → npm install → dev edita → git-commit commit + merge + delete branch
 - **Permission.task**: não funciona em frontmatter .md (parser ignora); usar `opencode.json` (documentado em 9.6.3 de MULTI_AGENT_ORCHESTRATION.md)
@@ -195,12 +219,13 @@ Cada upgrade tocou os mesmos 6 arquivos:
 ## Sessão de 2026-08-17 — Ajustes de Coerência Documental e Agentes
 
 ### Resumo
+
 Correção de inconsistências documentais e ajustes nos agentes do sistema multi-agente.
 
 ### Mudanças Implementadas
 
 | Commit | Descrição |
-|--------|-----------|
+| -------- | ----------- |
 | `19676cf` | 23 inconsistências corrigidas em 5 arquivos (AGENTS.md, MULTI_AGENT_ORCHESTRATION.md, SESSION_CONTEXT, README.md, ADR-005) |
 | `ba0df7f` | MULTI_AGENT_ORCHESTRATION.md: skill count 49→50, nova seção 4.5 "Como Adicionar Skills a um Projeto" |
 | `a83ec74` | task-planner.md: detecção obrigatória de skills por tecnologia (17 stacks mapeadas) |
@@ -209,6 +234,7 @@ Correção de inconsistências documentais e ajustes nos agentes do sistema mult
 ### Detalhes por Mudança
 
 #### Coerência Documental (19676cf)
+
 - ADR-005: plan-reviewer invocado via code-review, timeouts corrigidos
 - MULTI_AGENT_ORCHESTRATION.md seção 2.1: plan-reviewer, code review, revisão consolidada
 - AGENTS.md: steps 0-8, melhorias atualizadas, referências quebradas corrigidas
@@ -216,9 +242,11 @@ Correção de inconsistências documentais e ajustes nos agentes do sistema mult
 - README.md: 50 skills, plan-reviewer, code review, aritmética corrigida
 
 #### task-planner.md — Skills por Tecnologia (a83ec74)
+
 17 stacks mapeados com skills obrigatórios:
+
 | Tecnologia | Skills Obrigatórios |
-|------------|---------------------|
+| ------------ | --------------------- |
 | React Native | `react-native-best-practices` |
 | Expo | `expo-*` (conforme módulo) |
 | Python | `python-pro` |
@@ -239,7 +267,9 @@ Correção de inconsistências documentais e ajustes nos agentes do sistema mult
 Regra: skills de tecnologia são OBRIGATÓRIOS mesmo que task-build indique outros.
 
 #### dev.md — Não Sugerir Commit (3497e95)
+
 Adicionada seção `### Commit` nas Regras do dev.md:
+
 ```markdown
 ### Commit
 - NUNCA sugerir ou iniciar commit — task-build decide o momento correto
@@ -248,6 +278,7 @@ Adicionada seção `### Commit` nas Regras do dev.md:
 ```
 
 ### Pendências Conhecidas
+
 1. `bin/opencode-tailscale-stop.sh` tem o mesmo problema de órfãos (fora de escopo)
 2. Tailscale ainda não instalado no device (instruções em `docs/tailscale/README.md`)
 3. `docs/tailscale/README.md` ainda usa `pkg install tailscale` (INCORRETO — precisa compilar do fonte)
@@ -255,22 +286,26 @@ Adicionada seção `### Commit` nas Regras do dev.md:
 ## Sessão de 2026-08-17 — SSH/SFTP Access para Termux
 
 ### Resumo
+
 Implementação de scripts para acesso SSH/SFTP ao Termux via Termius, com notificação push ntfy.sh incluindo botão de copiar.
 
 ### Contexto
+
 Usuário queria acessar arquivos do Termux remotamente via SFTP. Pesquisou sobre opções (JuiceSSH, Termius) e escolheu Termius. Pedeu para criar script que:
+
 - Inicia sshd se não estiver rodando
 - Detecta IP do dispositivo
 - Envia notificação ntfy push com comando SSH formatado (botão copiar via `copy` action do ntfy)
 - Envia notificação local Termux com botão copiar
 
 ### Descoberta Importante
+
 ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <value>` — copia valor para o clipboard do Android. Isso permite que o usuário copie o comando SSH com um toque na notificação.
 
 ### Arquivos Criados
 
 | Arquivo | Descrição |
-|---|---|
+| --- | --- |
 | `bin/termux-ssh.sh` | Script principal: inicia sshd, detecta IP, envia notificações (ntfy + Termux local) |
 | `bin/termux-ssh-stop.sh` | Script de parada: graceful kill → force kill → cleanup |
 | `docs/termux/ssh-sftp-access.md` | Documentação de referência SSH/SFTP |
@@ -278,7 +313,7 @@ ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <valu
 ### Arquivos Modificados
 
 | Arquivo | Mudança |
-|---|---|
+| --- | --- |
 | `shell/aliases.sh` | Adicionados aliases `termux_ssh` e `termux_ssh_stop` |
 | `.env` | Adicionada variável `SSH_PORT=8022` |
 | `.env.example` | Adicionada variável `SSH_PORT=8022` |
@@ -286,8 +321,9 @@ ntfy.sh suporta **action type `copy`** via header `Actions: copy, <label>, <valu
 | `README.md` | Estrutura, seção SSH/SFTP, referência dos scripts, 3 perguntas FAQ |
 
 ### Commits
+
 | Commit | Descrição |
-|---|---|
+| --- | --- |
 | `b5b6e7f` | `feat: add SSH/SFTP access scripts for remote Termux file management` |
 | `f733ba4` | `docs: update AI_HANDOVER.md with SSH/SFTP session context` |
 | `4f3884c` | `fix: sshd port flag, stop script env loading, agents comment` |
@@ -299,7 +335,7 @@ Todos os commits foram push para `main → origin/main`.
 ### Issues Encontrados e Corrigidos (Code Review)
 
 | # | Severidade | Issue | Fix | Commit |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Crítico | `sshd` sem flag `-p` — porta do `.env` ignorada | `sshd -D -p "$SSH_PORT" &` | `4f3884c` |
 | 2 | Importante | `termux-ssh-stop.sh` não carregava `.env` | Adicionado `SCRIPT_DIR` + source `.env` | `4f3884c` |
 | 3 | Menor | AGENTS.md comment desatualizado | Comentário atualizado com 6 aliases | `4f3884c` |
@@ -310,6 +346,7 @@ Todos os commits foram push para `main → origin/main`.
 | 8 | Menor | `--delete` pode não existir no `termux-notification` | Substituído por comentário | `1a32670` |
 
 ### Padrões do Projeto Confirmados
+
 - Shebang Termux: `#!/data/data/com.termux/files/usr/bin/bash`
 - `[INFO]`/`[ERROR]`/`[OK]` messages (sem cores)
 - `.env` loading via `$SCRIPT_DIR` com `set -a; source ...; set +a`
@@ -321,10 +358,12 @@ Todos os commits foram push para `main → origin/main`.
 - ntfy push: `curl -s -d "..." "https://ntfy.sh/$NTFY_TOPIC" >/dev/null 2>&1 || true`
 
 ### Uso
+
 ```bash
 termux_ssh          # inicia sshd + notifica IP
 termux_ssh_stop     # para sshd
 ```
+
 Porta padrão: 8022. Autenticação via senha (`passwd`).
 
 ---

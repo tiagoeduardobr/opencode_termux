@@ -18,6 +18,7 @@ comum. Cenário real observado: órfãos reparentados ao init + zumbi `<defunct>
 ## Decision
 
 Reescrever `bin/opencode-web-stop.sh` (commit `dc4f00a`):
+
 - Carregar `.env` via `$SCRIPT_DIR` com defaults (`OPENCODE_PORT`/`OPENCODE_HOSTNAME`)
 - Helpers `is_zombie()` (case `Z*` via `ps -o stat=`) e `kill_graceful()` (SIGTERM → 3×1s → SIGKILL, zombie-aware)
 - Limpeza de órfãos **por padrão** (sempre, mesmo sem PID_FILE) em duas fases:
@@ -39,12 +40,14 @@ Reescrever `bin/opencode-web-stop.sh` (commit `dc4f00a`):
 ## Consequences
 
 ### Positivos
+
 - Stop script limpa cenários reais observados no device
 - Zumbis não bloqueiam o script (tratamento zombie-aware)
 - Padrões de kill seguros (nunca `pkill -f "opencode web"`)
 - Verificação final fornece visibilidade sobre processos remanescentes
 
 ### Negativos
+
 - Limpeza por porta pode matar processo não relacionado na mesma porta — Mitigado: a porta é configurável e do projeto; o caminho principal via trap continua sendo o `run-cloudflare-tunnel.sh`
 - `lsof`/`fuser` podem ser cegos para processos em outro namespace — Mitigado: WARN único (`TOOLS_WARNED`) e caminho principal via trap
 
@@ -52,4 +55,4 @@ Reescrever `bin/opencode-web-stop.sh` (commit `dc4f00a`):
 
 - [MULTI_AGENT_ORCHESTRATION.md](../MULTI_AGENT_ORCHESTRATION.md)
 - [SESSION_CONTEXT_20260618.md](../SESSION_CONTEXT_20260618.md)
-- [Plano de implementação](../../.opencode/plans/20260814_1142_stop-script-zombies.md)
+- [Plano de implementação](../../.opencode/plans/archive/20260814_1142_stop-script-zombies.md)

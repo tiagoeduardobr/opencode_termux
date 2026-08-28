@@ -1,4 +1,4 @@
-> **Fonte**: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/local-management/configuration-file/
+> **Fonte**: <https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/local-management/configuration-file/>
 > **Snapshot**: 19/06/2026
 > **Formato**: Configuration file reference (Cloudflare developers)
 

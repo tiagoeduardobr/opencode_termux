@@ -21,7 +21,7 @@ Tailscale cria uma rede privada entre seus dispositivos usando WireGuard como pr
 ### Diferença do Cloudflare Quick Tunnel
 
 | Aspecto | Cloudflare Quick Tunnel | Tailscale |
-|---|---|---|
+| --- | --- | --- |
 | Acesso | Via URL `*.trycloudflare.com` | Via IP `100.x.x.x` |
 | SSE | Limitado (200 req) | Sem limitação |
 | WebSocket | Não suportado | Suportado |
@@ -35,7 +35,7 @@ Tailscale cria uma rede privada entre seus dispositivos usando WireGuard como pr
 
 - Android 12 ou superior
 - Termux instalado
-- F-Droid com Tailscale instalado ([link](https://f-droid.org/en/packages/com.tailscale.ipn/))
+- F-Droid com Tailscale instalado ([Tailscale no F-Droid](https://f-droid.org/en/packages/com.tailscale.ipn/))
 - proot-distro configurado com Ubuntu
 - opencode instalado dentro do proot
 
@@ -101,6 +101,7 @@ opencode_tailscale
 ```
 
 Este comando:
+
 1. Verifica se `tailscaled` está rodando
 2. Obtém o IP Tailscale do dispositivo
 3. Inicia o opencode web no proot (`127.0.0.1:4096`)
@@ -114,6 +115,7 @@ opencode_tailscale_stop
 ```
 
 Este comando:
+
 1. Para o `tailscale serve`
 2. Para o opencode web
 3. Limpa processos órfãos
@@ -122,14 +124,14 @@ Este comando:
 ### Arquivos de referência
 
 | Arquivo | Conteúdo |
-|---|---|
+| --- | --- |
 | `$PREFIX/tmp/opencode_tailscale.pid` | PID do processo principal |
 | `$PREFIX/tmp/opencode_tailscale_url.txt` | URL ativa (handoff) |
 | `$PREFIX/tmp/opencode_tailscale.log` | Log de diagnóstico |
 
 ## Arquitetura
 
-```
+```text
 ┌─────────────┐     tailscale serve     ┌──────────────┐
 │  Termux     │◄───────────────────────►│  Chromebook  │
 │  (Android)  │   http://100.x.x.x:4096 │  (peer)      │
@@ -154,6 +156,7 @@ Este comando:
 **Sintoma:** Comando `tailscale status` retorna erro ou timeout.
 
 **Solução:**
+
 ```bash
 tailscaled &
 sleep 2
@@ -165,6 +168,7 @@ tailscale status
 **Sintoma:** `tailscale ip` retorna erro ou vazio.
 
 **Solução:**
+
 ```bash
 tailscale up
 tailscale ip
@@ -177,6 +181,7 @@ Verifique se o login foi concluído no navegador.
 **Sintoma:** Erro ao iniciar opencode web — `Address already in use`.
 
 **Solução:**
+
 ```bash
 ss -tlnp | grep 4096 || fuser 4096/tcp 2>/dev/null || echo "Use: pkg install lsof && lsof -i :4096"
 kill <PID>
@@ -189,11 +194,13 @@ Ou use porta alternativa alterando `OPENCODE_PORT` no `.env`.
 **Sintoma:** O processo do proot encerra imediatamente após iniciar.
 
 **Solução:** Verifique o log de diagnóstico:
+
 ```bash
 cat $PREFIX/tmp/opencode_tailscale.log
 ```
 
 Causas comuns:
+
 - `tailscaled` não está rodando
 - Porta já em uso
 - Permissões insuficientes
@@ -203,6 +210,7 @@ Causas comuns:
 **Sintoma:** Serviço inicia mas opencode web não responde.
 
 **Solução:**
+
 ```bash
 cat $PREFIX/tmp/opencode_tailscale.log
 # Verificar se opencode está instalado dentro do proot
@@ -222,6 +230,7 @@ proot-distro login ubuntu -- opencode --version
 **Sintoma:** Ao clicar no botão "Abrir" da notificação Termux, nada acontece.
 
 **Solução:** Verifique se a URL está correta:
+
 ```bash
 cat $PREFIX/tmp/opencode_tailscale_url.txt
 ```

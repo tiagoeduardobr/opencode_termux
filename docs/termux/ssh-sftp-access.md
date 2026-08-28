@@ -29,6 +29,7 @@ termux_ssh
 ```
 
 O script:
+
 1. Verifica se `openssh` está instalado
 2. Inicia `sshd` na porta configurada (default: 8022)
 3. Detecta o IP do dispositivo
@@ -58,12 +59,16 @@ O sshd do Termux roda na porta **8022** (não 22). Isso evita conflito com outro
 ## Acessar via SFTP
 
 ### Via Termius
+
 Após conectar via SSH no Termius:
+
 - Clique no ícone **SFTP** na barra lateral
 - Navegue pelos diretórios do Termux
 
 ### Via cliente SFTP separado
+
 Use FileZilla, WinSCP, Cyberduck ou similar:
+
 - **Host**: `<IP do dispositivo>`
 - **Port**: `8022`
 - **Username**: `root`
@@ -73,7 +78,7 @@ Use FileZilla, WinSCP, Cyberduck ou similar:
 ## Caminhos acessíveis
 
 | Caminho | Descrição |
-|---|---|
+| --- | --- |
 | `$HOME` (`~`) | Diretório home do Termux (`/data/data/com.termux/files/home`) |
 | `$PREFIX/tmp` | Temp (limpo ao reiniciar o Termux) |
 | `/sdcard` | Armazenamento interno do Android |
@@ -96,7 +101,7 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
 ## Troubleshooting
 
 | Problema | Solução |
-|---|---|
+| --- | --- |
 | `Permission denied` | Verifique se a senha está correta com `passwd` |
 | `Connection refused` | Verifique se sshd está rodando: `pgrep sshd` |
 | IP não detectado | Verifique com `ip addr show` ou `ifconfig` |

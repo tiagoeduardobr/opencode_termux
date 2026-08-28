@@ -1,15 +1,15 @@
 # opencode_termux — Guia para Agentes de IA
 
-Repositório auto-contido que centraliza scripts Termux + config OpenCode global (skills, agents) + setup.sh.
+Repositório auto-contido que centraliza scripts Termux + config OpenCode global (skills, agentes) + setup.sh.
 
 ## Estrutura
 
-```
+```text
 opencode_termux/
 ├── .config/opencode/           ← GLOBAL (symlink de ~/.config/opencode/)
 │   ├── opencode.jsonc          ← config global do opencode
 │   ├── package.json            ← dependências de skills (npm)
-│   ├── skills/                 ← 50 skills (27 globais + 14 do obra/superpowers + 10 novas upstream)
+│   ├── skills/                 ← 50 skills (24 globais + 14 do obra/superpowers + 10 upstream + 2 unificadas)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system/            ← unificado de design-system-patterns + design-tokens
@@ -59,7 +59,7 @@ opencode_termux/
 - **`~/.config/opencode/`** é um **symlink** apontando para `opencode_termux/.config/opencode/`
 - Todos os projetos enxergam skills e agentes automaticamente via `~/.config/opencode/`
 - `opencode_termux/opencode.json` usa paths relativos (`.config/opencode/...`)
-- `parecer_descritivo/opencode.json` NÃO precisa ser alterado — skills/agents chegam via symlink global
+- `parecer_descritivo/opencode.json` NÃO precisa ser alterado — skills/agentes chegam via symlink global
 - Plans específicos de projeto (ex: `parecer_descritivo/.opencode/plans/`) permanecem no projeto
 
 ## Setup em Device Novo
@@ -67,6 +67,7 @@ opencode_termux/
 Para instruções detalhadas de setup, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 4.2).
 
 Resumo rápido:
+
 ```bash
 git clone <url> opencode_termux
 cd opencode_termux
@@ -82,10 +83,11 @@ cp .env.example .env           # e editar
 Manager fire-and-forget para expor OpenCode Web via Cloudflare Quick Tunnel.
 
 Variáveis (via `.env` ou env var):
+
 | Variável | Default | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
-| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`)|
+| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`) |
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
 | `PROJECT_DIR` | diretório do script | Onde está `run-cloudflare-tunnel.sh` (raiz deste repo, não o projeto de destino) |
 | `NOTIFY_FILE` | `$PREFIX/tmp/opencode_url.txt` | Handoff da URL |
@@ -101,8 +103,9 @@ Executado **dentro do proot** (`--shared-tmp`). Sobe `opencode web` + `cloudflar
 Wrapper fire-and-forget para expor OpenCode Web via Tailscale (alternativa ao Cloudflare Quick Tunnel).
 
 Variáveis (via `.env` ou env var):
+
 | Variável | Default | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
 | `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web |
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
@@ -116,8 +119,9 @@ Variáveis (via `.env` ou env var):
 Gerencia o serviço SSH do Termux para acesso remoto via SFTP/SSH.
 
 Variáveis (via `.env` ou env var):
+
 | Variável | Default | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
 | `SSH_PORT` | `8022` | Porta do sshd |
 | `SSHD_PID_FILE` | `$PREFIX/tmp/termux_sshd.pid` | Arquivo do PID |
@@ -128,7 +132,7 @@ Para o serviço sshd: kill graceful → kill -9 → cleanup.
 
 ## Skills e Subagentes
 
-50 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 10 novas upstream), além de `customize-opencode` (built-in do opencode, sem diretório).
+50 skills em `.config/opencode/skills/` (24 globais + 14 do obra/superpowers + 10 upstream + 2 unificadas), além de `customize-opencode` (built-in do opencode, sem diretório).
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
 Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_20260618.md`.
 
@@ -173,6 +177,7 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   > Ver seção 9.6.3 de `docs/MULTI_AGENT_ORCHESTRATION.md` para detalhes.
 
   No `opencode.json`, o formato é:
+
   ```json
   "permission": {
     "task": []
@@ -199,7 +204,7 @@ Documentação de referência para as ferramentas utilizadas, salva localmente
 para acesso offline e versionamento no repositório.
 
 | Doc | Cobre | Usado por |
-|---|---|---|
+| --- | --- | --- |
 | `docs/proot-distro/README.md` | Login, `--shared-tmp`, distros, troubleshooting | `opencode-web.sh`, `setup.sh` |
 | `docs/termux/filesystem-layout.md` | `$PREFIX`, `$TMPDIR`, hierarquia de dirs | Todos os scripts (paths de handoff) |
 | `docs/termux/termux-notification.md` | Flags, `--id`, `--ongoing`, `--action` | `opencode-web.sh` (notificação) |
@@ -217,7 +222,7 @@ para acesso offline e versionamento no repositório.
 ## Leitura Recomendada por Tarefa
 
 | Tarefa | Docs para ler |
-|---|---|
+| --- | --- |
 | **Setup em device novo** | `proot-distro/README.md`, `cloudflare/downloads.md`, `termux/filesystem-layout.md` |
 | **Debug do tunnel não subir** | `cloudflare/quick-tunnel.md`, `cloudflare/run-parameters.md` |
 | **Mudar porta/host do opencode** | `termux/filesystem-layout.md`, `cloudflare/config-file.md` |
@@ -274,7 +279,8 @@ O loop resumido abaixo cobre os passos essenciais para pipelines orquestrados:
 > **Regra**: Code review é OBRIGATÓRIO antes de CADA commit (individual + consolidado).
 > task-build NUNCA edita arquivos — todas as mudanças são delegadas para dev.
 
-**Notas**
+#### Notas
+
 - Este resumo é uma visão de alto nível. Sempre siga o workflow completo em `task-build.md` ao usar o agente `task-build`.
 - Para fluxos simples (sem task-build), siga `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 3.2, "Fluxo Simples (sem task-build)").
 
@@ -289,7 +295,7 @@ Para anti-padrões detalhados, veja `docs/MULTI_AGENT_ORCHESTRATION.md` (seção
 - Steps 4b/4c no task-build
 - Timeouts padronizados (plan-reviewer=3min, code-review 10min/5min)
 - Code review explícito antes de cada commit
-- 10 novas skills upstream instaladas (devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect)
+- 10 skills upstream instaladas (devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect)
 - Criação manual de plano removida (task-build apenas delega)
 - Unificação de skills de design/frontend: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
 - Atualização para OpenCode 1.18.2: subagentes isolados por padrão (`subagent_depth`), `@opencode-ai/plugin` `^1.18.0` → `^1.18.2`

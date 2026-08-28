@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Criar `opencode_termux` como repositório auto-contido centralizando scripts Termux + config OpenCode global (skills, agents) + setup.sh, clonável em qualquer dispositivo Android com Termux.
+Criar `opencode_termux` como repositório auto-contido centralizando scripts Termux + config OpenCode global (skills, agentes) + setup.sh, clonável em qualquer dispositivo Android com Termux.
 
 ---
 
@@ -11,7 +11,7 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 - **Ambiente**: Termux (Android 14, arm64, MIUI/Xiaomi) rodando Ubuntu via proot (usuário root)
 - **OpenCode Web** exposto via Cloudflare Quick Tunnel (efêmero), notificação via ntfy.sh (curl push)
 - **`~/.config/opencode/`** será symlink apontando para `opencode_termux/.config/opencode/`
-- **`parecer_descritivo`** consome skills/agents do `opencode_termux` via symlink global (sem alterações no seu `opencode.json`)
+- **`parecer_descritivo`** consome skills/agentes do `opencode_termux` via symlink global (sem alterações no seu `opencode.json`)
 - **Plans específicos** do projeto (`parecer_descritivo/.opencode/plans/`) permanecem lá, não no `opencode_termux`
 - **Skills de `parecer_descritivo/.agents/skills/`** (design-system-patterns, design-tokens) movidas para `opencode_termux/.config/opencode/skills/` e removidas de `parecer_descritivo`
 - **Unificação de skills**: `design-system-patterns` + `design-tokens` → `design-system`; `frontend-design` + `designing-frontend-interfaces` → `frontend-complete`
@@ -25,14 +25,14 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 ## Arquivos Criados
 
 | Path | Descrição |
-|---|---|
+| --- | --- |
 | `opencode_termux/.config/opencode/agents/code-review.md` | Subagente code-review (movido de `~/.config/opencode/`) |
 | `opencode_termux/.config/opencode/agents/git-commit.md` | Subagente git-commit (movido de `~/.config/opencode/`) |
 | `opencode_termux/.config/opencode/opencode.jsonc` | Config global do opencode (movido) |
 | `opencode_termux/.config/opencode/package.json` | Dependências npm de skills |
 | `opencode_termux/.config/opencode/package-lock.json` | Lock file npm |
-| `opencode_termux/.config/opencode/skills/` | 49 skills (25 globais + 11 obra/superpowers + 10 upstream + 2 unificadas) |
-| `opencode_termux/opencode.json` | Config do projeto: skills path, agents, permissions (49 skills allow) |
+| `opencode_termux/.config/opencode/skills/` | 50 skills (24 globais + 14 obra/superpowers + 10 upstream + 2 unificadas) |
+| `opencode_termux/opencode.json` | Config do projeto: skills path, agentes, permissions (50 skills allow) |
 | `opencode_termux/scripts/setup.sh` | Setup em device novo: backup + symlink + npm install + .bashrc alias |
 | `opencode_termux/.env` | Config real: `OPENCODE_PORT=4096`, `NTFY_TOPIC=opencode-tunnel`, `PROJECT_DIR=/root/Projetos/parecer_descritivo` |
 | `opencode_termux/docs/SESSION_CONTEXT_20260618.md` | Este arquivo |
@@ -40,9 +40,9 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 ## Arquivos Modificados
 
 | Path | O que mudou |
-|---|---|
+| --- | --- |
 | `opencode_termux/README.md` | Adicionada seção "Estrutura do repositório" com diagrama; tutorial atualizado (setup.sh steps 6-10); arquitetura dividida em 2 camadas (config + execução) |
-| `opencode_termux/AGENTS.md` | Expandido de 34 linhas para documento completo com estrutura, arquitetura de config, setup workflow, lista de 49 skills, comandos |
+| `opencode_termux/AGENTS.md` | Expandido de 34 linhas para documento completo com estrutura, arquitetura de config, setup workflow, lista de 50 skills, comandos |
 | `opencode_termux/bin/opencode-web.sh` | Inner proot command usa `$SCRIPT_DIR` e `exec ./run-cloudflare-tunnel.sh` (centraliza tunnel script) |
 | `opencode_termux/.config/opencode/.gitignore` | Ajustado para tracker package.json/lock |
 | `opencode_termux/.gitignore` | `.config/opencode/node_modules/` ignorado |
@@ -50,7 +50,7 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 ## Arquivos Removidos
 
 | Path | Motivo |
-|---|---|
+| --- | --- |
 | `parecer_descritivo/.agents/skills/design-system-patterns/` (unificada em `design-system`) | Movido para `opencode_termux/.config/opencode/skills/` |
 | `parecer_descritivo/.agents/skills/design-tokens/` (unificada em `design-system`) | Movido para `opencode_termux/.config/opencode/skills/` |
 | `parecer_descritivo/run_opencode_web_cloudflare.sh` | Substituído por `opencode_termux/run-cloudflare-tunnel.sh` |
@@ -58,15 +58,19 @@ Criar `opencode_termux` como repositório auto-contido centralizando scripts Ter
 ## Commits
 
 ### `parecer_descritivo` (branch `main`, pushado via HTTPS)
-```
+
+```text
 0f3ecd7 chore: remove .agents/skills/ and run_opencode_web_cloudflare.sh
   8 files changed, 2510 deletions(-)
 ```
+
 Remove `design-system-patterns/` (unificada em `design-system`), `design-tokens/` (unificada em `design-system`), `run_opencode_web_cloudflare.sh`.
 
 ### `opencode_termux` (branch `main`, pushado via SSH)
+
 O repositório foi criado com 2 commits:
-```
+
+```text
 28d198b feat: initial scaffold for Termux OpenCode Web with Cloudflare Tunnel
 a4abb22 feat: centralize opencode config with skills, agents, setup.sh
   61 files changed, 10363 insertions(+), 34 deletions(-)
@@ -74,19 +78,20 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 
 ---
 
-## Skills Instaladas (49)
+## Skills Instaladas (50)
 
 | Skill | Origem |
-|---|---|
-| `agent-restrictions` | obra/superpowers |
+| --- | --- |
+| `agent-restrictions` | global |
 | `alpine-js` | global |
 | `api-security-best-practices` | global |
 | `architecture-designer` | upstream |
 | `backlog-curator` | global |
-| `brainstorming` | global |
+| `brainstorming` | obra/superpowers |
 | `changelog-generator` | global |
 | `cloud-architect` | upstream |
 | `coauthoring-docs` | global |
+| `code-architecture-tailwind-v4-best-practices` | global |
 | `code-documenter` | global |
 | `code-reviewer` | global |
 | `content-research-writer` | global |
@@ -96,7 +101,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `devops-engineer` | upstream |
 | `dispatching-parallel-agents` | obra/superpowers |
 | `documentation-and-adrs` | global |
-| `executing-plans` | global |
+| `executing-plans` | obra/superpowers |
 | `fastapi-expert` | global |
 | `finishing-a-development-branch` | obra/superpowers |
 | `frontend-complete` | unificada |
@@ -105,7 +110,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `microservices-architect` | upstream |
 | `monitoring-expert` | upstream |
 | `pandoc-docs` | global |
-| `plan-reviewer` | obra/superpowers |
+| `plan-reviewer` | global |
 | `postgres-pro` | global |
 | `python-pro` | global |
 | `receiving-code-review` | obra/superpowers |
@@ -117,13 +122,13 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 | `sre-engineer` | upstream |
 | `staff-engineer-review` | global |
 | `subagent-driven-development` | obra/superpowers |
-| `systematic-debugging` | global |
+| `systematic-debugging` | obra/superpowers |
 | `terraform-engineer` | upstream |
 | `test-driven-development` | obra/superpowers |
 | `test-master` | global |
 | `using-git-worktrees` | obra/superpowers |
-| `using-superpowers` | global |
-| `verification-before-completion` | global |
+| `using-superpowers` | obra/superpowers |
+| `verification-before-completion` | obra/superpowers |
 | `web-design-guidelines` | global |
 | `writing-plans` | obra/superpowers |
 | `writing-skills` | obra/superpowers |
@@ -131,7 +136,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 ## Subagentes (5)
 
 | Nome | Prompt |
-|---|---|
+| --- | --- |
 | `git-commit` | `.config/opencode/agents/git-commit.md` |
 | `code-review` | `.config/opencode/agents/code-review.md` |
 | `task-build` | `.config/opencode/agents/task-build.md` |
@@ -145,18 +150,22 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 ## Pendências (no device real — Termux)
 
 1. ⏳ **Rodar setup.sh**:
+
    ```bash
    cd opencode_termux
    bash scripts/setup.sh
    ```
+
    Cria symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`, instala npm, adiciona alias ao `.bashrc`.
 
 2. ✅ **Remover script obsoleto**:
+
    ```bash
    rm ~/opencode_web.sh
    ```
 
 3. ✅ **Verificar funcionamento**:
+
    ```bash
    source ~/.bashrc
    opencode_web
@@ -183,7 +192,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 ### Scripts corrigidos
 
 | Arquivo | O que mudou |
-|---|---|
+| --- | --- |
 | `run-cloudflare-tunnel.sh` | Default `HOSTNAME` mudou de `0.0.0.0` para `127.0.0.1` (getifaddrs bug); adicionado `command -v opencode` check; `CLOUDFLARED_LOG` fixo em `/tmp/` (evita `rm -f ""`); removido `cleanup` duplicado no early exit |
 | `bin/opencode-web.sh` | Adicionado `LOG_FILE` variável; PID death detection (`sleep 2` + `kill -0`) com `tail -20` do log; mensagem de warn mostra caminho do log |
 | `bin/opencode-web-stop.sh` | Adicionado `LOG_FILE` ao cleanup; removido `termux-notification-remove` (MIUI bug) |
@@ -191,7 +200,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 ### Config atualizada
 
 | Arquivo | O que mudou |
-|---|---|
+| --- | --- |
 | `.env` | Adicionado `OPENCODE_HOSTNAME=127.0.0.1` |
 | `.env.example` | `OPENCODE_HOSTNAME=127.0.0.1` com comentário sobre getifaddrs |
 | `AGENTS.md` | Tabela de variáveis atualizada; gotchas adicionadas: getifaddrs, termux-notification-remove |
@@ -200,6 +209,7 @@ a4abb22 feat: centralize opencode config with skills, agents, setup.sh
 ### Alias corrigido
 
 O alias `opencode_web` no `.bashrc` apontava para `~/opencode_web.sh` (script antigo). Atualizado para apontar diretamente para o repositório dentro do container Ubuntu:
+
 ```bash
 OPENCODE_TERMUX_DIR="/data/data/com.termux/files/usr/var/lib/proot-distro/containers/ubuntu/rootfs/root/Projetos/opencode_termux"
 alias opencode_web="$OPENCODE_TERMUX_DIR/bin/opencode-web.sh"
@@ -209,10 +219,12 @@ alias opencode_web_stop="$OPENCODE_TERMUX_DIR/bin/opencode-web-stop.sh"
 ### Diagnóstico do getifaddrs bug
 
 `opencode web --hostname 0.0.0.0` falha dentro do proot com:
-```
+
+```text
 Error: Unexpected error
 A system error occurred: getifaddrs returned an error
 ```
+
 Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompleto). Solução: usar `127.0.0.1` (cloudflared conecta em localhost de qualquer forma).
 
 ---
@@ -225,16 +237,18 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Criação manual de plano removida
 - Code review explícito antes de cada commit
 - Gate de aprovação do task-planner simplificado
-- Contador atual: 49 skills (vs. 27 neste snapshot)
+- Contador atual: 50 skills (vs. 27 neste snapshot)
 
 ### Revisão Completa de Skills (07/07/2026)
+
 - `@opencode-ai/plugin` atualizado de 1.15.13 para 1.17.14
-- 10 novas skills instaladas do upstream synapse-ai-hub/opencode-skills
+- 10 skills instaladas do upstream synapse-ai-hub/opencode-skills
 - Skills: devops-engineer, cloud-architect, sql-pro, sre-engineer, monitoring-expert, security-reviewer, debugging-wizard, architecture-designer, terraform-engineer, microservices-architect
 - Total de skills: 51 → 49
 - Sincronização opencode.json corrigida (plan-reviewer adicionado)
 
 ### Sessão de Unificação (08/07/2026)
+
 - Atualizado opencode de 1.17.9 para 1.17.14
 - Revisão completa de skills (14 tasks, todas aprovadas)
 - 10 skills upstream instaladas
@@ -249,6 +263,7 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 ### Migração OpenCode 1.18.1 (14/07/2026)
 
 **O que foi feito**:
+
 - Migração de `rbac` custom para `permission.task` nativo do OpenCode 1.18.1
 - Agentes migrados de JSON para markdown puro com frontmatter YAML enriquecido
 - Frontmatter dos 5 agentes (.config/opencode/agents/): `description`, `mode`, `hidden`, `color`, `temperature`, `permission`
@@ -256,30 +271,33 @@ Causa: proot não expõe interfaces de rede corretamente (bind de `/sys` incompl
 - Seção `agent` removida do `opencode.json` (agentes auto-descobertos via `.md`)
 - Dependência `@opencode-ai/plugin` atualizada: ^1.17.14 → ^1.18.0 (resolve para 1.18.1)
 - Documentação atualizada: AGENTS.md, MULTI_AGENT_ORCHESTRATION.md, AGENTS_TEMPLATE.md
-- Built-in agents do 1.18.1 documentados (Build, Plan, General, Explore, Scout)
+- Agentes built-in do 1.18.1 documentados (Build, Plan, General, Explore, Scout)
 
 **Arquivos modificados**:
+
 - `.config/opencode/agents/*.md` (5 arquivos — frontmatter enrich)
 - `opencode.json` (seção agent removida)
 - `.config/opencode/package.json`, `.config/opencode/package-lock.json` (plugin atualizado)
 - `AGENTS.md` (RBAC → permission.task, auto-descoberta)
-- `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5 reescrita, built-in agents 11.4)
+- `docs/MULTI_AGENT_ORCHESTRATION.md` (seção 5 reescrita, agentes built-in 11.4)
 - `docs/AGENTS_TEMPLATE.md` (referências RBAC → permissões)
 
 **Skills**: 50 (inalterado)
-**Agentes**: 5 (task-build primary, task-planner/dev/code-review/git-commit subagents)
+**Agentes**: 5 (task-build primary, task-planner/dev/code-review/git-commit subagentes)
 
 **Branch**: feature/adaptacao-opencode-1-18
 
 ### Atualização OpenCode 1.18.2 (16/07/2026)
 
 **O que foi feito**:
+
 - Atualização de OpenCode 1.18.1 para 1.18.2 (CLI + plugin)
 - Mudança principal: subagentes não lançam subagentes aninhados por padrão (`subagent_depth=0`)
 - `@opencode-ai/plugin`: `^1.18.0` → `^1.18.2`
 - `permission.task` menos crítico: isolamento agora é default
 
 **Arquivos modificados**:
+
 - `.config/opencode/package.json` (plugin ^1.18.0 → ^1.18.2)
 - `.config/opencode/package-lock.json` (atualizado pelo npm install)
 - `AGENTS.md` (referências 1.18.1→1.18.2, nota subagent_depth)
@@ -418,27 +436,27 @@ Cinco rodadas de melhorias baseadas em pesquisa de boas práticas da comunidade:
 - **code-review** (`825294a`, 20/08): persona Senior Reviewer, OWASP security scan, depth tiers, output contract
 - **git-commit** (`5a1bf2b`, 21/08): 11 types Conventional Commits, atomic commits, pre-commit validation, body/footer format, Co-Authored-By
 
-### Atualização OpenCode 1.18.21 (23/08/2026)
+### Atualização OpenCode 1.18.21 (24/08/2026)
 
 Cadeia de upgrades de 1.18.18 para 1.18.21 (direto), seguindo pipeline consolidado.
 
 | Versão | Data | Destaques |
-|--------|------|-----------|
+| -------- | ------ | ----------- |
 | 1.18.19 | 20/08/2026 | Cloudflare AI Gateway passthroughs (OpenAI/Anthropic), Codex rate limits, fix Qwen sampling defaults, fix /connect providers, ignore malformed pricing, OpenAI websocket fallback, web search Go provider, compat v1 DBs |
 | 1.18.20 | 21/08/2026 | **subagent failures resumíveis com task_id + surfaced** (relevante ao workflow multi-agente), permission requests de subagentes respondidas durante `opencode run`, retry network_error (+variantes), Cerebras max_completion_tokens, retry xAI capacity errors |
 | 1.18.21 | 21/08/2026 | continue on unknown finish reason, Vertex AI eu/us multi-region via REP endpoints |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
 
-### Atualização OpenCode 1.18.25 (27/08/2026)
+### Atualização OpenCode 1.18.25 (28/08/2026)
 
 Cadeia de upgrades de 1.18.21 para 1.18.25 (direto), seguindo pipeline consolidado.
 
 | Versão | Data | Destaques |
-|--------|------|-----------|
+| -------- | ------ | ----------- |
 | 1.18.22 | 21/08/2026 | Removido messaging/pricing desatualizado do OpenCode Go, fix device login links (URLs relativas/base path), fix textVerbosity para providers OpenAI-compatible, atualizado Amazon Bedrock |
 | 1.18.23 | 21/08/2026 | Fix Cloudflare AI Gateway routing (non-Workers via REST API), fix modelos Anthropic via AI Gateway (IDs com ponto → slug com traço), fix parent session IDs em headers, fix GitHub auth OIDC |
-| 1.18.24 | 27/08/2026 | Fix Bedrock reasoning cache (empty messages), Azure sign-in via Microsoft Entra ID (Azure CLI), V1 lê config V2, fix archived sessions no desktop |
-| 1.18.25 | 27/08/2026 | Fix Azure auth (Azure CLI sign-in sem Bun) |
+| 1.18.24 | 28/08/2026 | Fix Bedrock reasoning cache (empty messages), Azure sign-in via Microsoft Entra ID (Azure CLI), V1 lê config V2, fix archived sessions no desktop |
+| 1.18.25 | 28/08/2026 | Fix Azure auth (Azure CLI sign-in sem Bun) |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).

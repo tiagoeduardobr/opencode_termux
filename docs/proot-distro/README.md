@@ -1,4 +1,4 @@
-> **Fonte**: https://github.com/termux/proot-distro
+> **Fonte**: <https://github.com/termux/proot-distro>
 > **Snapshot**: 19/06/2026
 > **Formato**: Raw README.md do repositório oficial
 
@@ -88,7 +88,7 @@ The `pd` short alias works everywhere `proot-distro` does.
 
 ### `install` — Install a container
 
-```
+```bash
 proot-distro install [OPTIONS] (IMAGE or PATH)
 ```
 
@@ -98,14 +98,14 @@ from a local archive file.
 **Options:**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `-n`, `--name NAME` | Set a custom local name for the container |
 | `-a`, `--architecture ARCH` | Override the target CPU architecture |
 | `-q`, `--quiet` | Suppress non-error output |
 
 ### `login` — Start a shell inside a container
 
-```
+```bash
 proot-distro login [OPTIONS] CONTAINER [-- COMMAND ...]
 ```
 
@@ -115,7 +115,7 @@ container.
 **Options always available:**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `-u`, `--user USER` | Log in as USER (default: `root`) |
 | `-P`, `--redirect-ports` | Redirect privileged ports 1–1023 to higher numbers |
 | `--shared-home` | Bind the host home directory into the container |
@@ -132,7 +132,7 @@ container.
 **Options available only on Termux (Android):**
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `--isolated` | Skip non-essential host bindings |
 | `--minimal` | Bare-minimum proot (only /dev, /proc, /sys) |
 | `--no-link2symlink` | Disable proot's hard-link emulation |
@@ -141,7 +141,7 @@ container.
 
 ### `run` — Run the image-defined entrypoint
 
-```
+```bash
 proot-distro run [OPTIONS] CONTAINER [-- ARG ...]
 ```
 
@@ -150,49 +150,49 @@ image manifest.
 
 ### `list` — List installed containers
 
-```
+```bash
 proot-distro list
 ```
 
 ### `remove` — Delete a container
 
-```
+```bash
 proot-distro remove [OPTIONS] CONTAINER
 ```
 
 ### `reset` — Reinstall a container from scratch
 
-```
+```bash
 proot-distro reset CONTAINER
 ```
 
 ### `backup` — Archive a container
 
-```
+```bash
 proot-distro backup [OPTIONS] CONTAINER
 ```
 
 ### `restore` — Restore a container from a backup
 
-```
+```bash
 proot-distro restore [OPTIONS] [BACKUP_FILE]
 ```
 
 ### `copy` — Copy files to or from a container
 
-```
+```bash
 proot-distro copy [OPTIONS] [CONTAINER:]SRC [CONTAINER:]DEST
 ```
 
 ### `sync` — Synchronize files to or from a container
 
-```
+```bash
 proot-distro sync [OPTIONS] [CONTAINER:]SRC [CONTAINER:]DEST
 ```
 
 ### `clear-cache` — Delete the download cache
 
-```
+```bash
 proot-distro clear-cache
 ```
 
@@ -241,7 +241,7 @@ All runtime data is stored under `$RUNTIME_DIR`:
 - **Regular Linux**: `$XDG_DATA_HOME/proot-distro/`
 
 | Path | Contents |
-|---|---|
+| --- | --- |
 | `containers/<name>/rootfs/` | Container root filesystem |
 | `containers/<name>/manifest.json` | Image reference, arch, full OCI manifest, full image config |
 | `containers/<name>/rootfs/.l2s/` | Proot link2symlink (l2s) backing store |
@@ -255,7 +255,7 @@ All runtime data is stored under `$RUNTIME_DIR`:
 ## Environment variables
 
 | Variable | Effect |
-|---|---|
+| --- | --- |
 | `TERMUX__PREFIX` | Override Termux prefix path |
 | `TERMUX__HOME` | Override the Termux home path |
 | `TERMUX_APP__PACKAGE_NAME` | Override the Termux app package |

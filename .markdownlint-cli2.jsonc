@@ -1,0 +1,47 @@
+{
+  // Configuração do markdownlint-cli2 para o opencode_termux.
+  // Exceções configuradas com justificativa (docs têm linhas longas e HTML intencionais).
+
+  // Arquivos fora do escopo de linting:
+  // - node_modules: dependências (nunca lintar)
+  // - .config/opencode/skills e .config/opencode/agents: prompts/skills (fora do
+  //   escopo do plano de consistência de docs — não são documentação)
+  // - .opencode/plans: planos de trabalho (consolidados pela Task 9 do plano)
+  "ignores": [
+    "node_modules/**",
+    ".config/opencode/node_modules/**",
+    ".opencode/node_modules/**",
+    ".config/opencode/skills/**",
+    ".config/opencode/agents/**",
+    ".opencode/plans/**"
+  ],
+
+  "config": {
+    // MD013 - line length: desabilitado. As docs contêm URLs longas, comandos e
+    // tabelas com linhas intencionalmente longas que não devem ser quebradas.
+    "MD013": false,
+
+    // MD024 - duplicate headings: desabilitado. Vários docs repetem headings
+    // (ex: "## Resumo", "## Verificação") em seções distintas, sem falsos
+    // positivos que justifiquem renomear.
+    "MD024": false,
+
+    // MD033 - inline HTML: permitido. Badges (shields.io), <br> e HTML nos docs
+    // são intencionais (README, badges de plataforma).
+    "MD033": false,
+
+    // MD041 - first line heading: desabilitado. Os docs de referência iniciam
+    // com bloco de atribuição "> **Fonte**: ..." (padrão intencional), e o
+    // README inicia com badges (shields.io). Adicionar H1 antes alteraria a
+    // estrutura intencional desses arquivos.
+    "MD041": false,
+
+    // MD060 - table column style: estilo "compact" (sem alinhamento obrigatório).
+    // As docs de referência têm tabelas com conteúdo mais largo que o header,
+    // impossibilitando alinhamento com o estilo "aligned". O estilo "compact"
+    // mantém a regra ativa sem exigir alinhamento.
+    "MD060": {
+      "style": "compact"
+    }
+  }
+}

@@ -1,7 +1,6 @@
 [![GitHub stars](https://img.shields.io/github/stars/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/tiagoeduardobr/opencode_termux?style=flat-square)](https://github.com/tiagoeduardobr/opencode_termux/issues)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Termux%20%2F%20Android-0D1117.svg?style=flat-square)](https://f-droid.org/packages/com.termux/)
 [![OpenCode](https://img.shields.io/badge/OpenCode-Web-blue.svg?style=flat-square)](https://opencode.ai)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM%20Compatible-76B900.svg?style=flat-square)](https://build.nvidia.com)
@@ -18,11 +17,11 @@ como um serviço web acessível de qualquer lugar via Cloudflare Tunnel, com not
 
 ## Estrutura do repositório
 
-```
+```text
 opencode_termux/
-├── .config/opencode/              ← GLOBAL: skills, agents, config (symlink de ~/.config/opencode)
+├── .config/opencode/              ← GLOBAL: skills, agentes, config (symlink de ~/.config/opencode)
 │   ├── opencode.jsonc             ← config global do opencode
-│   ├── skills/                    ← 50 skills (27 globais + 14 do obra/superpowers + 8 novas upstream + plan-reviewer)
+│   ├── skills/                    ← 50 skills (24 globais + 14 do obra/superpowers + 10 upstream + 2 unificadas)
 │   │   ├── code-reviewer/
 │   │   ├── executing-plans/
 │   │   ├── design-system/
@@ -32,36 +31,46 @@ opencode_termux/
 │   └── agents/                    ← subagentes (git-commit, code-review, task-planner, dev, task-build)
 │       ├── git-commit.md
 │       └── code-review.md
-├── opencode.json                  ← config DO PROJETO (aponta para skills e agents locais)
+├── opencode.json                  ← config DO PROJETO (aponta para skills e agentes locais)
 ├── bin/
-│   ├── opencode-web.sh            ← manager fire-and-forget
-│   ├── opencode-web-stop.sh       ← stopper
-│   ├── termux-ssh.sh              ← inicia sshd + notifica IP
-│   └── termux-ssh-stop.sh         ← para sshd
-├── run-cloudflare-tunnel.sh       ← script executado dentro do proot
+│   ├── opencode-web.sh             ← manager fire-and-forget (Cloudflare)
+│   ├── opencode-web-stop.sh        ← stopper (Cloudflare)
+│   ├── opencode-tailscale.sh       ← manager fire-and-forget (Tailscale)
+│   ├── opencode-tailscale-stop.sh  ← stopper (Tailscale)
+│   ├── termux-ssh.sh               ← inicia sshd + notifica IP
+│   └── termux-ssh-stop.sh          ← para sshd
+├── run-cloudflare-tunnel.sh       ← script executado dentro do proot (Cloudflare)
+├── run-opencode-tailscale.sh      ← script executado dentro do proot (Tailscale)
 ├── shell/aliases.sh               ← aliases para bash
 ├── scripts/setup.sh               ← configuração inicial em qualquer device
-├── docs/                       ← documentação de referência
+├── docs/                          ← documentação de referência
+│   ├── AGENTS_TEMPLATE.md         ← template de AGENTS.md para projetos
+│   ├── MULTI_AGENT_ORCHESTRATION.md ← orquestração multi-agente
+│   ├── SESSION_CONTEXT_20260618.md ← contexto da sessão de criação
+│   ├── decisions/                 ← ADRs (decisões arquiteturais)
 │   ├── proot-distro/
-│   │   └── README.md           ← docs completas do proot-distro
+│   │   └── README.md              ← docs completas do proot-distro
 │   ├── termux/
-│   │   ├── filesystem-layout.md ← paths, $PREFIX, $TMPDIR
+│   │   ├── filesystem-layout.md   ← paths, $PREFIX, $TMPDIR
 │   │   ├── termux-notification.md ← API de notificações
-│   │   └── ssh-sftp-access.md   ← referência SSH/SFTP
+│   │   └── ssh-sftp-access.md     ← referência SSH/SFTP
+│   ├── tailscale/
+│   │   └── README.md              ← docs completas do Tailscale
 │   └── cloudflare/
-│       ├── quick-tunnel.md     ← Quick Tunnel / TryCloudflare
-│       ├── downloads.md        ← cloudflared arm64 .deb
-│       ├── config-file.md      ← YAML config structure
-│       └── run-parameters.md   ← tunnel run flags
+│       ├── quick-tunnel.md        ← Quick Tunnel / TryCloudflare
+│       ├── downloads.md           ← cloudflared arm64 .deb
+│       ├── config-file.md         ← YAML config structure
+│       └── run-parameters.md      ← tunnel run flags
+├── AI_HANDOVER.md                 ← handover entre sessões
 ├── .env                           ← configurações reais
 └── .env.example                   ← template de configuração
 ```
 
 > **📌 Como funciona**: `~/.config/opencode/` → symlink → `opencode_termux/.config/opencode/`
-> Skills e agents vivem no repositório e são referenciados globalmente pelo symlink.
+> Skills e agentes vivem no repositório e são referenciados globalmente pelo symlink.
 > Clone em qualquer device, rode `bash scripts/setup.sh`, e tudo funciona.
-
-> **📖 Documentação completa**: Para detalhes sobre orquestração de agents,
+>
+> **📖 Documentação completa**: Para detalhes sobre orquestração de agentes,
 > veja `docs/MULTI_AGENT_ORCHESTRATION.md`.
 
 ---
@@ -136,17 +145,21 @@ opencode
 O OpenCode usa SQLite como banco de dados local. Na primeira execução:
 
 #### 1. Criação do banco de dados
+
 O banco é criado em: `~/.local/share/opencode/opencode.db`
 
 Se o diretório não existir, o OpenCode cria automaticamente.
 
 #### 2. Schema migrations (Drizzle ORM)
+
 O OpenCode usa Drizzle ORM para gerenciar o schema do banco. Na primeira vez, ele executa migrations que criam tabelas como `project`, `session`, `message`, `tool`, `participant`, `worktree`, além de índices e journal de migrations.
 
 #### 3. Inicialização de plugins
+
 O OpenCode baixa e inicializa `oh-my-opencode` (content checker) e verifica atualizações de plugins.
 
 #### 4. Carregamento de configuração
+
 Lê `~/.config/opencode/opencode.json` e `opencode.json` do diretório atual.
 
 ---
@@ -154,14 +167,14 @@ Lê `~/.config/opencode/opencode.json` e `opencode.json` do diretório atual.
 **Quanto tempo leva?**
 
 | Ambiente | Tempo estimado |
-|----------|----------------|
+| ---------- | ---------------- |
 | Desktop (Intel/AMD) | 5-15 segundos |
 | Termux (ARM64) | **30-90 segundos** |
 | Termux (ARM64, 1ª vez) | **2-5 minutos** |
 
 **O que você verá no terminal:**
 
-```
+```text
 $ opencode
 Loading configuration...
 Performing one time database migration...
@@ -174,6 +187,7 @@ Ready.
 **Dicas importantes:**
 
 1. **Wake lock** — Execute antes para evitar que Android suspenda:
+
    ```bash
    termux-wake-lock
    ```
@@ -181,6 +195,7 @@ Ready.
 2. **Não interrompa** — NÃO feche o terminal nem pressione Ctrl+C durante a migração. Isso pode corromper o banco.
 
 3. **Se travar** — Se não houver progresso por mais de 2 minutos:
+
    ```bash
    pkill -f opencode
    rm ~/.local/share/opencode/opencode.db
@@ -195,7 +210,7 @@ Ready.
 **Problemas comuns:**
 
 | Problema | Causa | Solução |
-|----------|-------|---------|
+| ---------- | ------- | --------- |
 | "Database is locked" | Outro processo usando o banco | `pkill -f opencode` e tente novamente |
 | "Migration failed" | Banco corrompido | Delete `opencode.db` e reexecute |
 | Timeout na inicialização | Plugin não baixa | Verifique conexão com internet |
@@ -228,6 +243,7 @@ bash scripts/setup.sh
 ```
 
 O que `setup.sh` faz:
+
 1. Faz backup de `~/.config/opencode/` existente (se não for symlink)
 2. Cria symlink: `~/.config/opencode/` → `opencode_termux/.config/opencode/`
 3. Instala dependências npm do `.config/opencode/`
@@ -258,6 +274,7 @@ opencode_web
 ```
 
 O que acontece:
+
 1. O script manager adquire wake lock (impede o Android de dormir)
 2. Inicia `proot-distro login ubuntu --shared-tmp` rodando `run-cloudflare-tunnel.sh`
 3. Dentro do proot: `opencode web` → `cloudflared tunnel` → ntfy.sh push
@@ -302,6 +319,7 @@ termux_ssh
 ```
 
 O que acontece:
+
 1. Verifica se `openssh` está instalado
 2. Inicia `sshd` na porta 8022
 3. Detecta o IP do dispositivo
@@ -327,6 +345,7 @@ termux_ssh_stop
 ### Acessar via SFTP
 
 No Termius, após conectar via SSH:
+
 - Clique no ícone **SFTP** na barra lateral
 - Navegue pelos diretórios do Termux
 
@@ -335,7 +354,7 @@ Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
 ### Caminhos acessíveis
 
 | Caminho | Descrição |
-|---|---|
+| --- | --- |
 | `$HOME` (`~`) | Diretório home do Termux |
 | `$PREFIX/tmp` | Temp (limpo ao reiniciar) |
 | `/sdcard` | Armazenamento interno do Android |
@@ -349,7 +368,7 @@ Ou use um cliente SFTP separado (FileZilla, WinSCP) com as mesmas credenciais.
 
 ### Camada de config — symlink global
 
-```
+```text
 ~/.config/opencode/  ──symlink──►  opencode_termux/.config/opencode/
                                          │
                                       skills/ (50 skills)
@@ -361,7 +380,7 @@ Todos os projetos enxergam skills e agentes via ~/.config/opencode/
 
 ### Camada de execução — Termux → proot
 
-```
+```text
 Termux (nativo)                     proot (Ubuntu)
 ────────────────────────────────────────────────────
 opencode-web.sh  ──proot──►  run-cloudflare-tunnel.sh
@@ -373,20 +392,20 @@ opencode-web.sh  ──proot──►  run-cloudflare-tunnel.sh
                                     │
                               ┌─────┘
                               ▼
-                     termux-notification (fallback local)
                      ntfy push (notificação remota)
+                     termux-notification (local, best-effort)
 ```
 
 ### Fluxo
 
 | Passo | Quem | O que faz |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `opencode-web.sh` | Adquire wake lock, inicia proot com `--shared-tmp` |
 | 2 | proot + `run-cloudflare-tunnel.sh` | Sobe `opencode web` em `127.0.0.1:4096` |
 | 3 | proot | Sobe `cloudflared tunnel --url http://127.0.0.1:4096` |
 | 4 | proot | Extrai URL do log do cloudflared, escreve em `/tmp/opencode_url.txt` |
 | 5 | proot | Envia notificação ntfy.sh com a URL |
-| 6 | `opencode-web.sh` | Lê o notify file (via `--shared-tmp`), mostra no terminal, tenta `termux-notification` |
+| 6 | `opencode-web.sh` | Lê o notify file (via `--shared-tmp`), mostra a URL no terminal, tenta `termux-notification` (best-effort) |
 | 7 | `opencode-web.sh` | **Sai** — serviço continua em background |
 
 ### Por que Fire-and-Forget?
@@ -401,10 +420,10 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 
 ## Skills e Subagentes
 
-50 skills em `.config/opencode/skills/` (27 globais + 14 do obra/superpowers + 8 novas upstream + plan-reviewer), além de `customize-opencode` (built-in do opencode, sem diretório).
+50 skills em `.config/opencode/skills/` (24 globais + 14 do obra/superpowers + 10 upstream + 2 unificadas), além de `customize-opencode` (built-in do opencode, sem diretório).
 
 | Agente | Modo | Responsabilidade |
-|--------|------|------------------|
+| -------- | ------ | ------------------ |
 | `task-build` | primary | Orquestra pipelines completas |
 | `task-planner` | subagent | Planeja tasks antes da implementação |
 | `dev` | subagent | Implementa código |
@@ -412,11 +431,11 @@ O `opencode serve` (e o `opencode web`) têm um bug conhecido onde Ctrl+C não t
 | `git-commit` | subagent | Cria commits semânticos |
 
 > Prompts dos 5 agentes reforçados em 19–21/08/2026 (`58fc4ea`, `609d579`, `68e2b11`, `825294a`, `5a1bf2b`) — detalhes em `docs/MULTI_AGENT_ORCHESTRATION.md`.
-
+>
 > **Nota**: `customize-opencode` é built-in do opencode (sem diretório em skills/)
-
+>
 > **Skills obrigatórias**: `executing-plans`, `systematic-debugging`, `verification-before-completion`, `plan-reviewer` — carregadas automaticamente pelo agent `task-build`.
-
+>
 > **Regra**: Code review é **obrigatório** antes de cada commit (individual + consolidado).
 
 Subagentes: `git-commit`, `code-review`, `task-planner`, `dev`, `task-build` (prompts em `.config/opencode/agents/`).
@@ -433,9 +452,9 @@ Manager fire-and-forget. Inicia, notifica e sai.
 Variáveis (via `.env` ou env var):
 
 | Variável | Default | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `OPENCODE_PORT` | `4096` | Porta local do OpenCode Web |
-| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`)|
+| `OPENCODE_HOSTNAME` | `127.0.0.1` | Hostname do opencode web (usar `127.0.0.1` dentro do proot — `0.0.0.0` crasha com `getifaddrs`) |
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
 | `PROJECT_DIR` | diretório do script | Onde está `run-cloudflare-tunnel.sh` |
 | `NOTIFY_FILE` | `$PREFIX/tmp/opencode_url.txt` | Arquivo de handoff da URL |
@@ -459,7 +478,7 @@ Executado **dentro do proot**. Sobe `opencode web` + `cloudflared tunnel` + ntfy
 
 ### `shell/aliases.sh`
 
-Define os aliases `opencode_web`, `opencode_web_stop`, `termux_ssh` e `termux_ssh_stop`.
+Define os aliases `opencode_web`, `opencode_web_stop`, `opencode_tailscale`, `opencode_tailscale_stop`, `termux_ssh` e `termux_ssh_stop`.
 
 ### `bin/termux-ssh.sh`
 
@@ -468,7 +487,7 @@ Inicia o serviço SSH do Termux para acesso remoto.
 Variáveis (via `.env` ou env var):
 
 | Variável | Default | Descrição |
-|---|---|---|
+| --- | --- | --- |
 | `NTFY_TOPIC` | `opencode-tunnel` | Tópico ntfy.sh para notificação |
 | `SSH_PORT` | `8022` | Porta do sshd |
 | `SSHD_PID_FILE` | `$PREFIX/tmp/termux_sshd.pid` | Arquivo do PID |
@@ -488,11 +507,13 @@ O OpenCode suporta [NVIDIA NIM](https://build.nvidia.com) como provedor de infer
 1. Obtenha uma API key em [build.nvidia.com](https://build.nvidia.com) (conta gratuita)
 
 2. No OpenCode, use o comando `/connect`:
-   ```
+
+   ```text
    /connect nvidia
    ```
 
 3. Ou configure manualmente em `opencode.json` do seu projeto:
+
    ```json
    {
      "$schema": "https://opencode.ai/config.json",
@@ -507,6 +528,7 @@ O OpenCode suporta [NVIDIA NIM](https://build.nvidia.com) como provedor de infer
    ```
 
 4. Defina a variável de ambiente (dentro do proot):
+
    ```bash
    export NVIDIA_API_KEY="nvapi-xxx..."
    ```
@@ -514,7 +536,7 @@ O OpenCode suporta [NVIDIA NIM](https://build.nvidia.com) como provedor de infer
 ### Modelos populares (gratuitos)
 
 | Modelo | Descrição |
-|---|---|
+| --- | --- |
 | `meta/llama-3.1-70b-instruct` | Geral, bom custo-benefício |
 | `nvidia/nemotron-70b-instruct` | Instruções complexas |
 | `deepseek/deepseek-v4-flash` | Rápido, respostas curtas |
@@ -522,6 +544,7 @@ O OpenCode suporta [NVIDIA NIM](https://build.nvidia.com) como provedor de infer
 ### Plugin de sincronização (opcional)
 
 Para auto-sincronizar modelos disponíveis:
+
 ```bash
 opencode plugin nim-sync -g
 ```
@@ -534,7 +557,7 @@ opencode plugin nim-sync -g
 ## FAQ
 
 | Pergunta | Resposta |
-|---|---|
+| --- | --- |
 | O opencode não abre o navegador sozinho? | Sim, o CLI tenta abrir o navegador. No Termux isso falha silenciosamente. Use a URL do tunnel. |
 | Como saber a URL atual? | No momento da inicialização ela aparece no terminal e chega por ntfy.sh. Depois, `cat $PREFIX/tmp/opencode_url.txt`. |
 | O que é `--shared-tmp`? | Faz o `/tmp` do proot compartilhar o mesmo diretório do Termux nativo (`$PREFIX/tmp`), permitindo que o manager leia o notify file. |

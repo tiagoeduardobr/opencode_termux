@@ -1,4 +1,4 @@
-> **Fonte**: https://github.com/termux/termux-packages/wiki/Termux-file-system-layout
+> **Fonte**: <https://github.com/termux/termux-packages/wiki/Termux-file-system-layout>
 > **Snapshot**: 19/06/2026
 > **Formato**: Termux wiki - File system layout
 
@@ -11,7 +11,7 @@ The following docs provide info on Android and Termux paths, and their differenc
 ## Android Paths
 
 | Path | Description |
-|---|---|
+| --- | --- |
 | `/` | The filesystem rootfs. Usually a ramdisk, but on modern Android OS it is a mounted system partition. |
 | `/bin` | Symlink to `/system/bin`. Do not add to `$PATH`. |
 | `/data` | The data partition of the internal sd card. |
@@ -33,7 +33,7 @@ The following docs provide info on Android and Termux paths, and their differenc
 ## Termux Paths
 
 | Path | Description |
-|---|---|
+| --- | --- |
 | `/data/data/com.termux` | Termux Private App Data Directory |
 | `/data/data/com.termux/termux` | Termux Project Directory (v0.119+) |
 | `/data/data/com.termux/termux/core` | Termux Core Directory |
@@ -48,7 +48,7 @@ The following docs provide info on Android and Termux paths, and their differenc
 The Termux prefix directory (`$PREFIX`) serves the same purpose as `/usr` on Linux distros.
 
 | Path | Description |
-|---|---|
+| --- | --- |
 | `$PREFIX/bin` | Executables. Combines `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin`. |
 | `$PREFIX/etc` | Configuration files. |
 | `$PREFIX/include` | C/C++ headers. |
@@ -69,7 +69,7 @@ Cache files that are safe to be deleted by Android or Termux. Default path: `/da
 ## File Path Limits
 
 | Constant | Value | Description |
-|---|---|---|
+| --- | --- | --- |
 | `TERMUX_APP__DATA_DIR___MAX_LEN` | 69 | Max length for app data directory |
 | `TERMUX__ROOTFS_DIR___MAX_LEN` | 86 | Max length for rootfs directory |
 | `TERMUX__PREFIX_DIR___MAX_LEN` | 90 | Max length for prefix directory |

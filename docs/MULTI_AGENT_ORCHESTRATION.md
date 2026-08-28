@@ -19,7 +19,7 @@ para executar um pipeline completo: planejar → implementar → revisar → com
 ### Quando usar task-build vs. abordagem manual
 
 | Cenário | Abordagem |
-|---------|-----------|
+| --------- | ----------- |
 | Feature complexa (3+ arquivos) | `task-build` (pipeline completo) |
 | Fix pontual (1-2 arquivos) | `dev` + `git-commit` |
 | Revisão de código | `code-review` |
@@ -29,6 +29,7 @@ para executar um pipeline completo: planejar → implementar → revisar → com
 ### Princípio de triangulação
 
 Cada agente **triangula** três fontes de informação:
+
 - `task-build`: Tarefa × Plano × Entrega
 - `task-planner`: Tarefa × Codebase × Skills
 - `dev`: Task × Plano × Skills
@@ -39,7 +40,7 @@ Cada agente **triangula** três fontes de informação:
 ### Tabela Resumo
 
 | Agente | Modo | Skills Obrigatórias | Responsabilidade |
-|--------|------|---------------------|------------------|
+| -------- | ------ | --------------------- | ------------------ |
 | `task-build` | **primary** | `executing-plans` | Orquestra pipeline completo |
 | `task-planner` | subagent | `spec-driven-development`, `executing-plans` | Cria planos adaptativos |
 | `dev` | subagent | `executing-plans`, `systematic-debugging` | Implementa código |
@@ -48,7 +49,7 @@ Cada agente **triangula** três fontes de informação:
 
 > **Modo `primary`**: `task-build` é o único agente que aparece no TUI Tab.
 > Os outros 4 são invocados apenas via Task tool (subagentes).
-
+>
 > **Nota sobre `git-commit`**: É o único subagent sem acesso a skills
 > (`"skill"` não listado no opencode.json). É intencional — não precisa
 > de skills para operações git.
@@ -59,11 +60,13 @@ Cada agente **triangula** três fontes de informação:
 implementação, review e commit para os subagentes.
 
 **Responsabilidades**:
+
 - `plan-reviewer` é skill obrigatória — sempre carrega antes de qualquer tarefa
 - Code review é obrigatório antes de cada commit (individual + consolidado)
 - Revisão consolidada final (step 6e) antes do commit final
 
 **Novas capacidades (commit `58fc4ea`, 19/08/2026)**:
+
 - Retry policy unificada com backoff exponencial + jitter (2s→4s→8s, máx. 3 tentativas por delegação)
 - Output contracts padronizados para os 5 subagentes (formato fixo de sucesso/erro)
 - Routing table com 7 mapeamentos tipo-de-tarefa → agente → pipeline
@@ -72,6 +75,7 @@ implementação, review e commit para os subagentes.
 - Circuit breaker HALF_OPEN (ver seção 6.1) e checkpoints expandidos com `resumivel`, `proximo_passo`, `contexto_necessario` (ver seção 6.3)
 
 **O que NÃO faz**:
+
 - Nunca modifica código (delega para `dev`)
 - Nunca executa git de escrita (delega para `git-commit`)
 - Nunca aprova automaticamente — revisão do plan-reviewer + gate de aprovação obrigatórios antes de apresentar ao usuário
@@ -84,6 +88,7 @@ implementação, review e commit para os subagentes.
 `.opencode/plans/{timestamp}_{slug}.md`.
 
 **Novas capacidades (commit `68e2b11`, 20/08/2026)**:
+
 - Critérios de aceitação Given/When/Then (step 3a)
 - Escala numérica de complexidade (step 6a) e heurísticas de decomposição (step 6.1)
 - Matriz de dependências entre tasks
@@ -94,6 +99,7 @@ implementação, review e commit para os subagentes.
 - Tabela de 8 anti-padrões de planejamento
 
 **O que NÃO faz**:
+
 - Nunca modifica código
 - Nunca faz commit/push/merge
 
@@ -103,6 +109,7 @@ implementação, review e commit para os subagentes.
 (build/test/lint auto-detect), marca tasks no backlog.
 
 **Novas capacidades (commit `609d579`, 19/08/2026)**:
+
 - Pré-análise com decomposição da task antes de implementar (Decompose Pattern)
 - Stop conditions explícitas (blocos PARAR / NÃO PARAR / NÃO FAZER)
 - Output template padronizado com 6 seções
@@ -116,6 +123,7 @@ implementação, review e commit para os subagentes.
 - Tabela de anti-padrões a evitar
 
 **O que NÃO faz**:
+
 - Nunca executa comandos git de escrita
 - Nunca modifica arquivos fora do escopo da task
 
@@ -125,6 +133,7 @@ implementação, review e commit para os subagentes.
 verifica conclusão de TODOs no backlog, compara plano vs. implementação.
 
 **Novas capacidades (commit `825294a`, 20/08/2026)**:
+
 - Persona Senior Reviewer com rigor técnico
 - Structured findings com severidade formal (Critical/High/Medium/Low)
 - Context gathering além do diff (5 steps)
@@ -137,6 +146,7 @@ verifica conclusão de TODOs no backlog, compara plano vs. implementação.
 - Tabela de 10 anti-padrões do reviewer
 
 **O que NÃO faz**:
+
 - Nunca modifica código
 - Nunca faz commit
 
@@ -146,6 +156,7 @@ verifica conclusão de TODOs no backlog, compara plano vs. implementação.
 cleanup de branches stale.
 
 **Novas capacidades (commit `5a1bf2b`, 21/08/2026)**:
+
 - Tipos Conventional Commits completos (+style, perf, build, ci, revert)
 - Regra 50/72 e modo imperativo nas mensagens
 - Staging strategy: `git add -p` com fallback não-interativo
@@ -159,6 +170,7 @@ cleanup de branches stale.
 - Output contract para integração com task-build
 
 **O que NÃO faz**:
+
 - Nunca modifica código fonte ou testes (`edit: "deny"`, `write: "deny"`)
 - Nunca roda quality checks
 
@@ -177,10 +189,9 @@ graph TD
     B0 --> B1{Plano existente?}
     B1 -->|Sim| E[Apresentar ao usuário]
     B1 -->|Não| D[task-planner]
-    D --> D2[plan-reviewer: revisar plano]
-    D2 --> D3[code-review: revisar plano]
-    D3 -->|Aprovado| D4{Gate pós-revisão}
-    D3 -->|Rejeitado| D4
+    D --> D2[code-review: revisar plano (carrega plan-reviewer)]
+    D2 -->|Aprovado| D4{Gate pós-revisão}
+    D2 -->|Rejeitado| D4
     D4 -->|Aprovado| E[Apresentar ao usuário]
     D4 -->|Refinamento| D
     E -->|Aprovado| F[git-commit: criar branch]
@@ -200,14 +211,14 @@ graph TD
 
 ### 3.2 Fluxo Simples (sem task-build)
 
-```
+```text
 1. dev → entender contexto + implementar
 2. git-commit → branch + commit + cleanup
 ```
 
 ### 3.3 Fluxo de Revisão
 
-```
+```text
 1. code-review → analisar mudanças
 2. dev → aplicar feedback
 3. git-commit → commitar fixes
@@ -219,7 +230,7 @@ graph TD
 
 **GLOBAL** (em `opencode_termux/`, acessível via symlink `~/.config/opencode/`):
 
-```
+```text
 opencode_termux/.config/opencode/
 ├── opencode.jsonc               ← config global
 ├── package.json                 ← dependências de skills
@@ -232,20 +243,22 @@ opencode_termux/.config/opencode/
     └── git-commit.md
 ```
 
-> **Composição das 50 skills**: 27 globais + 14 do
+> **Composição das 50 skills**: 24 globais + 14 do
 > [obra/superpowers](https://github.com/obra/superpowers): `brainstorming`,
 > `dispatching-parallel-agents`, `executing-plans`, `finishing-a-development-branch`,
 > `receiving-code-review`, `requesting-code-review`, `subagent-driven-development`,
 > `systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
-> `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`.
+> `using-superpowers`, `verification-before-completion`, `writing-plans`, `writing-skills`
+>
+> - 10 upstream + 2 unificadas.
 
 | Skill | Categoria | Origem | Uso |
-|-------|-----------|--------|-----|
+| ------- | ----------- | -------- | ----- |
 | `plan-reviewer` | workflow | global | Revisão de planos antes de implementação |
 
 **LOCAL** (em cada projeto):
 
-```
+```text
 projeto/
 ├── opencode.json                ← config do projeto (MÍNIMO: skills.paths + permission.skill)
 ├── AGENTS.md                    ← convenções específicas do projeto
@@ -267,6 +280,7 @@ cp .env.example .env           # e editar
 ```
 
 O `setup.sh`:
+
 1. Faz backup de `~/.config/opencode/` existente (se não for symlink)
 2. Cria symlink: `~/.config/opencode/` → `opencode_termux/.config/opencode/`
 3. Instala dependências npm do `.config/opencode/`
@@ -288,17 +302,19 @@ O modelo usa um symlink `~/.config/opencode/` → `opencode_termux/.config/openc
 para compartilhar agentes e skills entre TODOS os projetos.
 
 **Por que symlink (não cópia)?**
+
 - **Atualização centralizada**: atualizar `opencode_termux` atualiza TODOS os projetos
-- **Consistência**: todos os projetos usam as mesmas versões de agents e skills
-- **Economia de espaço**: uma única cópia de 50 skills + 5 agents
+- **Consistência**: todos os projetos usam as mesmas versões de agentes e skills
+- **Economia de espaço**: uma única cópia de 50 skills + 5 agentes
 
 **O que cada projeto mantém LOCALMENTE:**
+
 - `opencode.json`: permissões e config do projeto (MÍNIMO: skills.paths + permission.skill). Agentes definidos em markdown em `.config/opencode/agents/`.
 - `AGENTS.md`: convenções, gotchas, e workflow do projeto
 - `.opencode/plans/`: planos de implementação
 - `docs/PROJECT_BACKLOG_*.md`: backlog de tasks
 
-> **NUNCA copie** prompts `.md` dos agents ou diretórios de skills para o projeto.
+> **NUNCA copie** prompts `.md` dos agentes ou diretórios de skills para o projeto.
 > Eles já estão disponíveis via symlink `~/.config/opencode/`.
 
 ### 4.5 Como Adicionar Skills a um Projeto
@@ -318,7 +334,7 @@ Isso lista todas as 50 skills disponíveis via symlink global.
 Cada agente tem skills obrigatórias. Verifique quais seu projeto precisa:
 
 | Agente | Skills Obrigatórias |
-|--------|---------------------|
+| -------- | --------------------- |
 | `task-build` | `executing-plans`, `plan-reviewer` |
 | `task-planner` | `spec-driven-development`, `executing-plans` |
 | `dev` | `executing-plans`, `systematic-debugging` |
@@ -384,6 +400,7 @@ agente pode invocar via Task tool. Isso substitui o `rbac` custom usado
 anteriormente.
 
 **Formato**:
+
 ```yaml
 permission:
   task: []  # array vazio = não pode chamar ninguém
@@ -394,7 +411,7 @@ Regras são avaliadas em ordem; a última regra matching vence.
 ### 5.2 Quem pode chamar quem
 
 | Agente | `permission.task` | Pode chamar |
-|--------|-------------------|-------------|
+| -------- | ------------------- | ------------- |
 | `task-build` (primary) | Não definido | Todos os subagentes (padrão) |
 | `task-planner` (subagent) | `[]` | Ninguém |
 | `dev` (subagent) | `[]` | Ninguém |
@@ -416,13 +433,14 @@ Regras são avaliadas em ordem; a última regra matching vence.
 
 > **⚠️ Nota**: `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md.
 > Ver seção 9.6.3 para detalhes.
-
+>
 > **Novo no 1.18.2**: Subagentes não podem mais lançar subagentes aninhados por padrão.
 > A configuração `subagent_depth=0` (default) impede que subagentes chamem outros
 > subagentes. Para permitir, configure `subagent_depth` no `opencode.json` do projeto.
-
+>
 > **Sintaxe**: `permission.task` aceita um objeto com padrões glob para
 > controle granular:
+>
 > ```json
 > "permission": {
 >   "task": {
@@ -431,13 +449,14 @@ Regras são avaliadas em ordem; a última regra matching vence.
 >   }
 > }
 > ```
+>
 > No nosso caso, usamos `task: []` (array vazio) para bloquear tudo.
 
 ### 5.4 Gotchas
 
 - `permission.task: []` significa "nenhum subagente permitido"
 - Se `permission.task` não for definido, o agente pode chamar TODOS
-  (padrão para primary agents)
+  (padrão para agentes primários)
 - O `rbac` custom antigo foi removido — usar `permission.task`
 - Cores dos agentes no TUI: `task-build`=blue, `task-planner`=green,
   `dev`=orange, `code-review`=purple, `git-commit`=gray
@@ -450,6 +469,7 @@ Regras são avaliadas em ordem; a última regra matching vence.
 ### 6.1 Circuit Breaker
 
 Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review:
+
 - Transição para estado **HALF_OPEN** com recovery timeout de 30s
 - Retry 1x com prompt modificado (instruir dev a usar abordagem diferente)
 - Se retry em HALF_OPEN for bem-sucedido → circuit breaker FECHA (volta ao normal)
@@ -459,6 +479,7 @@ Se 3+ tasks consecutivas receberem veredito "Precisa de ajustes" do code-review:
 ### 6.2 State Hashing (Detecção de Loops)
 
 Após cada tentativa de dev + code-review:
+
 1. Gerar hash do output do dev (100 chars do resumo + arquivos alterados)
 2. Comparar com hash da tentativa anterior
 3. Se idêntico 3 vezes → transição para **HALF_OPEN** com recovery timeout de 30s
@@ -470,6 +491,7 @@ Após cada tentativa de dev + code-review:
 ### 6.3 Crash Recovery
 
 Se agent crashar (timeout/erro API):
+
 1. Retry 1x automático com o mesmo prompt
 2. Se falhar → salvar checkpoint expandido com campos:
    - `task_id`, `tentativa`, `output_partial`, `hash_ciclo`, `retries_contador`, `branch`, `timestamp`
@@ -479,6 +501,7 @@ Se agent crashar (timeout/erro API):
 3. QUESTION TOOL → continuação via task_id em sessão futura
 
 **Distinção entre Checkpoint e Dead Letter Queue**:
+
 - **Checkpoint** = recuperação intermediária — permite retomar task interrompida (schema com `resumivel`, `proximo_passo`, `contexto_necessario`)
 - **Dead Letter Queue** = falha permanente — registro para análise futura (schema distinto com `Agente`, `Plano`, `Erro`)
 
@@ -491,7 +514,7 @@ Se agent crashar (timeout/erro API):
 ### 6.5 Timeouts
 
 | Agente | Timeout | Ação |
-|--------|---------|------|
+| -------- | --------- | ------ |
 | `task-planner` | 5 min | QUESTION TOOL |
 | `plan-reviewer` | 3 min | Retry 1x → QUESTION TOOL |
 | `dev` | 10 min/task | QUESTION TOOL |
@@ -525,7 +548,7 @@ Campos obrigatórios: `timestamp`, `agent`, `task_id`, `input_summary`,
 
 Log imutável (append-only) de todas as ações:
 
-```
+```text
 [2026-06-22T14:30:00Z] task-build → delegou para dev (task 1/3) → ok
 [2026-06-22T14:30:15Z] dev → implementou auth JWT → ok (15s)
 [2026-06-22T14:30:20Z] code-review → revisou task 1/3 → "Aprovado" (5s)
@@ -534,7 +557,7 @@ Log imutável (append-only) de todas as ações:
 ### 7.3 Quando usar cada formato
 
 | Formato | Quando usar | Uso |
-|---------|-------------|-----|
+| --------- | ------------- | ----- |
 | **Structured Logging (JSON)** | Cada delegação de task-build | Rastreabilidade automatizada, debugging, métricas |
 | **Audit Trail** | Visão humana do pipeline | Relatório final, compliance, revisão pós-mortem |
 | **Debug (texto simples)** | Step 8 do relatório | Formato compacto para o usuário final |
@@ -565,7 +588,7 @@ Log imutável (append-only) de todas as ações:
 ```
 
 > **NOTA**: Este é o MÍNIMO necessário. Agentes são resolvidos via symlink global
-> `~/.config/opencode/` — NÃO re-declare os 5 agents no `opencode.json` do projeto.
+> `~/.config/opencode/` — NÃO re-declare os 5 agentes no `opencode.json` do projeto.
 > Se precisar de permissões customizadas de agente, adicione a seção `"agent"` apenas
 > para sobrescrever configurações globais.
 
@@ -673,7 +696,8 @@ Listar TODAS as skills instaladas nos diretórios:
 ```
 
 Formato de conclusão:
-```
+
+```text
 - [x] **TODO-B-01:** Criar estrutura do projeto – Concluído em [23/06/2026:14:30]
 ```
 
@@ -685,6 +709,7 @@ Formato de conclusão:
 O template completo para criação de `AGENTS.md` em projetos alvo está disponível em [`docs/AGENTS_TEMPLATE.md`](AGENTS_TEMPLATE.md).
 
 **Resumo do template**:
+
 - Cabeçalho com nome e descrição do projeto
 - Estrutura de diretórios do projeto
 - Lista de skills e subagentes disponíveis (5 agentes + 50 skills via symlink)
@@ -700,7 +725,7 @@ O template completo para criação de `AGENTS.md` em projetos alvo está dispon�
 ### 9.1 Erros Comuns
 
 | Problema | Solução |
-|----------|---------|
+| ---------- | --------- |
 | `rbac` custom removido | `permission.task` funciona apenas no `opencode.json`, NÃO no frontmatter .md — ver seção 9.6.3 |
 | Agent editando código sendo que shouldn't | Verificar `edit: "deny"` no frontmatter .md |
 | Git commit sem branch feature | task-build cria branch antes do pipeline |
@@ -752,6 +777,7 @@ Agentes podem usar métodos alternativos (sed, python -c, tee) para modificar ar
 2. **Permission system**: Padrões de negação no frontmatter `.md` que bloqueiam comandos específicos
 
 **Métodos bloqueados para `task-build` e `task-planner`**:
+
 - `sed` / `awk` — edição via regex em shell
 - `python -c` / `python3 -c` — edição via Python inline
 - `node -e` — edição via Node.js inline
@@ -779,7 +805,7 @@ Agentes ainda podem usar `echo "content" > file` mesmo com deny patterns.
 #### 9.6.1 Hex colors precisam de aspas
 
 | Correto | Incorreto | Problema |
-|---------|-----------|----------|
+| --------- | ----------- | ---------- |
 | `color: "#FFA500"` | `color: #FFA500` | `#` é início de comentário YAML — valor fica null |
 
 **Regra**: Qualquer cor hex DEVE estar entre aspas duplas: `color: "#HEXCODE"`.
@@ -788,7 +814,7 @@ Cores nomeadas (purple, orange, gray, etc.) não precisam de aspas.
 #### 9.6.2 `*` é alias YAML — usar aspas na chave
 
 | Correto | Incorreto | Problema |
-|---------|-----------|----------|
+| --------- | ----------- | ---------- |
 | `"*": allow` | `*: allow` | YAML tenta resolver como alias de referência |
 
 **Regra**: Chaves com `*` DEVEM ter aspas: `"*": allow`, `"git *": deny`.
@@ -796,7 +822,7 @@ Cores nomeadas (purple, orange, gray, etc.) não precisam de aspas.
 #### 9.6.3 `permission.task` NÃO funciona no frontmatter .md
 
 | Campo | Suportado no frontmatter .md | Suportado no opencode.json |
-|-------|:---:|:---:|
+| ------- | :---: | :---: |
 | `permission.bash` | ✅ Sim | ✅ Sim |
 | `permission.read` | ✅ Sim | ✅ Sim |
 | `permission.edit` | ✅ Sim | ✅ Sim |
@@ -846,7 +872,7 @@ done
 #### 9.6.5 Delimitadores `---` no body do markdown
 
 | Correto | Incorreto | Problema |
-|---------|-----------|----------|
+| --------- | ----------- | ---------- |
 | `### Seção` | `---` (isolado no body) | Parsers YAML ingênuos interpretam como fim do frontmatter |
 
 **Regra**: O body do markdown NÃO deve conter `---` isolados como separadores de seção.
@@ -855,7 +881,7 @@ genéricos (como `python3 -c "import yaml; ..."`) podem falhar.
 
 ## 10. Melhorias Recentes
 
-Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente, subagent_depth.
+Melhorias recentes incluem: git delegado, permission.task, quality checks agnósticos, state hashing, circuit breaker, orçamento global, crash recovery, structured logging, audit trail, skills do obra/superpowers, plan-reviewer para revisão de planos, steps 4b/4c (revisão + gate), timeouts padronizados por agente, subagent_depth.
 
 ### Reforço dos prompts dos agentes (19–21/08/2026)
 
@@ -863,7 +889,7 @@ Cinco rodadas de melhorias nos prompts dos 5 agentes (~870 linhas adicionadas),
 uma por agente, em ordem cronológica:
 
 | Data | Commit | Agente | Rodada de melhorias |
-|------|--------|--------|---------------------|
+| ------ | -------- | -------- | --------------------- |
 | 19/08/2026 | `58fc4ea` | `task-build` | 10 melhorias no workflow: retry policy com backoff exponencial + jitter, output contracts, routing table, context budgeting, branch-only delegation guard |
 | 19/08/2026 | `609d579` | `dev` | 12 melhorias de prompt engineering: decomposição pré-análise, stop conditions, escalation ladder, timeout policy, context budget |
 | 20/08/2026 | `68e2b11` | `task-planner` | Templates estruturados, framework de risco, checkpoints, anti-padrões |
@@ -878,7 +904,7 @@ uma por agente, em ordem cronológica:
 ### 11.1 Arquivos do Sistema
 
 | Arquivo | Descrição |
-|---------|-----------|
+| --------- | ----------- |
 | `.config/opencode/agents/task-build.md` | Prompt do orquestrador |
 | `.config/opencode/agents/task-planner.md` | Prompt do planejador |
 | `.config/opencode/agents/dev.md` | Prompt do implementador |
@@ -890,7 +916,7 @@ uma por agente, em ordem cronológica:
 ### 11.2 Skills Relevantes
 
 | Skill | Usado por |
-|-------|-----------|
+| ------- | ----------- |
 | `executing-plans` | task-build, task-planner, dev |
 | `systematic-debugging` | dev |
 | `verification-before-completion` | dev |
@@ -906,12 +932,12 @@ uma por agente, em ordem cronológica:
 Skills que orquestram fluxos de trabalho:
 
 | Skill | Descrição | Uso |
-|-------|-----------|-----|
+| ------- | ----------- | ----- |
 | `executing-plans` | Executa planos existentes | Pipeline de implementação |
 | `plan-reviewer` | Revisa planos antes de implementação | Gate de qualidade |
 | `spec-driven-development` | Cria specs antes de código | Projetos novos |
 | `writing-plans` | Escrita de planos | Planejamento |
-| `subagent-driven-development` | Desenvolvimento com subagents | Multi-agent |
+| `subagent-driven-development` | Desenvolvimento com subagentes | Multi-agent |
 | `requesting-code-review` | Solicita review | Pré-merge |
 | `receiving-code-review` | Processa feedback de review | Pós-review |
 | `finishing-a-development-branch` | Finaliza branch | Pós-implementação |
@@ -920,33 +946,33 @@ Skills que orquestram fluxos de trabalho:
 
 ### 11.4 Agentes Built-in do OpenCode 1.18.2
 
-O OpenCode 1.18.2 inclui 5 built-in agents que complementam nossos agentes custom:
+O OpenCode 1.18.2 inclui 5 agentes built-in que complementam nossos agentes customizados:
 
 | Agente | Tipo | Descrição |
-|--------|------|-----------|
+| -------- | ------ | ----------- |
 | **Build** | primary | Agente padrão com todas as ferramentas habilitadas |
 | **Plan** | primary | Análise e planejamento sem modificar código (read-only) |
 | **General** | subagent | Propósito geral, full tools (exceto todo). Invocável via `@general` |
 | **Explore** | subagent | Fast read-only para explorar codebase. Invocável via `@explore` |
 | **Scout** | subagent | Read-only para pesquisa de dependências. Invocável via `@scout` |
 
-Além destes, há 3 hidden system agents de uso interno: **compaction**, **title**, **summary**.
+Além destes, há 3 agentes ocultos do sistema de uso interno: **compaction**, **title**, **summary**.
 
-#### Relação com nossos agentes custom
+#### Relação com nossos agentes customizados
 
 Nossos 5 agentes (`task-build`, `task-planner`, `dev`, `code-review`, `git-commit`) são especializados em orquestração de entrega e **não substituem** os built-ins:
 
 | Built-in | Nosso equivalente? | Uso recomendado |
-|----------|-------------------|-----------------|
+| ---------- | ------------------- | ----------------- |
 | **Build** | Parcial (task-build) | Uso geral/build manual. task-build é mais especializado |
 | **Plan** | Parcial (task-planner) | Análise ad-hoc rápida. task-planner gera planos SDD estruturados |
 | **General** | Não | Tasks complexas autônomas sem orquestração |
 | **Explore** | Não | Busca rápida na codebase pelo usuário |
 | **Scout** | Não | Pesquisar docs de dependências externas |
 
-> **Recomendação**: Built-ins e custom agents são complementares. Use `@explore` para buscas rápidas, `@general` para tasks autônomas, e nossos agents para pipelines orquestrados.
+> **Recomendação**: Built-ins e agentes customizados são complementares. Use `@explore` para buscas rápidas, `@general` para tasks autônomas, e nossos agentes para pipelines orquestrados.
 
 ### 11.5 Links Externos
 
-- OpenCode Docs: https://opencode.ai
-- obra/superpowers: https://github.com/obra/superpowers
+- OpenCode Docs: <https://opencode.ai>
+- obra/superpowers: <https://github.com/obra/superpowers>

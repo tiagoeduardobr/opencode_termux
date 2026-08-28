@@ -1,4 +1,4 @@
-> **Fonte**: https://github.com/termux/termux-api-package/blob/master/scripts/termux-notification.in
+> **Fonte**: <https://github.com/termux/termux-api-package/blob/master/scripts/termux-notification.in>
 > **Snapshot**: 19/06/2026
 > **Formato**: termux-notification script (Termux API package)
 
@@ -8,14 +8,14 @@ Display a system notification. Content text is specified using `-c/--content` or
 
 ## Usage
 
-```
+```bash
 termux-notification [options]
 ```
 
 ## Options
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `--action action` | Action to execute when pressing the notification |
 | `--alert-once` | Do not alert when the notification is edited |
 | `--button1 text` | Text to show on the first notification button |
@@ -46,7 +46,7 @@ termux-notification [options]
 ## Media actions (available with `--type "media"`)
 
 | Option | Description |
-|---|---|
+| --- | --- |
 | `--media-next` | Action to execute on the media-next button |
 | `--media-pause` | Action to execute on the media-pause button |
 | `--media-play` | Action to execute on the media-play button |

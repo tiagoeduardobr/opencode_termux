@@ -14,7 +14,7 @@
 
 ## Estrutura do Projeto
 
-```
+```text
 {PROJECT_ROOT}/
 ├── {SOURCE_DIR}/                  ← código fonte
 │   └── ...
@@ -34,7 +34,7 @@
 
 ## Skills e Subagentes Disponíveis
 
-Este projeto usa 5 agentes e 49 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
+Este projeto usa 5 agentes e 50 skills via symlink `~/.config/opencode/` → `opencode_termux/.config/opencode/`.
 As skills estão em 3 diretórios (todos via symlink global):
 
 - `~/.config/opencode/skills/` — skills globais
@@ -42,8 +42,9 @@ As skills estão em 3 diretórios (todos via symlink global):
 - `.agents/skills/` — skills de agentes customizados
 
 **Subagentes**:
+
 | Agente | Função |
-|--------|--------|
+| -------- | -------- |
 | `task-build` | Orquestra pipeline completo (planejar → implementar → revisar → commitar) |
 | `task-planner` | Cria planos adaptativos antes de implementar |
 | `dev` | Implementa código seguindo o plano |
@@ -56,7 +57,7 @@ As skills estão em 3 diretórios (todos via symlink global):
 **Skills obrigatórias por agente**:
 
 | Agente | Skills obrigatórias |
-|--------|---------------------|
+| -------- | --------------------- |
 | `task-build` | `executing-plans` |
 | `task-planner` | `spec-driven-development`, `executing-plans` |
 | `dev` | `executing-plans`, `systematic-debugging` |
@@ -87,6 +88,7 @@ As skills estão em 3 diretórios (todos via symlink global):
 ### Quality Checks
 
 Quality checks são auto-detectados pelo `code-review` e `dev`:
+
 - Python: `ruff format --check`, `ruff check`, `pytest`
 - Node.js: `npm run build`, `npm run lint`, `npm test`
 - Makefile: `make lint`, `make test`, `make build`
@@ -136,7 +138,7 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 ### Qual agente usar
 
 | Tarefa | Agente | Quando usar |
-|--------|--------|-------------|
+| -------- | -------- | ------------- |
 | Explorar codebase rápido | `explore` | Buscar arquivos, entender estrutura, achar padrões |
 | Planejar tarefa antes de implementar | `task-planner` | Gerar plano adaptativo com escopo, dependências e riscos |
 | Implementar código | `dev` | Executar tasks do plano com qualidade e conformidade |
@@ -154,14 +156,16 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 ### Padrões de orquestração
 
 **Padrão simples** (mudança pontual):
-```
+
+```text
 1. explore → entender contexto
 2. dev → implementar
 3. git-commit → branch + commit + cleanup
 ```
 
 **Padrão completo** (feature ou fix complexo):
-```
+
+```text
 1. task-build → ler AGENTS.md + receber tarefa
 2. task-planner → gerar plano adaptativo
 3. dev → implementar
@@ -170,7 +174,8 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 ```
 
 **Padrão de revisão** (após receber PR/issues):
-```
+
+```text
 1. code-review → analisar mudanças
 2. dev → aplicar feedback
 3. git-commit → commitar fixes
@@ -186,7 +191,7 @@ Quality checks são auto-detectados pelo `code-review` e `dev`:
 
 ### Loop de trabalho
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │  0. Ler AGENTS.md                               │
 │     └─ entender convenções e gotchas             │
@@ -225,7 +230,7 @@ Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 
 ## Gotchas deste Projeto
 
-- **permission.task**: Controla quais subagentes um agente pode invocar. Array vazio (`[]`) = não chama ninguém. Primary agents sem `task` chamam todos.
+- **permission.task**: Controla quais subagentes um agente pode invocar. Array vazio (`[]`) = não chama ninguém. Agentes primários sem `task` chamam todos.
 
 <!-- ============================================================
      INSTRUÇÕES: Liste armadilhas conhecidas deste projeto específico.
@@ -260,7 +265,7 @@ Ou usar o agente `task-build` para orquestrar tudo automaticamente.
 ## Leitura Recomendada por Tarefa
 
 | Tarefa | Docs para ler |
-|--------|---------------|
+| -------- | --------------- |
 | **Setup do projeto** | {SETUP_DOCS} |
 | **Debug** | {DEBUG_DOCS} |
 | **Deploy** | {DEPLOY_DOCS} |
