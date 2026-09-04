@@ -460,3 +460,14 @@ Cadeia de upgrades de 1.18.21 para 1.18.25 (direto), seguindo pipeline consolida
 | 1.18.25 | 28/08/2026 | Fix Azure auth (Azure CLI sign-in sem Bun) |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
+### Atualização OpenCode 1.18.27 (04/09/2026)
+
+Cadeia de upgrades de 1.18.25 para 1.18.27 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+|--------|------|-----------|
+| 1.18.26 | 27/08/2026 | Fix Claude 5 stale thinking blocks, Bedrock GPT-5.6 none reasoning effort, Bedrock reasoning/replay mais confiável, fix tool call timing, fix apply_patch empty move path, Azure CLI sign-in resource name direto, session renames desktop |
+| 1.18.27 | 04/09/2026 | Default provider header timeouts 5min, default streamed chunk timeouts 5min (false suportado), Anthropic thinking.blockBinding opt-out via config, thinking block binding limitado a Claude 5.1+, fix unhandled errors ao cancelar SSE reads |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
