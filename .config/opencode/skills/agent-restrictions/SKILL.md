@@ -42,7 +42,7 @@ Documenta restrições de permissão dos agentes para garantir conformidade.
 
 **Permissões**:
 - `edit: "allow"`, `write: "allow"`
-- `bash: "*": "allow"` com `git *` deny
+- `bash: "*": "allow"` com denies específicos de escrita git
 
 **Proibições**:
 - NUNCA executar comandos git de escrita
@@ -95,7 +95,21 @@ Documenta restrições de permissão dos agentes para garantir conformidade.
 ```json
 "bash": {
   "*": "allow",
-  "git *": "deny"
+  "git add *": "deny",
+  "git commit *": "deny",
+  "git push *": "deny",
+  "git merge *": "deny",
+  "git rebase *": "deny",
+  "git reset *": "deny",
+  "git stash *": "deny",
+  "git checkout -b*": "deny",
+  "git branch -d*": "deny",
+  "git branch -D*": "deny",
+  "git restore *": "deny",
+  "git clean *": "deny",
+  "git rm *": "deny",
+  "git cherry-pick *": "deny",
+  "git revert *": "deny"
 }
 ```
 

@@ -30,6 +30,11 @@ permission:
     "git reset *": deny
     "git rebase *": deny
     "git stash *": deny
+    "git restore *": deny
+    "git clean *": deny
+    "git rm *": deny
+    "git cherry-pick *": deny
+    "git revert *": deny
   read: allow
   glob: allow
   grep: allow

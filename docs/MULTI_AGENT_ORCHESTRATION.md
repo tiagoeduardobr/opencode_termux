@@ -817,7 +817,7 @@ Cores nomeadas (purple, orange, gray, etc.) não precisam de aspas.
 | --------- | ----------- | ---------- |
 | `"*": allow` | `*: allow` | YAML tenta resolver como alias de referência |
 
-**Regra**: Chaves com `*` DEVEM ter aspas: `"*": allow`, `"git *": deny`.
+**Regra**: Chaves com `*` DEVEM ter aspas: `"*": allow`, `"git add *": deny`.
 
 #### 9.6.3 `permission.task` NÃO funciona no frontmatter .md
 

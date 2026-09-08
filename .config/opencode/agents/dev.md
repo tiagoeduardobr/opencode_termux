@@ -7,7 +7,21 @@ temperature: 0.3
 permission:
   bash:
     "*": allow
-    "git *": deny
+    "git add *": deny
+    "git commit *": deny
+    "git push *": deny
+    "git merge *": deny
+    "git rebase *": deny
+    "git reset *": deny
+    "git stash *": deny
+    "git checkout -b*": deny
+    "git branch -d*": deny
+    "git branch -D*": deny
+    "git restore *": deny
+    "git clean *": deny
+    "git rm *": deny
+    "git cherry-pick *": deny
+    "git revert *": deny
   read: allow
   glob: allow
   grep: allow
