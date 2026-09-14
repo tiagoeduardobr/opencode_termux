@@ -471,3 +471,15 @@ Cadeia de upgrades de 1.18.25 para 1.18.27 (direto), seguindo pipeline consolida
 | 1.18.27 | 04/09/2026 | Default provider header timeouts 5min, default streamed chunk timeouts 5min (false suportado), Anthropic thinking.blockBinding opt-out via config, thinking block binding limitado a Claude 5.1+, fix unhandled errors ao cancelar SSE reads |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
+### Atualização OpenCode 1.18.30 (14/09/2026)
+
+Cadeia de upgrades de 1.18.27 para 1.18.30 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+|--------|------|-----------|
+| 1.18.28 | set/2026 | Session ID como interaction header do GitHub Copilot, fix client ID desktop na device auth, fix tamanho ícone open-in app |
+| 1.18.29 | set/2026 | Fix Codex OAuth model filtering (versões GPT inteiras como gpt-6), fix gpt-6-astra para assinantes OpenAI |
+| 1.18.30 | set/2026 | Astra system prompt para GPT-6, fix Bedrock DeepSeek model IDs (incluindo ARN-based), SDK updates Azure/OpenAI, reasoning effort variants para GitLab GPT e Claude |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
