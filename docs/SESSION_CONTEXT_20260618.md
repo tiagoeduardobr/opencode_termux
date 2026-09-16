@@ -520,3 +520,49 @@ Quatro upgrades executados em sequência dentro de uma única conversa (1.18.18 
 
 4. **git-commit agent não criava branches**:
    O agente `git-commit` retornava output vazio ao tentar criar branches. O workaround foi usar o agente `general` para `git checkout -b`.
+
+---
+
+### Sessão de Consistência de Documentação + Permissões (16/09/2026)
+
+#### 1. Consistência de Documentação (28/08/2026, commit `694678d`)
+
+- Plano: `.opencode/plans/20260828_0958_consistencia-documentacao.md` (10 tasks, todas aprovadas)
+- Branch: `feature/docs-consistency` → merged em `main` (fast-forward `0ef9e23..694678d`)
+- Commit: `694678d docs: consolidar documentação e arquivar planos` — 46 files, 5630+/219−
+- O que foi feito:
+  - Inventário canônico de skills: 24 globais + 14 obra/superpowers + 10 upstream + 2 unificadas = **50 skills** (contagem corrigida em 5 docs: README, AGENTS.md, SESSION_CONTEXT, MULTI_AGENT_ORCHESTRATION, AGENTS_TEMPLATE)
+  - Badge LICENSE removido (repo não tem LICENSE)
+  - Terminologia PT-BR padronizada
+  - Versões atualizadas para 1.18.25
+  - Diagramas atualizados (mermaid D2/D3 → code-review carrega plan-reviewer)
+  - Tabelas atualizadas (aliases 4→6)
+  - **markdownlint adicionado**: `.markdownlint-cli2.jsonc` + `package.json` (0 issues em 24 files)
+  - **Planos consolidados**: 15 planos movidos para `.opencode/plans/archive/`, 2 ativos + README.md permanecem
+  - Links quebrados corrigidos (ADR-009:58, AI_HANDOVER:85 apontando para planos arquivados)
+- Decisões do usuário: manter alterações do markdownlint `--fix` nas docs estáticas (cloudflare/proot-distro/tailscale/termux/decisions)
+
+#### 2. Permissão de acesso à pasta de skills no parecer_descritivo (commit `4d52b67`)
+
+- **Problema**: code-review pediu permissão para acessar pasta de skills em workflow
+- **Root cause**: `/root/.agents/skills/` (33 skills externas: react-native, eas-*, expo-*, vercel-*) está FORA do workspace → prompt `external_directory`; `list` não configurado
+- **Descoberta importante**: `external_directory` e `list` NÃO são suportados em frontmatter .md de agentes (como `permission.task`) — devem ser configurados no `opencode.json` do projeto (top-level `permission`)
+- **Fix** (em `parecer_descritivo/opencode.json`): adicionado `external_directory`, `list`, `read`, `glob`, `grep` com patterns `~/.agents/skills/**` e `~/.config/opencode/skills/**` (allow) + fallback `"*": "ask"`; patterns relativos mortos removidos
+- Commit: `4d52b67 chore(opencode): allow agents access to skills folders` (repo `parecer_descritivo`, branch `feature/opencode-permissions` — não verificável neste repo)
+- PR: `https://github.com/tiagoeduardobr/parecer_descritivo/pull/new/feature/opencode-permissions`
+- **Nota**: config não é hot-reloaded — reiniciar opencode para aplicar
+
+#### 3. Correção de permissão git do dev (08/09/2026, commit `ba6898b`)
+
+- **Problema**: `dev.md` tinha `"git *": deny` no frontmatter — bloqueava TODOS os comandos git, inclusive leitura (`log`, `diff`, `status`), apesar do prompt (L186) dizer que leitura era permitida. Causou bloqueio no workflow (dev tentou `git diff --stat` e foi negado)
+- **Fix**: `"git *": deny` → 15 denies específicos de escrita:
+  - 10 originais: `git add`, `git commit`, `git push`, `git merge`, `git rebase`, `git reset`, `git stash`, `git checkout -b*`, `git branch -d*`, `git branch -D*`
+  - 5 complementares: `git restore`, `git clean`, `git rm`, `git cherry-pick`, `git revert`
+- **Arquivos alterados** (4):
+  - `.config/opencode/agents/dev.md` — frontmatter corrigido
+  - `.config/opencode/agents/task-build.md` — denies complementares adicionados (consistência)
+  - `.config/opencode/skills/agent-restrictions/SKILL.md` — documentação atualizada (L45 + bloco JSON "Git (dev)")
+  - `docs/MULTI_AGENT_ORCHESTRATION.md` — exemplo L820 atualizado para `"git add *": deny`
+- Commit: `ba6898b fix(agents): allow dev read-only git access` na `main` (pushado)
+- **Resultado**: dev agora consistente com task-build/task-planner — leitura git permitida para contexto, escrita sempre delegada ao `git-commit`
+- **Validação**: `opencode debug agent` confirmou que o parser lê os 15 denies em ambos agentes
