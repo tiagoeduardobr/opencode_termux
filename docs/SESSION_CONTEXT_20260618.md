@@ -483,3 +483,40 @@ Cadeia de upgrades de 1.18.27 para 1.18.30 (direto), seguindo pipeline consolida
 | 1.18.30 | set/2026 | Astra system prompt para GPT-6, fix Bedrock DeepSeek model IDs (incluindo ARN-based), SDK updates Azure/OpenAI, reasoning effort variants para GitLab GPT e Claude |
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
+---
+
+### Sessão de Upgrades Sequenciais (14/09/2026)
+
+Quatro upgrades executados em sequência dentro de uma única conversa (1.18.18 → 1.18.30).
+
+#### Sequência de upgrades
+
+| Upgrade | Data | Commit | Versão final |
+|---------|------|--------|--------------|
+| 1.18.18 → 1.18.21 | 23/08/2026 | `d04a640` | CLI 1.18.21, plugin ^1.18.21 |
+| 1.18.21 → 1.18.25 | 28/08/2026 | `0ef9e23` | CLI 1.18.25, plugin ^1.18.25 |
+| 1.18.25 → 1.18.27 | 04/09/2026 | `d241abf` | CLI 1.18.27, plugin ^1.18.27 |
+| 1.18.27 → 1.18.30 | 14/09/2026 | `447e4c6` | CLI 1.18.30, plugin ^1.18.30 |
+
+#### Estado final
+
+- **CLI**: 1.18.30
+- **Plugin**: ^1.18.30
+- **Skills**: 50 (inalterado)
+- **Agentes**: 5 (inalterado)
+
+#### Lições aprendidas
+
+1. **Caret range resolving para versão mais nova**:
+   No upgrade 1.18.21 → 1.18.23, o dev usou `^1.18.23` no `package.json`, mas o caret resolveu para 1.18.25 (latest no registry). Isso causou dessincronização: CLI em 1.18.23, plugin em 1.18.25. O usuário decidiu alinhar tudo em 1.18.25.
+   - **Mitigação adotada**: Verificar `npm view` antes de cada bump, usar versão exata no CLI (`@1.18.XX`), e confirmar que o latest do plugin é a mesma versão.
+
+2. **Upgrades diretos sem versões intermediárias**:
+   O usuário sempre escolheu "upgrade direto" ao invés de sequencial (1.18.XX → 1.18.YY → 1.18.ZZ). Isso é mais eficiente e gera menos commits.
+
+3. **Code review agent com outputs vazios**:
+   O agente `code-review` retornou output vazio em diversas delegações nesta sessão. O workaround foi usar o agente `general` para code review quando necessário.
+
+4. **git-commit agent não criava branches**:
+   O agente `git-commit` retornava output vazio ao tentar criar branches. O workaround foi usar o agente `general` para `git checkout -b`.
