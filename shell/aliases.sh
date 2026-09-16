@@ -6,3 +6,6 @@ alias termux_ssh="$OPENCODE_TERMUX_DIR/bin/termux-ssh.sh"
 alias termux_ssh_stop="$OPENCODE_TERMUX_DIR/bin/termux-ssh-stop.sh"
 alias opencode_tailscale="$OPENCODE_TERMUX_DIR/bin/opencode-tailscale.sh"
 alias opencode_tailscale_stop="$OPENCODE_TERMUX_DIR/bin/opencode-tailscale-stop.sh"
+
+# Limpeza manual do DB/cache do opencode
+alias limpar_opencode="$OPENCODE_TERMUX_DIR/bin/limpar-opencode.sh"

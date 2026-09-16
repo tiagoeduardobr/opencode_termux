@@ -11,6 +11,7 @@
 |-------|--------|----------------------|
 | `20260827_2301_upgrade-opencode-1-18-23.md` | Em andamento (referência) | `0ef9e23` (upgrade 1.18.25 mergeado) |
 | `20260828_0958_consistencia-documentacao.md` | Plano atual | — |
+| `20260916_0516_limpar-db-opencode.md` | Plano atual (limpeza DB/cache) | — |
 
 ## Arquivados
 

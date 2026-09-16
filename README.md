@@ -478,7 +478,7 @@ Executado **dentro do proot**. Sobe `opencode web` + `cloudflared tunnel` + ntfy
 
 ### `shell/aliases.sh`
 
-Define os aliases `opencode_web`, `opencode_web_stop`, `opencode_tailscale`, `opencode_tailscale_stop`, `termux_ssh` e `termux_ssh_stop`.
+Define os aliases `opencode_web`, `opencode_web_stop`, `opencode_tailscale`, `opencode_tailscale_stop`, `termux_ssh`, `termux_ssh_stop` e `limpar_opencode`.
 
 ### `bin/termux-ssh.sh`
 

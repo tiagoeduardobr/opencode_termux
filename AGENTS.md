@@ -30,9 +30,10 @@ opencode_termux/
 │   ├── opencode-tailscale.sh      ← wrapper Termux (Tailscale)
 │   ├── opencode-tailscale-stop.sh ← stop script (Tailscale)
 │   ├── termux-ssh.sh              ← inicia sshd + notifica IP
-│   └── termux-ssh-stop.sh         ← para sshd
+│   ├── termux-ssh-stop.sh         ← para sshd
+│   └── limpar-opencode.sh         ← limpeza manual do DB/cache do opencode
 ├── shell/
-│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop, opencode_tailscale, opencode_tailscale_stop, termux_ssh, termux_ssh_stop)
+│   └── aliases.sh              ← aliases bash (opencode_web, opencode_web_stop, opencode_tailscale, opencode_tailscale_stop, termux_ssh, termux_ssh_stop, limpar_opencode)
 ├── scripts/
 │   └── setup.sh                ← setup em device novo (backup, symlink, npm install)
 ├── docs/                       ← documentação de referência
@@ -334,6 +335,9 @@ opencode_tailscale_stop      # para
 # SSH/SFTP
 termux_ssh                # inicia sshd + notifica IP
 termux_ssh_stop           # para sshd
+
+# Limpeza
+limpar_opencode           # limpa DB/cache do opencode
 
 # Status manual
 cat $PREFIX/tmp/opencode_web.pid   # PID
