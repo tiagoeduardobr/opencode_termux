@@ -171,7 +171,7 @@ cleanup de branches stale.
 
 **O que NÃO faz**:
 
-- Nunca modifica código fonte ou testes (`edit: "deny"`, `write: "deny"`)
+- Nunca modifica código fonte ou testes (`edit: "deny"` — a chave é umbrella e cobre `write` e `apply_patch`)
 - Nunca roda quality checks
 
 > **Idioma**: O `git-commit.md` tem frontmatter em inglês porque as
@@ -607,7 +607,6 @@ permission:
     {comandos proibidos}: deny
   read: allow
   edit: deny
-  write: deny
   question: allow
   skill: allow
 ---
@@ -788,7 +787,7 @@ Agentes podem usar métodos alternativos (sed, python -c, tee) para modificar ar
 - `patch` — aplicação de patches
 - `git checkout -b*` — criação de branch (delegado para git-commit)
 
-**Exceção**: `task-planner` pode salvar planos em `.opencode/plans/` (via `write: "allow"`).
+**Exceção**: `task-planner` pode salvar planos em `.opencode/plans/` (via `edit` com allow por caminho — a chave `edit` é umbrella e cobre `write` e `apply_patch`; regras `write:` no frontmatter não são consultadas na autorização).
 
 **Limitação conhecida**: Redirecionamento shell (`echo "content" > file`,
 `cat file1 > file2`) é difícil de bloquear via pattern matching no frontmatter .md.

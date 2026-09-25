@@ -29,8 +29,9 @@ permission:
   read: allow
   glob: allow
   grep: allow
-  edit: deny
-  write: allow
+  edit:
+    "*": deny
+    ".opencode/plans/*": allow
   question: allow
   skill: allow
 ---

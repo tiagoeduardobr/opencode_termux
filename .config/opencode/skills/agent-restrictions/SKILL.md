@@ -28,8 +28,17 @@ Documenta restrições de permissão dos agentes para garantir conformidade.
 ### task-planner (Planejador)
 
 **Permissões**:
-- `edit: "deny"`, `write: "allow"` (apenas para planos)
+- `edit`: `"*": "deny"` com allow apenas para `.opencode/plans/*`
 - `bash: "*": "allow"` com padrões de negação
+
+> **Nota**: a chave `edit` é umbrella — cobre as ferramentas `edit`, `write` e
+> `apply_patch`. Essas ferramentas pedem `permission:"edit"` com o path do
+> arquivo, então quem decide a autorização é sempre `edit`. Uma regra `write:`
+> no frontmatter é aceita pelo parser e aparece em `opencode debug agent`, mas
+> nenhuma ferramenta consulta essa chave na decisão de autorização — e um
+> `edit: deny` sempre vence um `write: allow`. O matcher relativiza o path ao
+> worktree antes de avaliar as regras, então use sempre caminhos relativos ao
+> worktree nos padrões.
 
 **Proibições**:
 - NUNCA chamar subagentes de implementação (dev, code-review, git-commit)
