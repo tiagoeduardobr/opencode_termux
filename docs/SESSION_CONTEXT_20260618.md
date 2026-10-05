@@ -484,6 +484,19 @@ Cadeia de upgrades de 1.18.27 para 1.18.30 (direto), seguindo pipeline consolida
 
 Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
 
+### Atualização OpenCode 1.18.34 (05/10/2026)
+
+Cadeia de upgrades de 1.18.30 para 1.18.34 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+| -------- | ------ | ----------- |
+| 1.18.31 | 14/09/2026 | Restaura limites de chunk de session model/effort/mode/reasoning do ACP, erros de auth de remote config no TUI, adaptive thinking resumido no GitHub Copilot |
+| 1.18.32 | 21/09/2026 | Bedrock image attachments hoisted só para Claude/Nova/Llama 4, fix streaming usage Together AI |
+| 1.18.33 | 28/09/2026 | Timeouts de resposta e stream do Cloudflare AI Gateway, falhas de lançamento do MCP browser reportadas, debug config redige credenciais e headers sensíveis, defaults de thinking e effort do Gemini alinhados |
+| 1.18.34 | 30/09/2026 | Headers de identidade de sessão e parent-session namespaced nas requisições de modelo, re-assinatura de binários macOS compilados localmente (macOS 27+), binários de release do CLI macOS assinados com Developer ID |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
 ---
 
 ### Sessão de Upgrades Sequenciais (14/09/2026)
