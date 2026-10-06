@@ -12,6 +12,13 @@ excluir a DB — este documento garante que o contexto da sessão não se perca.
 
 ## Estado do Repositório
 
+> **⚠️ Snapshot histórico — não é o estado corrente.** Os dados abaixo
+> registram o estado no momento da criação deste documento e de suas
+> atualizações pontuais (agosto/2026) e **não são mantidos continuamente**.
+> A versão vigente do OpenCode está em `AGENTS.md` (seção "Melhorias
+> Recentes"), `docs/MULTI_AGENT_ORCHESTRATION.md` (cabeçalho "Versão do
+> sistema") e `docs/SESSION_CONTEXT_20260618.md` (seções de upgrade).
+
 - Branch: `main` em commit `3497e95`
 - Sincronizado com `origin/main`
 - Working tree limpo (sem alterações pendentes)

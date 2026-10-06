@@ -466,7 +466,7 @@ Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.confi
 Cadeia de upgrades de 1.18.25 para 1.18.27 (direto), seguindo pipeline consolidado.
 
 | Versão | Data | Destaques |
-|--------|------|-----------|
+| -------- | ------ | ----------- |
 | 1.18.26 | 27/08/2026 | Fix Claude 5 stale thinking blocks, Bedrock GPT-5.6 none reasoning effort, Bedrock reasoning/replay mais confiável, fix tool call timing, fix apply_patch empty move path, Azure CLI sign-in resource name direto, session renames desktop |
 | 1.18.27 | 04/09/2026 | Default provider header timeouts 5min, default streamed chunk timeouts 5min (false suportado), Anthropic thinking.blockBinding opt-out via config, thinking block binding limitado a Claude 5.1+, fix unhandled errors ao cancelar SSE reads |
 
@@ -477,7 +477,7 @@ Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.confi
 Cadeia de upgrades de 1.18.27 para 1.18.30 (direto), seguindo pipeline consolidado.
 
 | Versão | Data | Destaques |
-|--------|------|-----------|
+| -------- | ------ | ----------- |
 | 1.18.28 | set/2026 | Session ID como interaction header do GitHub Copilot, fix client ID desktop na device auth, fix tamanho ícone open-in app |
 | 1.18.29 | set/2026 | Fix Codex OAuth model filtering (versões GPT inteiras como gpt-6), fix gpt-6-astra para assinantes OpenAI |
 | 1.18.30 | set/2026 | Astra system prompt para GPT-6, fix Bedrock DeepSeek model IDs (incluindo ARN-based), SDK updates Azure/OpenAI, reasoning effort variants para GitLab GPT e Claude |
@@ -506,7 +506,7 @@ Quatro upgrades executados em sequência dentro de uma única conversa (1.18.18 
 #### Sequência de upgrades
 
 | Upgrade | Data | Commit | Versão final |
-|---------|------|--------|--------------|
+| --------- | ------ | -------- | -------------- |
 | 1.18.18 → 1.18.21 | 23/08/2026 | `d04a640` | CLI 1.18.21, plugin ^1.18.21 |
 | 1.18.21 → 1.18.25 | 28/08/2026 | `0ef9e23` | CLI 1.18.25, plugin ^1.18.25 |
 | 1.18.25 → 1.18.27 | 04/09/2026 | `d241abf` | CLI 1.18.27, plugin ^1.18.27 |
