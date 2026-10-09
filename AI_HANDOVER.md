@@ -89,7 +89,7 @@ Reescrita do stop script (32→140 linhas) com:
 ## Pendências / Conhecimento Útil
 
 - **DB do OpenCode**: para excluir, `rm ~/.local/share/opencode/opencode.db ~/.local/share/opencode/opencode.db-wal ~/.local/share/opencode/opencode.db-shm`
-- **Recriar contexto do stop script**: plano detalhado em `.opencode/plans/archive/20260814_1142_stop-script-zombies.md`
+- **Recriar contexto do stop script**: plano detalhado `20260814_1142_stop-script-zombies.md` (removido do working tree; histórico no git — `git log -- .opencode/plans/`)
 - **Follow-up conhecido**: `bin/opencode-tailscale-stop.sh` tem o mesmo problema de órfãos (fora de escopo desta sessão)
 - **Testes integrados**: todos validados no device (4 cenários descritos acima)
 

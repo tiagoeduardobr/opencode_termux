@@ -4,7 +4,7 @@ set -euo pipefail
 # =============================================================================
 # limpar-opencode.sh — Limpeza manual do DB/cache do OpenCode
 #
-# Baseado em: .opencode/plans/20260916_0516_limpar-db-opencode.md
+# Baseado em: plano 20260916_0516_limpar-db-opencode (histórico no git)
 # Tasks cobertas: 3 (WAL checkpoint), 4 (events), 5 (sessions),
 #                 6 (VACUUM), 7 (log), 8 (tool-output), 9 (cache),
 #                 10 (snapshots, opcional), 11 (verificação final)

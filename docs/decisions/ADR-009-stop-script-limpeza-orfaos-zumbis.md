@@ -55,4 +55,4 @@ Reescrever `bin/opencode-web-stop.sh` (commit `dc4f00a`):
 
 - [MULTI_AGENT_ORCHESTRATION.md](../MULTI_AGENT_ORCHESTRATION.md)
 - [SESSION_CONTEXT_20260618.md](../SESSION_CONTEXT_20260618.md)
-- [Plano de implementação](../../.opencode/plans/archive/20260814_1142_stop-script-zombies.md)
+- Plano de implementação: `20260814_1142_stop-script-zombies.md` (removido do working tree; histórico no git — `git log -- .opencode/plans/`)
