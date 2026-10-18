@@ -499,6 +499,20 @@ Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.confi
 
 ---
 
+### Atualização OpenCode 1.19.3 (17/10/2026)
+
+Cadeia de upgrades de 1.18.34 para 1.19.3 (direto), seguindo pipeline consolidado.
+
+| Versão | Data | Destaques |
+| -------- | ------ | ----------- |
+| 1.18.35 | 06/10/2026 | Stats legíveis por agentes (redirects canônicos + formatos JSON/Markdown), tool results do xAI incluem imagens suportadas |
+| 1.19.0 | 11/10/2026 | `opencode upgrade --major` para OpenCode 2, service tier `ultrafast` da OpenAI, validação de origem/tickets de conexões PTY, `/update` no TUI instala updates (não mais automáticos) |
+| 1.19.1 | 15/10/2026 | Session sharing descontinuado (links, comandos e import de share URLs removidos) |
+| 1.19.2 | 16/10/2026 | Linha 1.x permanece na 1.x (update checks usam só o `latest` do npm `opencode-ai`), upgrade para 2 é sempre explícito (`/update` ou `--major`), fix de upgrade via yarn, skip em Homebrew Core, install script recusa 2.x |
+| 1.19.3 | 16/10/2026 | Model reasoning options geram reasoning variants, substituindo catalog variants e preservando overrides do usuário |
+
+Arquivos alterados: CLI global (proot), `.config/opencode/package.json`, `.config/opencode/package-lock.json`, `AGENTS.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `docs/SESSION_CONTEXT_20260618.md` (esta entrada).
+
 ### Sessão de Upgrades Sequenciais (14/09/2026)
 
 Quatro upgrades executados em sequência dentro de uma única conversa (1.18.18 → 1.18.30).
