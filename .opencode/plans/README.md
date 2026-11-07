@@ -7,7 +7,9 @@
 
 ## Ativos
 
-_Nenhum plano ativo no momento._
+| Plano | Status | Commit de referência |
+|-------|--------|----------------------|
+| `20261022_1023_migracao-opencode-2.0.md` | Aprovado na revisão (review OKAY) — execução não iniciada | _pendente_ |
 
 ## Arquivados
 
