@@ -12,7 +12,7 @@ Migrar o repositório `opencode_termux` e o device Termux/proot que o executa do
 - Conversão de `opencode.json` (projeto) e `.config/opencode/opencode.jsonc` (global) para o schema V2.
 - Adaptação de `run-*.sh` (proot), `bin/*.sh` (Termux) e `scripts/setup.sh`: `opencode web` → `opencode serve`, **senha do servidor**, `opencode pair`, `opencode service`.
 - Resolução da dependência órfã `@opencode-ai/plugin` em `.config/opencode/package.json` **e** `.opencode/package.json`.
-- Backup e migração do DB `~/.local/share/opencode/opencode.db` (1,63 GB + WAL 240 MB).
+- Backup e migração do DB `~/.local/share/opencode/opencode.db` (~3,3 GB + WAL ~230 MB).
 - Atualização de `AGENTS.md`, `README.md`, `docs/MULTI_AGENT_ORCHESTRATION.md`, `AI_HANDOVER.md`, novo ADR e novo SESSION_CONTEXT.
 - Testes E2E no device e procedimento de rollback executável.
 
@@ -28,7 +28,7 @@ Migrar o repositório `opencode_termux` e o device Termux/proot que o executa do
 1. Escopo completo: CLI/instalação, config, scripts, plugin e docs.
 2. Validar o V2 lado a lado antes do cutover; o V1 1.19.3 permanece instalado e funcional como fallback até o corte.
 3. Manter shapes V1 de config; conversão nativa V2 fica como follow-up.
-4. Reavaliar `{action: external_directory, resource: "*", effect: "ask"}` — o V2 permite diretórios externos por padrão, então essa regra precisa ser reescrita no schema V2.
+4. A premissa original de reescrever `{action: external_directory, resource: "*", effect: "ask"}` **está errada**: essa regra **NÃO existe** no `opencode.json` deste repo (verificado em 08/11/2026). Não há nada a reescrever; a conversão nativa V2 fica como follow-up da T16.
 5. Sem PR: branch local + merge fast-forward em `main`.
 6. O usuário aceita mudança no formato das URLs de acesso (V2 exige senha no servidor).
 
@@ -42,15 +42,15 @@ Migrar o repositório `opencode_termux` e o device Termux/proot que o executa do
 - `opencode.json` (projeto) usa shape V1: `model`, `skills.paths`, `permission.skill`.
 - `.config/opencode/opencode.jsonc` contém apenas `{"$schema": ...}`.
 - Dependências: `.config/opencode/package.json` → `@opencode-ai/plugin: ^1.19.3`; `.opencode/package.json` → `@opencode-ai/plugin: 1.17.9` (divergente). **Nenhuma fonte de plugin, nenhuma pasta de plugin e nenhuma chave `plugin` nas configs** → dependência órfã nas duas árvores.
-- Dados: `~/.local/share/opencode` ≈ **1,8 GB**; `opencode.db` ≈ 1,63 GB; WAL ≈ 240 MB; cache ≈ 11 MB.
+- Dados: `~/.local/share/opencode` ≈ **3,4 GB**; `opencode.db` ≈ 3,1 GB (3.268.820.992 B em 08/11/2026; cresce com o uso); WAL ≈ 230 MB; cache ≈ 11 MB.
 - `scripts/setup.sh` **não instala** o binário do opencode (apenas `npm install` em `.config/opencode` e imprime a versão detectada). A instalação é documentada no `AGENTS.md` (`npm install -g opencode-linux-arm64 --force`).
 
 ### V2 2.0.32 — pacotes
 
 - `@opencode/cli@2.0.32` → `bin: { "opencode": "bin/opencode.exe", "opencode2": "bin/opencode.exe" }` (mesmo binário, dois nomes).
-- Optional dep arm64: `@opencode/cli-linux-arm64@2.0.32` (58 MB comprimido, binário ≈ 154 MB).
+- Optional dep arm64: `@opencode/cli-linux-arm64@2.0.32` (58 MB comprimido; binário ≈ 198 MiB / 207.472.936 B; prefixo instalado ≈ 199 MB).
 - Canal beta `@opencode-ai/cli@next` → `0.0.0-beta-17823` (bin `opencode2` apenas). **É mais antigo que o GA** e não tem `debug paths` — não serve como canal de validação do GA.
-- **Risco de versão:** `@opencode/cli@latest` já está em **2.1.3** (publicado em `2026-10-22T12:44:20.273Z`), não 2.0.32. Fixar `2.0.32` explicitamente; nunca usar `@latest` sem versão.
+- **Risco de versão:** `@opencode/cli@latest` já está em **2.2.6** (verificado em 08/11/2026; era 2.1.3 em 22/10/2026), não 2.0.32. Fixar `2.0.32` explicitamente; nunca usar `@latest` sem versão.
 
 ### V2 2.0.32 — CLI (verificado com o binário arm64 em `/tmp/opencode/v2inspect/`)
 
@@ -65,7 +65,7 @@ Migrar o repositório `opencode_termux` e o device Termux/proot que o executa do
 
 - `opencode serve` imprime `server listening on http://<host>:<port>` e, se `OPENCODE_PASSWORD` **não** estiver setado, imprime `server password <senha aleatória de 32 bytes>`.
 - Sem `OPENCODE_PASSWORD`, a senha é **aleatória a cada start** → precisa ser capturada e entregue ao usuário.
-- **API base path = `/api/*`** (JSON). Rotas desconhecidas caem no fallback do SPA (HTML 200) — logo, health-check por status HTTP não é confiável; checar `content-type`.
+- **API base path = `/api/*`** (JSON). Rota **inexistente sob `/api/*` → 404** (corpo vazio ou JSON de erro), **nunca** cai no SPA; fora de `/api/*`, qualquer path → **200 text/html** (fallback do SPA). Logo, health-check por status HTTP não é confiável: usar rota **conhecida** (`/api/agent`) **e** validar `content-type: application/json` — status HTTP sozinho não basta.
 - **Autenticação: HTTP Basic com usuário fixo `opencode`** e a senha do servidor.
   - Sem credencial → `401 {"_tag":"UnauthorizedError","message":"Authentication required"}`.
   - `Authorization: Bearer <senha>` → **401** (não suportado).
@@ -114,7 +114,7 @@ Migrar o repositório `opencode_termux` e o device Termux/proot que o executa do
 ### Pré-requisitos
 
 - Backup completo de `~/.local/share/opencode` (DB + WAL), `~/.config/opencode`, `~/.local/share/opencode/auth.json` e `account.json`.
-- ~2 GB livres no `/data/data/com.termux/files/usr` (prefixo isolado do V2 ≈ 160 MB + cópia do DB ≈ 1,9 GB).
+- ~4 GB livres no `/data/data/com.termux/files/usr` (prefixo isolado do V2 ≈ 199 MB + cópia do DB ≈ 3,3 GB).
 - Acesso ao registry npm (`@opencode/cli@2.0.32` já baixado e validado em `/tmp/opencode/v2inspect/`).
 - Sessão TUI ativa identificada: reiniciar o TUI é obrigatório em qualquer fase (o `run-cloudflare-tunnel.sh` é filho do TUI e morre junto).
 
@@ -130,31 +130,31 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 ### T1 — Backup integral do ambiente V1
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:00:41]
 - **Depende de:** —
-- **Arquivos:** `/data/data/com.termux/files/usr/tmp/opencode-v1-backup-<data>/` (fora do repo)
+- **Arquivos:** `/data/data/com.termux/files/usr/tmp/opencode-v1-backup-20261108_0017/` (+ cópia durável em `/root/backups/opencode-v1-backup-20261108_0017/`)
 - **Complexidade:** média
 
 **Acceptance (Given/When/Then):**
 
-- Given o V1 rodando com 1,63 GB de `opencode.db` em `~/.local/share/opencode/`, When a T1 é executada, Then existe uma cópia verbatim de `opencode.db`, `opencode.db-wal`, `opencode.db-shm`, `auth.json` e `account.json` num diretório de backup com checksum SHA-256 registrado.
+- Given o V1 rodando com ~3,1 GB de `opencode.db` em `~/.local/share/opencode/`, When a T1 é executada, Then existe uma cópia verbatim de `opencode.db`, `opencode.db-wal`, `opencode.db-shm`, `auth.json` e `account.json` num diretório de backup com checksum SHA-256 registrado.
 - Given o diretório global `~/.config/opencode` (symlink para o repo), When a T1 é executada, Then existe um tarball do conteúdo resolvido de `.config/opencode/` (skills + agents + jsonc + package.json), sem seguir o symlink como link.
 
 **Verification:**
 
 - **Run:** `ls -lh /data/data/com.termux/files/usr/tmp/opencode-v1-backup-*/ && sha256sum /data/data/com.termux/files/usr/tmp/opencode-v1-backup-*/opencode.db | tee /data/data/com.termux/files/usr/tmp/opencode-v1-backup-*/opencode.db.sha256`
-- **Expected:** arquivos `opencode.db` (~1,63 GB), `opencode.db-wal` (~240 MB), `auth.json`, `account.json`, `config.tar.gz` presentes; checksum SHA-256 impresso e o arquivo `opencode.db.sha256` criado no diretório de backup.
+- **Expected:** arquivos `opencode.db` (~3,1 GB / 3.268.820.992 B), `opencode.db-wal` (~230 MB), `auth.json`, `account.json`, `config.tar.gz` presentes; checksum SHA-256 impresso e o arquivo `opencode.db.sha256` criado no diretório de backup.
 
 ### T2 — Consolidar as notas de breaking changes V1→V2
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:01:42]
 - **Depende de:** —
 - **Arquivos:** `docs/opencode-v2-migration-notes.md` (novo)
 - **Complexidade:** baixa
 
 **Acceptance (Given/When/Then):**
 
-- Given o levantamento empirico já feito (CLI, auth, DB, serviço compartilhado), When a T2 é executada, Then `docs/opencode-v2-migration-notes.md` documenta, com o comando que comprova cada um: remoção de `web`/`db`, `debug agent`→`debug agents`, API em `/api/*`, Basic auth `opencode:<senha>`, `OPENCODE_PASSWORD`, colisão de DB `opencode.db` nos 3 canais, autostart do `serve --service` e o fato de `latest` = 2.1.3.
+- Given o levantamento empirico já feito (CLI, auth, DB, serviço compartilhado), When a T2 é executada, Then `docs/opencode-v2-migration-notes.md` documenta, com o comando que comprova cada um: remoção de `web`/`db`, `debug agent`→`debug agents`, API em `/api/*`, Basic auth `opencode:<senha>`, `OPENCODE_PASSWORD`, colisão de DB `opencode.db` nos 3 canais, autostart do `serve --service` e o fato de `latest` = 2.2.6 (2.1.3 em 22/10/2026).
 - Given a nota de migração, When um leitor sem contexto busca "como o V2 exige senha do servidor", Then encontra a resposta com o trecho de código-fonte extraído do binário que a comprova.
 
 **Verification:**
@@ -164,7 +164,7 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 ### T3 — Instalar o V2 2.0.32 em prefixo isolado (sem colisão com o V1)
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:11:44]
 - **Depende de:** T1
 - **Arquivos:** `/data/data/com.termux/files/usr/opt/opencode-v2/` (novo, fora do repo); `/usr/local/bin/opencode2` (symlink no proot)
 - **Complexidade:** média
@@ -172,12 +172,35 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 **Acceptance (Given/When/Then):**
 
 - Given o V1 instalado em `/data/data/com.termux/files/usr/lib/node_modules/opencode-linux-arm64` com bin `opencode`, When a T3 é executada, Then `opencode --version` continua retornando `1.19.3` e `opencode2 --version` retorna `2.0.32`, sem sobrescrever o binário V1.
-- Given o prefixo isolado, When a T3 é executada, Then `npm ls --prefix <prefixo> @opencode/cli` mostra exatamente `2.0.32` e `npm view @opencode/cli@latest version` (2.1.3) **não** foi usado.
+- Given o prefixo isolado, When a T3 é executada, Then `npm ls --prefix <prefixo> @opencode/cli` mostra exatamente `2.0.32` e `npm view @opencode/cli@latest version` (2.2.6) **não** foi usado.
 
 **Verification:**
 
 - **Run:** `opencode --version; opencode2 --version; npm ls --prefix /data/data/com.termux/files/usr/opt/opencode-v2 --depth=0`
-- **Expected:** `1.19.3` e `2.0.32` em linhas distintas; `@opencode/cli@2.0.32` listado como dependência direta, sem `2.1.3`.
+- **Expected:** `1.19.3` e `2.0.32` em linhas distintas; `@opencode/cli@2.0.32` listado como dependência direta, sem `2.2.6` (a versão de `@latest`).
+
+### Receita de instalação no Termux/proot (obrigatória)
+
+```bash
+PREFIXO=/data/data/com.termux/files/usr/opt/opencode-v2
+SHIM="$PREFIXO/.termux-os-linux-shim.cjs"
+mkdir -p "$PREFIXO"
+
+# 1) Shim: o postinstall de @opencode/cli usa os.platform() e o Node do Termux reporta "android".
+#    O shim precisa existir ANTES do primeiro install.
+printf '%s\n' 'const os = require("node:os")' 'os.platform = () => "linux"' > "$SHIM"
+
+# 2) Install: --force é obrigatório (npm-install-checks usa process.platform === "android" → EBADPLATFORM);
+#    a dep arm64 precisa ser pedida explicitamente (npm ignora --force para optionalDependencies).
+#    NODE_OPTIONS é ESCOPO A ESTA INVOCAÇÃO — nunca exportar globalmente.
+NODE_OPTIONS="--require $SHIM" npm install --force --prefix "$PREFIXO" \
+  @opencode/cli@2.0.32 @opencode/cli-linux-arm64@2.0.32
+
+# 3) Symlink: SOMENTE opencode2 (o pacote também publica "opencode" e sombrearia o V1 no PATH)
+ln -sf "$PREFIXO/node_modules/.bin/opencode2" /usr/local/bin/opencode2
+```
+
+**Nunca** `export NODE_OPTIONS=...` no setup.sh/.bashrc: o shim faz monkeypatch global de `os.platform` e faria todo processo Node do device reportar `linux`, mascarando o gate EBADPLATFORM do npm.
 
 ### Checkpoint 1: V2 instalado lado a lado
 
@@ -186,65 +209,69 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 ### T4 — PoC funcional do V2 com DB e senha isolados
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:15:10]
 - **Depende de:** T3, T1
 - **Arquivos:** nenhum (PoC); artefatos em `/data/data/com.termux/files/usr/tmp/v2poc/`
 - **Complexidade:** média
 
 **Acceptance (Given/When/Then):**
 
-- Given `OPENCODE_DB` apontando para um arquivo vazio isolado, When `opencode2 serve --hostname 127.0.0.1 --port 4097` é executado, Then o arquivo de DB criado fica no caminho isolado e `~/.local/share/opencode/opencode.db` **não** é modificado (mtime e tamanho inalterados).
+- Given `OPENCODE_DB` apontando para um arquivo vazio isolado, When `opencode2 serve --hostname 127.0.0.1 --port 4097` é executado, Then o arquivo de DB criado fica no caminho isolado e o processo V2 **não tem NENHUM fd** para `~/.local/share/opencode/opencode.db` (verificado via `/proc/<pid>/fd`) — tem fds **apenas** para `$OPENCODE_DB{,-wal,-shm}`.
+- Given o mesmo PoC, When se inspeciona `/proc/<pid>/fd`, Then o log do V2 aparece como fd para `~/.local/share/opencode/log/opencode.log` (**mesmo inode** do log do V1) — `OPENCODE_DB` isola o **DB**, **não** o log.
 - Given `OPENCODE_PASSWORD=senha-de-teste-123`, When `curl -u opencode:senha-de-teste-123 http://127.0.0.1:4097/api/agent` é executado, Then a resposta é JSON HTTP 200; e sem `-u`, Then é HTTP 401 com `UnauthorizedError`.
 - Given o `serve` do V2 rodando, When `opencode2 api --server http://127.0.0.1:4097 GET /api/agent` é executado, Then retorna JSON (sem `UnauthorizedError`), provando que `OPENCODE_PASSWORD` satisfaz o cliente oficial.
 
 **Verification:**
 
-- **Run:** `stat -c '%s %Y' ~/.local/share/opencode/opencode.db; OPENCODE_DB=$TMPDIR/v2poc/test.db OPENCODE_PASSWORD=senha-de-teste-123 opencode2 serve --hostname 127.0.0.1 --port 4097 & sleep 12; curl -s -o /dev/null -w '%{http_code}\n' -u opencode:senha-de-teste-123 http://127.0.0.1:4097/api/agent; curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:4097/api/agent; stat -c '%s %Y' ~/.local/share/opencode/opencode.db`
-- **Expected:** `200` e `401` nessa ordem; o `stat` final do DB real é **idêntico** ao inicial (tamanho e mtime inalterados).
+- **Run:** `mkdir -p /data/data/com.termux/files/usr/tmp/v2poc; OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db OPENCODE_PASSWORD=senha-de-teste-123 opencode2 serve --hostname 127.0.0.1 --port 4097 & PID=$!; sleep 12; ls -l /proc/$PID/fd | grep -E "opencode.*\.db"; curl -s -o /dev/null -w '%{http_code}\n' -u opencode:senha-de-teste-123 http://127.0.0.1:4097/api/agent; curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:4097/api/agent; kill "$PID"; wait "$PID"; opencode2 service stop`
+- **Expected:** `200` e `401` nessa ordem; os fds de DB listados são **apenas** `$OPENCODE_DB{,-wal,-shm}` (nenhum `~/.local/share/opencode/opencode.db`); o cleanup é **obrigatório** (`kill "$PID"; wait "$PID"; opencode2 service stop`) e deixa `0` processos V2 residuais.
 
 ### Checkpoint 2: PoC validado — DB real intocado
 
 - **Verificar:** o DB do V1 não foi tocado pelo PoC do V2.
-- **Validação:** comparar `stat` (tamanho + mtime) de `~/.local/share/opencode/opencode.db` antes e depois do PoC.
+- **Validação:** inspecionar `/proc/<pid>/fd` do processo V2 — **nenhum** fd para `~/.local/share/opencode/opencode.db`; fds apenas para `$OPENCODE_DB{,-wal,-shm}`.
 
-### T5 — Converter a config global para o schema V2
+### T5 — Validar a config global (shape V1 mantido) sob o V2
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:19:31]
 - **Depende de:** T2
 - **Arquivos:** `.config/opencode/opencode.jsonc`
 - **Complexidade:** baixa
 
 **Acceptance (Given/When/Then):**
 
-- Given a config global atual contém apenas `{"$schema": ...}`, When a T5 é executada, Then o arquivo passa a apontar para o schema JSON do V2 e a declarar explicitamente o diretório de skills/agents do repositório.
-- Given a config global convertida, When `opencode2 debug config` é executado, Then a saída lista a config global do repositório e a config do projeto, sem erro de validação de schema.
+- Given a config global atual usa shape V1 (`mcp` como objeto, `RENDER_API_KEY` como `{env:RENDER_API_KEY}`), When a T5 é executada, Then o arquivo **mantém o shape V1** (o V1 1.19.3 está em produção e lê os mesmos arquivos — converter `mcp` → `mcp.servers` quebraria o V1) e **não** ganha paths absolutos de skills (a autodescoberta de `~/.config/opencode/skills` já cobre).
+- Given a config global mantida em shape V1, When `opencode2 debug config` é executado, Then a saída lista a config global do repositório (`/root/.config/opencode/opencode.jsonc`) **e** a config do projeto (`/root/Projetos/opencode_termux/opencode.json`), o servidor MCP `render` aparece configurado (traduzido pelo V2 para `mcp.servers`), e **nenhum aviso de schema desconhecido** é emitido.
+- Given a config global dual-compatible, When `opencode debug config` (V1) é executado, Then o mesmo arquivo é lido sem erro e o servidor MCP `render` aparece com o mesmo shape (`mcp.render`).
 
 **Verification:**
 
-- **Run:** `opencode2 debug config | grep -n "opencode_termux"`
-- **Expected:** linhas apontando para `/root/Projetos/opencode_termux/.config/opencode` e para o `opencode.json` do projeto; exit code 0.
+- **Run:** `mkdir -p /data/data/com.termux/files/usr/tmp/v2poc; OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db opencode2 debug config | grep -nE "opencode.jsonc|opencode_termux/opencode.json|\"render\"|\"servers\""`; `opencode debug config | grep -nE "\"render\""`
+- **Expected:** exit code 0; a config global do repo e a do projeto listadas; o servidor MCP `render` presente nas duas saídas; nenhum aviso em stderr.
 
-### T6 — Converter a config do projeto para o schema V2
+### T6 — Validar a config do projeto (shape V1 mantido) sob o V2
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:19:31]
 - **Depende de:** T2, T5
 - **Arquivos:** `opencode.json`
 - **Complexidade:** média
 
 **Acceptance (Given/When/Then):**
 
-- Given o `opencode.json` usa `permission.skill` (V1), When a T6 é executada, Then a chave `permission` é convertida para o array `permissions` do V2, preservando o comportamento equivalente (`skill` → `allow`) e mantendo `model` e `skills.paths`.
-- Given a regra `{action: external_directory, resource: "*", effect: "ask"}` do V1, When a T6 é executada, Then ela é reescrita no formato V2 (`action`/`resource`/`effect` no array `permissions`) **e** há um comentário no arquivo justificando que o V2 permite diretórios externos por padrão e que a regra foi mantida por precaução.
-- Given a config convertida, When `opencode2 debug config` é executado, Then nenhum aviso de schema desconhecido é emitido.
+- Given o `opencode.json` usa shape V1 (`permission.skill`, `skills.paths`, `model`), When a T6 é executada, Then o arquivo **mantém o shape V1** (o V1 1.19.3 está em produção e lê os mesmos arquivos — converter para o shape nativo V2 quebraria as permissões de skill do V1).
+- Given o shape V1 mantido, When `opencode2 debug config` é executado, Then o V2 interpreta corretamente: `model` → `{providerID, model}`, `skills.paths` → `skills`, `permission.skill` → array `permissions` com 50 entradas `{action: "skill", resource: "<nome>", effect: "allow"}`, e **nenhum aviso de schema desconhecido** é emitido.
+- Given a regra `external_directory`, When a T6 é executada, Then fica registrado que essa regra **NÃO existe** no `opencode.json` deste repo (a premissa original do plano estava errada) e que a conversão nativa V2 fica como **follow-up** da T16.
+- Given uma config dual-compatible, When `opencode debug config` (V1) é executado, Then a saída efetiva é equivalente: `model: opencode/big-pickle`, `skills.paths: [".config/opencode/skills"]` e 50 entradas em `permission.skill` com `allow`.
 
 **Verification:**
 
-- **Run:** `opencode2 debug config && grep -nE '"permissions"|external_directory|"skills"|"model"' opencode.json`
-- **Expected:** exit code 0; o array `permissions` presente com a entrada `external_directory`; nenhuma chave `permission.` (singular) remanescente.
+- **Run:** `mkdir -p /data/data/com.termux/files/usr/tmp/v2poc; OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db opencode2 debug config | grep -c '"action": "skill"'` → `50`; `opencode debug config > /tmp/v1-config.json && python3 -c "import json; print(len(json.load(open('/tmp/v1-config.json'))['permission']['skill']))"` → `50`; `grep -nE '"permission"|"skills"|"model"' opencode.json`
+- **Expected:** exit code 0; `50` permissões de skill traduzidas pelo V2 e `50` no V1 (equivalência); o arquivo do projeto **inalterado** no shape V1 (`permission.skill`, `skills.paths`, `model`).
+- **Nota:** a saída do `opencode debug config` (V1) é **truncada quando encadeada por pipe** — redirecionar para arquivo antes de parsear com `python3`/`jq`.
 
 ### T7 — Validar agentes e skills sob o V2
 
-- [ ] **Status:** pendente
+- [x] **Status:** concluído em [08/11/2026:21:21]
 - **Depende de:** T4, T5, T6
 - **Arquivos:** `.config/opencode/agents/*.md`, `.config/opencode/skills/**/SKILL.md` (somente correções de compat, se houver)
 - **Complexidade:** média
@@ -257,8 +284,36 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 **Verification:**
 
-- **Run:** `opencode2 debug agents | grep -c '"name"' ; opencode2 debug agents | grep -E 'task-build|code-review|git-commit'`
-- **Expected:** contagem de agentes ≥ 7 (5 do repo + `build`/`plan` nativos); os 3 agentes de orquestração presentes com `permission` não vazio.
+- **Run (skills — servidor isolado, `OPENCODE_DB` prefixado):**
+
+  ```bash
+  mkdir -p /data/data/com.termux/files/usr/tmp/v2poc
+  OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db OPENCODE_PASSWORD=senha-de-teste-123 \
+    opencode2 serve --hostname 127.0.0.1 --port 4097 > /data/data/com.termux/files/usr/tmp/v2poc/serve.log 2>&1 &
+  PID=$!
+  for i in 1 2 3 4 5; do
+    curl -s -u opencode:senha-de-teste-123 http://127.0.0.1:4097/api/skill > /data/data/com.termux/files/usr/tmp/v2poc/skill.json
+    [ "$(grep -c '"id":' /data/data/com.termux/files/usr/tmp/v2poc/skill.json)" -ge 91 ] && break
+    sleep 3
+  done
+  grep -c '"id":' /data/data/com.termux/files/usr/tmp/v2poc/skill.json   # esperado: 91 (50 do repo + 41 externas/built-in)
+  kill "$PID"; wait "$PID" 2>/dev/null
+  opencode2 service stop
+  rm -f /root/.config/opencode/service.json
+  ```
+
+- **Run (agentes — `OPENCODE_DB` prefixado por invocação):**
+
+  ```bash
+  mkdir -p /data/data/com.termux/files/usr/tmp/v2poc
+  OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db opencode2 debug agents | grep -c '"name"'
+  # cleanup obrigatório (o serviço compartilhado persiste):
+  opencode2 service stop
+  rm -f /root/.config/opencode/service.json
+  ```
+
+- **Expected:** `91` skills no estado estável (50 do repo + 39 externas + 2 built-in do V2 `OpenCode`/`Report`; no V1 são 90, com `customize-opencode` no lugar de `OpenCode`); contagem de agentes ≥ 7 (5 do repo + `build`/`plan` nativos); os 3 agentes de orquestração presentes com `permission` não vazio. A 1ª requisição pode vir vazia (cold start) — por isso o retry no laço acima.
+- **Nota:** `OPENCODE_DB` deve ser SEMPRE prefixado por invocação — nunca exportado no shell/`.env` (ver FIX-4).
 
 ### Checkpoint 3: Configs convertidas e agentes/skills validados
 
@@ -275,7 +330,7 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 **Acceptance (Given/When/Then):**
 
 - Given os launchers hoje executam `opencode web --hostname 127.0.0.1 --port 4096`, When a T8 é executada, Then ambos executam `opencode serve --hostname 127.0.0.1 --port 4096` mantendo o `exec` (nunca `bash -c` sem `exec`) e o `--shared-tmp`.
-- Given o V2 exige senha, When o launcher sobe o servidor, Then ele define `OPENCODE_PASSWORD` (valor de `.env`, com fallback gerado) **antes** de iniciar o `serve`, de modo que a senha seja estável entre reinícios e recuperável.
+- Given o V2 exige senha, When o launcher sobe o servidor, Then ele **não** lê a senha do `.env` (o `.env` é versionado e **não** recebe a senha): a senha é gerada/persistente em `$PREFIX/tmp/opencode_password.txt` (chmod 600) e lida dali, **antes** de iniciar o `serve`, de modo que a senha seja estável entre reinícios e recuperável.
 - Given a senha é obrigatória na API, When o launcher monta a URL/arquivo de handoff, Then ele também persiste a senha em arquivo de handoff (ex.: `$PREFIX/tmp/opencode_password.txt`) para o script de notificação.
 - Given o launcher usa `.env`, When a T8 é executada, Then o `.env` continua sendo carregado por `$SCRIPT_DIR` (raiz do repo) e não pelo CWD.
 
@@ -312,13 +367,15 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 **Acceptance (Given/When/Then):**
 
 - Given o V2 introduz o serviço compartilhado (`opencode service`), When o stop script é executado, Then ele encerra o processo `serve` do V2 **e** o serviço compartilhado do V2, sem `pkill -f "opencode web"` (que mataria o TUI).
+- Given o serviço compartilhado do V2 roda como `/.l2s/.l2s.opencode0001.0002 serve --service` (proot com `--link2symlink`), When o stop script procura processos residuais, Then ele usa o padrão `ps -eo pid,args | grep -cE "[s]erve --service|[o]pencode2 serve"` (esperado `0`) — o cmdline do serviço compartilhado **NÃO casa** com `opencode serve` nem com `opencode2`, logo um grep por esses nomes reportaria `0` falsos e deixaria o serviço vivo.
+- Given o serviço compartilhado do V2, When o stop script é executado, Then o comando canônico de parada é `opencode2 service stop` (não `kill` por PID), seguido da remoção de `rm -f "$CONFIG_DIR/service.json"` — o `service stop` **não** remove esse arquivo, e ele contém a senha do serviço em texto claro dentro do repo (via symlink `~/.config/opencode`).
 - Given a regra do ADR-009 (kill graceful → kill -9 → cleanup de órfãos/zumbis com `is_zombie()`), When a T10 é executada, Then a ordem e a checagem de zumbi são preservadas, e `stty sane` continua no final.
 - Given o `opencode` do Termux é filho do TUI, When o stop script varre processos, Then ele identifica o processo por PID file e/ou por caminho do binário, nunca por string genérica do comando.
 
 **Verification:**
 
-- **Run:** `grep -nE "pkill|service|is_zombie|stty sane|kill -0" bin/opencode-web-stop.sh bin/opencode-tailscale-stop.sh`
-- **Expected:** zero ocorrências de `pkill -f "opencode web"`; presença de `is_zombie`, `stty sane` e do tratamento de `opencode service`.
+- **Run:** `grep -nE "pkill|service|is_zombie|stty sane|kill -0" bin/opencode-web-stop.sh bin/opencode-tailscale-stop.sh; ps -eo pid,args | grep -cE "[s]erve --service|[o]pencode2 serve"`
+- **Expected:** zero ocorrências de `pkill -f "opencode web"`; presença de `is_zombie`, `stty sane`, do tratamento de `opencode service` (`opencode2 service stop`) e da remoção de `service.json`; a contagem de processos residuais é `0`.
 
 ### T11 — Migrar `bin/limpar-opencode.sh` (sem `opencode db`)
 
@@ -421,7 +478,9 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 **Acceptance (Given/When/Then):**
 
 - Given o formato dos ADR-008 e ADR-009 existentes, When a T16 é executada, Then o ADR-010 segue o mesmo template (Contexto / Decisão / Consequências / Alternativas consideradas / Referências).
-- Given as decisões tomadas, When a T16 é executada, Then o ADR registra: target `2.0.32` fixado (e por que não `latest`=2.1.3), `web`→`serve`, Basic auth `opencode:<senha>` + `OPENCODE_PASSWORD`, isolamento do DB via `OPENCODE_DB`, `debug agent`→`debug agents`, `opencode db` removido, serviço compartilhado, e a decisão sobre o plugin.
+- Given as decisões tomadas, When a T16 é executada, Then o ADR registra: target `2.0.32` fixado (e por que não `latest`=2.2.6), `web`→`serve`, Basic auth `opencode:<senha>` + `OPENCODE_PASSWORD`, isolamento do DB via `OPENCODE_DB`, `debug agent`→`debug agents`, `opencode db` removido, serviço compartilhado, e a decisão sobre o plugin.
+- Given o V1 1.19.3 **também** honra `OPENCODE_DB` (verificado: `OPENCODE_DB=/data/data/com.termux/files/usr/tmp/v2poc/test.db opencode debug config` → exit 1, `Database is not empty and has no session table`, sem tocar o DB real do V1), When a T16 é executada, Then o ADR registra que `OPENCODE_DB` deve ser **sempre** scoped ao processo do V2 (prefixo por invocação), nunca exportado no shell/`.env`.
+- Given a forma nativa equivalente extraída do output efetivo do V2 (T6), When a T16 é executada, Then o ADR registra o **follow-up** de conversão nativa V2 — `mcp` → `mcp.servers`, `model` → `{providerID, model}`, `skills.paths` → `skills`, `permission.skill` → `permissions: [{action, resource, effect}]` — **sem** converter os arquivos agora (shape V1 dual-compatible mantido).
 
 **Verification:**
 
@@ -444,7 +503,8 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 - Given o backup da T1 verificado por SHA-256 e o TUI ativo identificado, When a T17 é executada, Then o `opencode web` do V1 é parado **antes** de qualquer escrita no DB, e o binário V1 (`opencode-linux-arm64`) é preservado para rollback.
 - Given o V2 é promovido, When `opencode --version` é executado, Then retorna `2.0.32` e `opencode2 --version` também, com `opencode` e `opencode2` apontando para o mesmo binário V2.
-- Given o DB do V1 tem 1,63 GB, When o V2 é iniciado **sem** `OPENCODE_DB` para forçar a migração nativa, Then o processo termina sem erro e `opencode2 debug paths` mostra o DB no caminho padrão; se a migração nativa falhar, Then o operator restaura o backup da T1 e usa `OPENCODE_DB` apontando para uma cópia isolada, sem perda de dados.
+- Given o DB do V1 tem ~3,1 GB, When o V2 é iniciado **sem** `OPENCODE_DB` para forçar a migração nativa, Then o processo termina sem erro e `opencode2 debug paths` mostra o DB no caminho padrão; se a migração nativa falhar, Then o operator restaura o backup da T1 e usa `OPENCODE_DB` apontando para uma cópia isolada, sem perda de dados.
+- Given `OPENCODE_DB` exportado no ambiente do Termux, When o V1 é reiniciado, Then o V1 **não** deve ser afetado — o `OPENCODE_DB` fica no prefixo do comando do V2.
 
 **Verification:**
 
@@ -460,15 +520,15 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 
 **Acceptance (Given/When/Then):**
 
-- Given o cutover feito, When `opencode_web` é executado, Then o tunnel Cloudflare sobe, a URL é entregue via ntfy **junto com a senha/link `pair`**, e a UI V2 é acessível pelo túnel (verificando `content-type: application/json` em `/api/...` autenticado, não apenas HTTP 200 do SPA).
+- Given o cutover feito, When `opencode_web` é executado, Then o tunnel Cloudflare sobe, a URL é entregue via ntfy **junto com a senha/link `pair`**, e a UI V2 é acessível pelo túnel — o health-check usa a rota **conhecida** `/api/agent` autenticada **e** valida `content-type: application/json` (status HTTP sozinho não basta: rota inexistente sob `/api/*` devolve 404 e qualquer path fora de `/api/*` devolve 200 text/html do SPA).
 - Given o cutover feito, When `opencode_tailscale` é executado, Then o serviço Tailscale sobe e a UI V2 responde autenticada.
 - Given o `serve` do V2 no proot, When `opencode2 api --server http://127.0.0.1:4096 GET /api/agent` é executado com `OPENCODE_PASSWORD`, Then retorna JSON 200 sem `UnauthorizedError`.
 - Given os scripts de stop, When `opencode_web_stop` e `opencode_tailscale_stop` são executados, Then nenhum processo `opencode` sobra (verificado por `ps`) e o TUI **não** foi morto.
 
 **Verification:**
 
-- **Run:** `opencode_web && sleep 20 && curl -s -o /dev/null -w '%{http_code} %{content_type}\n' -u "opencode:$OPENCODE_PASSWORD" https://<host-tunnel>/api/agent; opencode_web_stop; ps -eo pid,args | grep -c "[o]pencode serve"`
-- **Expected:** `200 application/json` no tunnel; após o stop, `0` processos `opencode serve` residuais e o TUI ainda ativo.
+- **Run:** `opencode_web && sleep 20 && curl -s -o /dev/null -w '%{http_code} %{content_type}\n' -u "opencode:$OPENCODE_PASSWORD" https://<host-tunnel>/api/agent; opencode_web_stop; ps -eo pid,args | grep -cE "[s]erve --service|[o]pencode2 serve"`
+- **Expected:** `200 application/json` no tunnel; após o stop, `0` processos V2 residuais — o padrão `[s]erve --service|[o]pencode2 serve` é obrigatório porque o serviço compartilhado roda como `/.l2s/.l2s.opencode0001.0002 serve --service` (proot `--link2symlink`) e **não** casa com `opencode serve` nem com `opencode2` — e o TUI ainda ativo.
 
 ### T19 — Rollback testado
 
@@ -514,12 +574,12 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|--------------|---------|-----------|
 | V2 GA alterar/migrar o DB `opencode.db` do V1 em place (mesmo caminho nos 3 canais), quebrando o fallback | **Alta** | **Alto** | Isolar com `OPENCODE_DB` em todo o PoC (T4); backup SHA-256 verificado antes de qualquer escrita (T1); validar o mecanismo de migração `opencode-next.db` antes do cutover (T17) |
-| Senha do servidor ausente ou não entregue ao usuário → tunnel abre mas a UI retorna 401 | **Alta** | **Alto** | `OPENCODE_PASSWORD` explícito no `.env`; senha persistida em arquivo de handoff e entregue na notificação ntfy ou via `opencode2 pair --url` (T8/T9); health-check por `content-type`, não por HTTP 200 |
+| Senha do servidor ausente ou não entregue ao usuário → tunnel abre mas a UI retorna 401 | **Alta** | **Alto** | Senha gerada/persistente em `$PREFIX/tmp/opencode_password.txt` (chmod 600, **fora do repo** — o `.env` versionado não a recebe); entregue na notificação ntfy ou via `opencode2 pair --url` (T8/T9); health-check por `content-type`, não por HTTP 200 |
 | Colisão do bin `opencode` entre `opencode-linux-arm64@1.19.3` e `@opencode/cli@2.0.32` na instalação global do Termux | **Alta** | **Médio** | Instalação side-by-side em prefixo isolado (T3); cutover remove o V1 **depois** do V2 validado (T17); bin V1 preservado para rollback (T19) |
-| `@opencode/cli@latest` migrar para 2.1.3 sem aviso e introduzir breaking changes não testados | **Média** | **Médio** | Fixar `@opencode/cli@2.0.32` em todos os manifests e no setup.sh; nunca instalar sem versão explícita (T3/T12) |
+| `@opencode/cli@latest` migrar para 2.2.6 (ou superior) sem aviso e introduzir breaking changes não testados | **Média** | **Médio** | Fixar `@opencode/cli@2.0.32` em todos os manifests e no setup.sh; nunca instalar sem versão explícita (T3/T12) |
 | Autostart do serviço compartilhado (`serve --service`) deixar processos órfãos e portões ocupados, confuso com o TUI | **Média** | **Médio** | Stop scripts param o processo `serve` **e** o `opencode service` (T10); verificação por `ps` no E2E (T18); nunca `pkill -f "opencode web"` |
 | `run-cloudflare-tunnel.sh` morrer junto com o TUI (é filho do processo do TUI) durante o cutover | **Média** | **Médio** | Identificar e reiniciar o TUI explicitamente antes do cutover; o wrapper `bin/opencode-web.sh` (fire-and-forget, com `disown`) é o ponto de entrada suportado (T17/T18) |
-| Migração nativa de 1,63 GB de sessões exceder o espaço em disco ou demorar excessivamente | **Média** | **Alto** | Confirmar espaço livre ≥ 2 GB antes do cutover; testar a migração numa **cópia** do DB real antes de aplicar no lugar; fallback: `OPENCODE_DB` apontando para cópia isolada |
+| Migração nativa de ~3,1 GB de sessões exceder o espaço em disco ou demorar excessivamente | **Média** | **Alto** | Confirmar espaço livre ≥ 4 GB antes do cutover; testar a migração numa **cópia** do DB real antes de aplicar no lugar; fallback: `OPENCODE_DB` apontando para cópia isolada |
 | Dependência de plugin `@opencode-ai/plugin` órfã quebrar o `npm install` do setup com a versão do V2 | **Média** | **Baixo** | Decidir e registrar no ADR antes do cutover (T13); `npm install` do setup já é `|| true` |
 | Loss de funcionalidade: algum comando V1 removido ainda referenciado por scripts ou docs | **Média** | **Médio** | Varredura `grep -rnE "opencode (web|db)"` no repo (Checkpoint 4/5); `debug agent`→`debug agents` verificado em T7/T15 |
 | Regressão no behaviour do tunnel por mudança no parsing da URL do Cloudflare / saída do V2 | **Baixa** | **Médio** | Manter o parsing atual da URL e validar o formato exato do output do V2 antes de alterar o regex (T8); E2E no device (T18) |
@@ -531,7 +591,7 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 3. `opencode2 debug config` → lista a config global do repo e a do projeto, sem warnings de schema.
 4. `grep -rnE "opencode (web|db)" bin/ scripts/ run-*.sh` → **nenhuma** ocorrência.
 5. `curl -u opencode:$OPENCODE_PASSWORD https://<tunnel>/api/agent` → `200` + `application/json`; sem `-u` → `401`.
-6. `opencode_web_stop` → `ps` sem `opencode serve` residual e TUI intacto.
+6. `opencode_web_stop` → `ps -eo pid,args | grep -cE "[s]erve --service|[o]pencode2 serve"` → `0` e TUI intacto.
 7. Checksum SHA-256 do DB de rollback idêntico ao da T1.
 8. `git status` limpo no commit final; plano arquivado e índice `.opencode/plans/README.md` atualizado.
 
@@ -540,13 +600,13 @@ Tarefas paralelizáveis: `T8`, `T11`, `T12` e `T13` podem ser executadas em para
 ```json
 {
   "features": [
-    { "id": 1, "name": "T1 — Backup integral do ambiente V1", "status": "pending", "acceptance": ["Given o V1 rodando com 1,63 GB de opencode.db, When a T1 é executada, Then existe cópia verbatim de DB, WAL, auth.json e account.json com checksum SHA-256", "Given ~/.config/opencode é symlink, When a T1 é executada, Then o tarball do conteúdo resolvido existe sem seguir o link"] },
-    { "id": 2, "name": "T2 — Notas de breaking changes V1→V2", "status": "pending", "acceptance": ["Given o levantamento empirico, When a T2 é executada, Then docs/opencode-v2-migration-notes.md documenta CLI, auth, DB, serviço compartilhado e o desvio latest=2.1.3", "Given a nota, When se busca 'senha do servidor', Then a resposta cita o código-fonte do binário que a comprova"] },
-    { "id": 3, "name": "T3 — Instalar V2 2.0.32 isolado", "status": "pending", "acceptance": ["Given o V1 instalado, When a T3 é executada, Then opencode --version continua 1.19.3 e opencode2 --version retorna 2.0.32", "Given o prefixo isolado, When se lista, Then @opencode/cli está em 2.0.32 e não 2.1.3"] },
-    { "id": 4, "name": "T4 — PoC funcional do V2 isolado", "status": "pending", "acceptance": ["Given OPENCODE_DB isolado, When o serve sobe, Then o DB real do V1 fica com tamanho e mtime inalterados", "Given OPENCODE_PASSWORD, When curl -u opencode:<senha> /api/agent, Then 200 JSON; sem -u, Then 401 UnauthorizedError"] },
-    { "id": 5, "name": "T5 — Config global V2", "status": "pending", "acceptance": ["Given a config global, When a T5 é executada, Then aponta para o schema JSON do V2", "Given a config convertida, When opencode2 debug config roda, Then lista global e projeto sem erro"] },
-    { "id": 6, "name": "T6 — Config do projeto V2", "status": "pending", "acceptance": ["Given permission.skill do V1, When a T6 é executada, Then o array permissions do V2 substitui a chave e model/skills.paths são preservados", "Given external_directory, When a T6 é executada, Then a regra é reescrita no formato V2 com justificativa em comentário"] },
-    { "id": 7, "name": "T7 — Validar agentes e skills no V2", "status": "pending", "acceptance": ["Given 5 agentes e 50 skills, When opencode2 debug agents roda, Then os 5 agentes de orquestração aparecem com permission preenchido e nenhum skill quebra"] },
+    { "id": 1, "name": "T1 — Backup integral do ambiente V1", "status": "done", "acceptance": ["Given o V1 rodando com ~3,1 GB de opencode.db, When a T1 é executada, Then existe cópia verbatim de DB, WAL, auth.json e account.json com checksum SHA-256", "Given ~/.config/opencode é symlink, When a T1 é executada, Then o tarball do conteúdo resolvido existe sem seguir o link"] },
+    { "id": 2, "name": "T2 — Notas de breaking changes V1→V2", "status": "done", "acceptance": ["Given o levantamento empirico, When a T2 é executada, Then docs/opencode-v2-migration-notes.md documenta CLI, auth, DB, serviço compartilhado e o desvio latest=2.2.6 (2.1.3 em 22/10/2026)", "Given a nota, When se busca 'senha do servidor', Then a resposta cita o código-fonte do binário que a comprova"] },
+    { "id": 3, "name": "T3 — Instalar V2 2.0.32 isolado", "status": "done", "acceptance": ["Given o V1 instalado, When a T3 é executada, Then opencode --version continua 1.19.3 e opencode2 --version retorna 2.0.32", "Given o prefixo isolado, When se lista, Then @opencode/cli está em 2.0.32 e não 2.2.6"] },
+    { "id": 4, "name": "T4 — PoC funcional do V2 isolado", "status": "done", "acceptance": ["Given OPENCODE_DB isolado, When o serve sobe, Then o processo V2 não tem NENHUM fd para ~/.local/share/opencode/opencode.db (verificado via /proc/<pid>/fd) e tem fds apenas para $OPENCODE_DB{,-wal,-shm}", "Given OPENCODE_PASSWORD, When curl -u opencode:<senha> /api/agent, Then 200 JSON; sem -u, Then 401 UnauthorizedError"] },
+    { "id": 5, "name": "T5 — Config global V2 (shape V1 mantido)", "status": "done", "acceptance": ["Given a config global em shape V1, When a T5 é executada, Then mantém o shape V1 (mcp como objeto, RENDER_API_KEY como {env:RENDER_API_KEY}) sem paths absolutos de skills", "Given a config global dual-compatible, When opencode2 debug config roda, Then lista a global e a do projeto, o MCP render aparece configurado e não há aviso de schema desconhecido"] },
+    { "id": 6, "name": "T6 — Config do projeto V2 (shape V1 mantido)", "status": "done", "acceptance": ["Given permission.skill do V1, When a T6 é executada, Then o shape V1 é mantido e o V2 traduz permission.skill em 50 entradas permissions com effect allow, preservando model e skills.paths", "Given external_directory, When a T6 é executada, Then fica registrado que a regra NÃO existe no opencode.json deste repo e que a conversão nativa V2 é follow-up da T16"] },
+    { "id": 7, "name": "T7 — Validar agentes e skills no V2", "status": "done", "acceptance": ["Given 5 agentes e 50 skills, When opencode2 debug agents roda, Then os 5 agentes de orquestração aparecem com permission preenchido e nenhum skill quebra"] },
     { "id": 8, "name": "T8 — Migrar run-*.sh para serve + senha", "status": "pending", "acceptance": ["Given os launchers com opencode web, When a T8 é executada, Then ambos usam opencode serve preservando exec e --shared-tmp", "Given o V2 exigir senha, When o launcher sobe, Then OPENCODE_PASSWORD é definido antes do serve e a senha é persistida em arquivo de handoff"] },
     { "id": 9, "name": "T9 — Migrar wrappers Termux", "status": "pending", "acceptance": ["Given o V2 exigir senha, When a notificação ntfy é montada, Then inclui URL e senha ou link one-time do pair"] },
     { "id": 10, "name": "T10 — Migrar stop scripts", "status": "pending", "acceptance": ["Given o serviço compartilhado do V2, When o stop script roda, Then encerra serve e opencode service sem pkill -f 'opencode web'", "Given o ADR-009, When a T10 é executada, Then graceful→kill -9→is_zombie→stty sane são preservados"] },

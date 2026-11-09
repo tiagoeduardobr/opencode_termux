@@ -165,8 +165,14 @@ Lista completa: `opencode.json` permission.skill e `docs/SESSION_CONTEXT_2026061
   → Detalhes: `docs/termux/termux-notification.md`
 - **`.env` loading**: Scripts carregam `.env` de `$SCRIPT_DIR` (raiz do repo), não do CWD.
   `run-cloudflare-tunnel.sh` dentro do proot também carrega do CWD (que é o mesmo dir).
-- **`.config/opencode/.gitignore`**: Ignora `node_modules`, `bun.lock` e `.gitignore`
-  — intencional (mantém package.json/lock versionados, exclui node_modules).
+- **`.config/opencode/.gitignore`**: Ignora `node_modules`, `bun.lock`, `.gitignore`
+  e `service.json` — intencional (mantém package.json/lock versionados, exclui
+  node_modules). O arquivo é **local-only**: **não versionado e auto-ignorado**
+  (ele se auto-ignora via a própria entrada `.gitignore`, então nunca entra no
+  índice). A garantia **repo-wide** do ignore de `service.json` está no
+  `.gitignore` da **raiz** do repo (`.config/opencode/service.json`) — num clone
+  novo o arquivo local não existe, e é a regra da raiz que impede versionar a
+  senha do servidor em texto claro.
 - **`opencode.json`**: usa paths relativos `.config/opencode/skills/`.
   Agentes são definidos via markdown em `.config/opencode/agents/` (auto-descobertos).
 - **`permission.task` (OpenCode 1.18.2)**: Substitui o `rbac` custom. Controla
